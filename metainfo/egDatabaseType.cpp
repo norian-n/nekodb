@@ -1,77 +1,118 @@
 #include <iostream>
+#include <filesystem>
 
 #include "egDatabaseType.h"
 
 void EgDatabaseType::clear() {
-    nodesTypesStorage->clear();
-    linksTypesStorage->clear();
+    nodesTypesMetainfo.clear();
+    linksTypesMetainfo.clear();
+    nodesTypesMetainfoLoaded = false;
+    linksTypesMetainfoLoaded = false;
 }
 
-int EgDatabaseType::ConnectDataNodesTypeRaw(EgLayoutIDType dntID, EgDataNodesType *dntPtr) {
+void EgDatabaseType::initDatabase() {
+    // check if nodes and links metainfo exists
+    if (nodesTypesMetainfo.ConnectSystemNodeType(nodesTypesStorageName) != 0) {
+        std::cout << "initDatabase() not found metadata storage, create new: " << nodesTypesStorageName << std::endl;
+        initNodesMetainfo();
+        nodesTypesMetainfo.ConnectSystemNodeType(nodesTypesStorageName);
+    }
+    LoadTypesInfo();
+    if (linksTypesMetainfo.ConnectSystemNodeType(linksTypesStorageName) != 0) {
+        std::cout << "initDatabase() not found metadata storage, create new: " << linksTypesStorageName << std::endl;
+        initLinksMetainfo();
+        linksTypesMetainfo.ConnectSystemNodeType(linksTypesStorageName);
+    }
+    LoadLinksInfo();
+}
+
+void EgDatabaseType::initNodesMetainfo() {
+    CreateNodeBlueprint(nodesTypesStorageName);
+
+    AddNodeDataField("nodesBlueprintID");
+    AddNodeDataField("nodesTypeName");
+
+    CommitSystemNodeBlueprint();
+}
+
+void EgDatabaseType::initLinksMetainfo() {
+    CreateNodeBlueprint(linksTypesStorageName);
+
+    AddNodeDataField("linksBlueprintID");
+    AddNodeDataField("linksTypeName");
+
+    CommitSystemNodeBlueprint();
+}
+
+int EgDatabaseType::InsertDataNodesTypeToMap(EgBlueprintIDType dntID, EgDataNodesType *dntPtr) {
     auto iter = dataNodesTypes.find(dntID); // search if already connected
     if (iter != dataNodesTypes.end())
         return -1;
-    dataNodesTypes.insert(std::pair<EgLayoutIDType, EgDataNodesType *>(dntID, dntPtr));
+    dataNodesTypes.insert(std::pair<EgBlueprintIDType, EgDataNodesType *>(dntID, dntPtr));
     return 0;
 }
 
-EgDataNodesType *EgDatabaseType::GetNodeTypePtrByID(EgLayoutIDType nodeTypeID) {
+EgDataNodesType *EgDatabaseType::GetNodeTypePtrByID(EgBlueprintIDType nodeTypeID) {
     auto iter = dataNodesTypes.find(nodeTypeID); // search all nodes
     if (iter != dataNodesTypes.end())
         return iter->second;
     return nullptr;
 }
 
-void EgDatabaseType::initLayouts() {
-    nodesTypesStorageLayout->LayoutInitStart();
-    nodesTypesStorageLayout->AddDataFieldName("nodesLayoutID");
-    nodesTypesStorageLayout->AddDataFieldName("nodesTypeName");
-    nodesTypesStorageLayout->layoutSettings.isServiceType = true;
-    nodesTypesStorageLayout->layoutMode = egLayoutActive; // virtual, do NOT commit to db
-
-    linksTypesStorageLayout->LayoutInitStart();
-    linksTypesStorageLayout->AddDataFieldName("linksTypeName");
-    linksTypesStorageLayout->layoutSettings.isServiceType = true;
-    linksTypesStorageLayout->layoutMode = egLayoutActive; // virtual, do NOT commit to db
-}
-
-void EgDatabaseType::AddDataNodesTypeInfo(EgLayoutIDType layoutID, std::string &typeName) {
-    EgDataNodeType *newNode = new EgDataNodeType(nodesTypesStorageLayout);
-    *newNode << layoutID;
+void EgDatabaseType::AddDataNodesTypeInfo(EgBlueprintIDType& blueprintID, std::string &typeName) {
+    if (!nodeTypeIDByName(typeName, blueprintID))// metainfoDataExists
+        return;
+    // EgDataNodeType *newNode = new EgDataNodeType(nodesTypesStorageBlueprint);
+    EgDataNodeType* newNode = new EgDataNodeType(nodesTypesMetainfo.dataNodeBlueprint);
+    blueprintID = nodesTypesMetainfo.nodesContainer-> lastNodeID + 1;
+    *newNode << blueprintID;
     *newNode << typeName;
-    *nodesTypesStorage << newNode;
+    nodesTypesMetainfo << newNode;
 }
 
-void EgDatabaseType::AddLinksTypeInfo(std::string &linksTypeName) {
-    EgDataNodeType *newNode = new EgDataNodeType(linksTypesStorageLayout);
+void EgDatabaseType::AddLinksTypeInfo(EgBlueprintIDType& blueprintID, std::string &linksTypeName) {
+    if (!linkTypeIDByName(linksTypeName, blueprintID))// metainfoDataExists
+        return;
+    // EgDataNodeType *newNode = new EgDataNodeType(linksTypesStorageBlueprint);
+    EgDataNodeType* newNode = new EgDataNodeType(linksTypesMetainfo.dataNodeBlueprint);
+    blueprintID = linksTypesMetainfo.nodesContainer-> lastNodeID + 1;
+    *newNode << blueprintID;
     *newNode << linksTypeName;
-    *linksTypesStorage << newNode;
+    linksTypesMetainfo << newNode;
 }
 
 int EgDatabaseType::LoadTypesInfo() {
-    nodesTypesStorage->clear();
-    return nodesTypesStorage-> LoadAllLocalFileNodes();
+    if (nodesTypesMetainfoLoaded)
+        return 0;
+    int res = nodesTypesMetainfo.LoadAllNodes();
+    nodesTypesMetainfoLoaded = !res; // ok
+    return res;
 }
 
 int EgDatabaseType::StoreTypesInfo() {
-    return nodesTypesStorage-> StoreToLocalFile();
+    return nodesTypesMetainfo.Store();
 }
 
 int EgDatabaseType::LoadLinksInfo() {
-    linksTypesStorage->clear();
-    return linksTypesStorage-> LoadAllLocalFileNodes();
+    if (linksTypesMetainfoLoaded)
+        return 0;
+    int res = linksTypesMetainfo.LoadAllNodes();
+    linksTypesMetainfoLoaded = !res; // ok
+    return res;
 }
 
 int EgDatabaseType::StoreLinksInfo() {
-    return linksTypesStorage-> StoreToLocalFile();
+    return linksTypesMetainfo.Store();
 }
 
-bool EgDatabaseType::checkTypenameExist(std::string& typeName) {
+bool EgDatabaseType::nodeTypeIDByName(std::string& typeName, EgBlueprintIDType& nodeTypeID) {
     if (LoadTypesInfo() == 0) { // files exist
-        for (auto nodesIter : nodesTypesStorage-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
+        for (auto nodesIter : nodesTypesMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
             std::string currentName ((char *)(*(nodesIter.second))["nodesTypeName"].arrayData);
+            // std::cout << "nodeTypeIDByName() currentName: " << currentName << " typeName: " << typeName << std::endl;
             if (currentName == typeName) {
-                // std::cout << "checkTypenameExist() node type found " << std::endl;
+                nodeTypeID = nodesIter.first;
+                // std::cout << "nodeTypeIDByName() node type found: " << typeName << " " << std::dec << nodeTypeID << std::endl;
                 return false; // typename exists
             }
         }
@@ -79,12 +120,14 @@ bool EgDatabaseType::checkTypenameExist(std::string& typeName) {
     return true;
 }
 
-bool EgDatabaseType::checkLinknameExist(std::string& linkName) {
+bool EgDatabaseType::linkTypeIDByName(std::string& linkName, EgBlueprintIDType& linkTypeID) {
     if (LoadLinksInfo() == 0) { // files exist
-        for (auto nodesIter : linksTypesStorage-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
+        for (auto nodesIter : linksTypesMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
             std::string currentName ((char *)(*(nodesIter.second))["linksTypeName"].arrayData);
+            std::cout << "linkTypeIDByName() currentName: " << currentName << " linkName: " << linkName << std::endl;
             if (currentName == linkName) {
-                std::cout << "checkLinknameExist() link type found " << std::endl;
+                linkTypeID = nodesIter.first;
+                // std::cout << "linkTypeIDByName() node type found: " << linkName << " " << std::dec << linkTypeID << std::endl;
                 return false; // typename exists
             }
         }
@@ -92,46 +135,99 @@ bool EgDatabaseType::checkLinknameExist(std::string& linkName) {
     return true;
 }
 
-int EgDatabaseType::CreateNodeLayoutBlueprintClass(std::string& name) { //,  EgNodeTypeSettings& typeSettings)
-    CreateNodeTypeFlag = true; // ok to add fields
-    if (! checkTypenameExist(name)) { // check nodestype/layout name
-        std::cout << "ERROR: Data nodes type/layout name already exists, cant CreateNodeType()" << std::endl;
-        CreateNodeTypeFlag = false; // abort next ops
+int EgDatabaseType::CreateNodeBlueprint(const char* name) { //,  EgNodeTypeSettings& typeSettings)
+    std::string strName(name);
+    if (std::filesystem::exists(strName + ".dnl")) { 
+        std::cout << "ERROR: Data nodes type/blueprint already exists, cant CreateNodeType(): " << name << std::endl;
+        CreateNodeBlueprintFlag = false; // abort next ops
         return -1;
     }
-
-    newLayout = new EgDataNodeLayoutType(name);
-    newLayout-> LayoutInitStart();
-    // std::cout << "newLayout before: " << newLayout->layoutName << " " << (int) newLayout-> layoutID << std::endl;
-    AddDataNodesTypeInfo(newLayout->layoutID, name); // FIXME STUB
-
+    nodeBlueprint = new EgDataNodeBlueprintType(strName);  // if someone failed to commit blueprint and leak mem, no big deal
+    nodeBlueprint-> BlueprintInitStart();
+    CreateNodeBlueprintFlag = true; // ok to add fields
+    // std::cout << "newBlueprint before: " << nodeBlueprint->blueprintName << " " << (int) nodeBlueprint-> blueprintID << std::endl;
     return 0;
 }
 
-void EgDatabaseType::AddDataField(std::string& fieldName) {
-    if (CreateNodeTypeFlag)
-        newLayout-> AddDataFieldName(fieldName);
+void EgDatabaseType::AddNodeDataField(std::string& fieldName) {
+    if (CreateNodeBlueprintFlag)
+        nodeBlueprint-> AddDataFieldName(fieldName);
 }
 
-void EgDatabaseType::CommitNodeLayoutBlueprintClass() {
-    if (CreateNodeTypeFlag)
-    {
-        newLayout-> LayoutInitCommit();
-        std::cout << "newLayout after: " << newLayout->layoutName << " " << (int) newLayout-> layoutID << std::endl;
+void EgDatabaseType::CommitNodeBlueprint() {
+    if (CreateNodeBlueprintFlag) {
+        nodeBlueprint-> BlueprintInitCommit();
+        AddDataNodesTypeInfo(nodeBlueprint-> blueprintID, nodeBlueprint-> blueprintName);
+        // std::cout << "newBlueprint after: " << nodeBlueprint->blueprintName << " " << (int) nodeBlueprint-> blueprintID << std::endl;
         StoreTypesInfo();
-        delete newLayout;
-        newLayout = nullptr;
     }
+    delete nodeBlueprint;
+    nodeBlueprint = nullptr;
+    CreateNodeBlueprintFlag = false;
 }
 
-int EgDatabaseType::AddLinkType(std::string& linkTypeName) { //,  EgNodeTypeSettings& typeSettings)
-    if (! checkLinknameExist(linkTypeName)) { // check nodestype/layout name
-        std::cout << "ERROR: Links type/layout name already exists, cant AddLinkType()" << std::endl;
+void EgDatabaseType::CommitSystemNodeBlueprint() { // dont add to nodes metainfo
+    if (CreateNodeBlueprintFlag)
+        nodeBlueprint-> BlueprintInitCommit();
+    // AddDataNodesTypeInfo(nodeBlueprint-> blueprintID, nodeBlueprint-> blueprintName); // FIXME STUB
+    // std::cout << "newBlueprint after: " << nodeBlueprint->blueprintName << " " << (int) nodeBlueprint-> blueprintID << std::endl;
+    // StoreTypesInfo();
+    delete nodeBlueprint;
+    nodeBlueprint = nullptr;
+    CreateNodeBlueprintFlag = false;
+}
+
+int EgDatabaseType::CreateLinkBlueprint(std::string& linkTypeName, std::string& nodesFrom, std::string& nodesTo) {
+    std::string fullLinkName = linkTypeName + std::string("_arrowLinks"); // FIXME global const
+    if (std::filesystem::exists(fullLinkName + ".dnl")) { 
+        std::cout << "ERROR: Link type/blueprint file already exists, cant CreateLinkBlueprint(): " << linkTypeName << std::endl;
+        CreateLinkBlueprintFlag = false; // abort next ops
+        return -1;
+    }   
+    linkBlueprint = new EgDataNodeBlueprintType(fullLinkName); // if someone failed to commit blueprint and leak mem, no big deal
+    linkBlueprint-> BlueprintInitStart();
+    linkBlueprint-> AddDataFieldName("fromID"); // FIXME global const
+    linkBlueprint-> AddDataFieldName("toID");   // FIXME global const
+    // std::cout << "newBlueprint before: " << newBlueprint->blueprintName << " " << (int) newBlueprint-> blueprintID << std::endl;
+    linkBlueprint->BlueprintInitCommit();
+    AddLinksTypeInfo(linkBlueprint->blueprintID, linkBlueprint->blueprintName);
+    // std::cout << "newBlueprint after: " << linkBlueprint->blueprintName << " " << (int)linkBlueprint->blueprintID << std::endl;
+    StoreLinksInfo();
+    delete linkBlueprint;
+    linkBlueprint = nullptr;
+    CreateLinkBlueprintFlag = false;
+    return 0;
+}
+
+int EgDatabaseType::CreateLinkWithDataBlueprint(std::string& linkTypeName, std::string& nodesFrom, std::string& nodesTo) {
+    std::string fullLinkName = linkTypeName + std::string("_arrowLinks"); // FIXME global const
+    if (std::filesystem::exists(fullLinkName + ".dnl")) { 
+        std::cout << "ERROR: Link type/blueprint file already exists, cant CreateLinkBlueprint(): " << linkTypeName << std::endl;
+        CreateLinkBlueprintFlag = false; // abort next ops
         return -1;
     }
-
-    AddLinksTypeInfo(linkTypeName); // FIXME STUB
-    StoreLinksInfo();
-
+    linkBlueprint = new EgDataNodeBlueprintType(fullLinkName); // if someone failed to commit blueprint and leak mem, no big deal
+    linkBlueprint-> BlueprintInitStart();
+    linkBlueprint-> AddDataFieldName("fromID"); // FIXME global const
+    linkBlueprint-> AddDataFieldName("toID");   // FIXME global const
+    // std::cout << "newBlueprint before: " << newBlueprint->blueprintName << " " << (int) newBlueprint-> blueprintID << std::endl;
+    CreateLinkBlueprintFlag = true;
     return 0;
+}
+
+void EgDatabaseType::AddLinkDataField(std::string& fieldName) {
+    if (CreateLinkBlueprintFlag)
+        linkBlueprint-> AddDataFieldName(fieldName);
+}
+
+void EgDatabaseType::CommitLinkBlueprint() {
+    if (CreateLinkBlueprintFlag) {
+        linkBlueprint-> BlueprintInitCommit();
+        AddLinksTypeInfo(linkBlueprint->blueprintID, linkBlueprint-> blueprintName);
+        // std::cout << "newBlueprint after: " << linkBlueprint->blueprintName << " " << (int) linkBlueprint-> blueprintID << std::endl;
+        StoreLinksInfo();
+    }
+    delete linkBlueprint;
+    linkBlueprint = nullptr;
+    CreateLinkBlueprintFlag = false;
 }

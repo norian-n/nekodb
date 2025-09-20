@@ -8,8 +8,13 @@ string field1 = "111111\0";
 const char* field2 = "test some string 2\0";
 string field3("just test 3");
 
+EgIndexSettingsType indexSettings;
+EgDataNodeBlueprintType testBlueprint("testNodes");
+EgDataNodesContainerType nodesContainer;
+
+
 inline void addSampleDataNode(EgDataNodesContainerType& container) {
-    EgDataNodeType* newNode = new EgDataNodeType(container.dataNodeLayout);
+    EgDataNodeType* newNode = new EgDataNodeType(container.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
     *newNode << field3;
@@ -17,46 +22,44 @@ inline void addSampleDataNode(EgDataNodesContainerType& container) {
     // cout << "addSampleDataNode() : node added" << endl;
 }
 
-bool testDataNodeLayout() {
-    EgIndexSettingsType indexSettings;
-    EgDataNodeLayoutType testLayout("testNodes");
-    // cout << "===== Test DataNodeLayout " << " =====" << endl;
+bool testDataNodeBlueprint() {
+    // cout << "===== Test DataNodeBlueprint " << " =====" << endl;
 
-    testLayout.LayoutInitStart();
+    testBlueprint.BlueprintInitStart();
 
-    testLayout.AddDataFieldName("field_1");
-    testLayout.AddDataFieldName("testField 2");
-    testLayout.AddDataFieldName("my_field 3");
+    testBlueprint.AddDataFieldName("field_1");
+    testBlueprint.AddDataFieldName("testField 2");
+    testBlueprint.AddDataFieldName("my_field 3");
 
-    testLayout.layoutSettings.useEntryNodes         = true;
-    testLayout.layoutSettings.useGUIsettings        = true;
-    testLayout.layoutSettings.useLinks              = true;
-    testLayout.layoutSettings.useNamedAttributes    = true;
-    testLayout.layoutSettings.useVisualSpace        = true;
+    testBlueprint.blueprintSettings.useEntryNodes         = true;
+    testBlueprint.blueprintSettings.useGUIsettings        = true;
+    testBlueprint.blueprintSettings.useLinks              = true;
+    testBlueprint.blueprintSettings.useNamedAttributes    = true;
+    testBlueprint.blueprintSettings.useVisualSpace        = true;
 
-    testLayout.LayoutInitCommit();
+    testBlueprint.BlueprintInitCommit();
 
     indexSettings.indexFamilyType   = egIntFT;
     indexSettings.indexSizeBits     = 32;
-    testLayout.AddIndex("field_1",  indexSettings);
+    testBlueprint.AddIndex("field_1",  indexSettings);
 
     indexSettings.indexFamilyType   = egHashFT;
     indexSettings.indexSizeBits     = 64;
     indexSettings.hashFunctionID    = 2;
-    testLayout.AddIndex("my_field 3",  indexSettings);
+    testBlueprint.AddIndex("my_field 3",  indexSettings);
     
-    testLayout.LocalStoreLayout();
-    testLayout.LocalLoadLayout();
-    // PrintDataNodeLayout(testLayout);
+    testBlueprint.LocalStoreBlueprint();
+    testBlueprint.LocalLoadBlueprint();
+    // PrintDataNodeBlueprint(testBlueprint);
     return true;
 }
 
 bool testDataNodesContainer() {
-    EgDataNodesContainerType nodesContainer("testNodes");
-
     cout << "===== Test NodesContainerType (store 3 generated nodes to container testNodes.gdn, delete #2) =====" << endl;
-    if(nodesContainer.LoadLocalLayout()) {
-        cout << "Error: can't open data nodes layout testNodes.dnl" << endl;
+    nodesContainer.init(&testBlueprint);
+
+    if(nodesContainer.LoadLocalBlueprint()) {
+        cout << "Error: can't open data nodes blueprint testNodes.dnl" << endl;
         return false;
     }
         // 3 generated nodes
@@ -81,7 +84,7 @@ bool testDataNodesContainer() {
     nodesContainer.DeleteDataNode(2);
     // EgDataNodeType* updNode = nodesContainer.dataNodes[1];
     // cout << "updNode-> dataNodeID : " << (int) updNode-> dataNodeID << endl;
-    nodesContainer.MarkUpdatedDataNode(nodesContainer.dataNodes[1]);
+    nodesContainer.MarkUpdatedDataNode(1);
     // cout << endl << "===== After DeleteDataNode(2), UpdateDataNode =====" << endl;
     // PrintDataNodesContainer(nodesContainer);
         // store to testNodes.gdn, load and print
@@ -118,10 +121,10 @@ bool testDataNodesContainer() {
 }
 
 int main() {
-    std::remove("testNodes.dnl"); // delete layout file
+    std::remove("testNodes.dnl"); // delete blueprint file
     std::remove("testNodes.gdn"); // delete data nodes file
 
-    testDataNodeLayout(); // create layout file
+    testDataNodeBlueprint(); // create blueprint file
 
     if (testDataNodesContainer())
         cout << "PASS" << endl;

@@ -1,53 +1,53 @@
-#include "../nodes/egDataNodeLayout.h"
+#include "../nodes/egDataNodeBlueprint.h"
 #include <iostream>
 #include <cstring>
 using namespace std;
 
 
-bool testDataNodeLayout() {
+bool testDataNodeBlueprint() {
 
-    cout << "===== Test DataNodeLayout (2 errors must appear in negative tests) " << " =====" << endl;
+    cout << "===== Test DataNodeBlueprint (2 errors must appear in negative tests) " << " =====" << endl;
 
-    EgDataNodeLayoutType testLayout("testNodes");
+    EgDataNodeBlueprintType testBlueprint("testNodes");
     EgIndexSettingsType indexSettings;
 
     std::remove("testNodes.dnl"); // delete file
 
-    testLayout.LayoutInitStart();
+    testBlueprint.BlueprintInitStart();
 
-    testLayout.AddDataFieldName("field_1");
-    testLayout.AddDataFieldName("testField 2");
-    testLayout.AddDataFieldName("field 3");
+    testBlueprint.AddDataFieldName("field_1");
+    testBlueprint.AddDataFieldName("testField 2");
+    testBlueprint.AddDataFieldName("field 3");
 
-    testLayout.layoutSettings.useEntryNodes         = true;
-    testLayout.layoutSettings.useGUIsettings        = true;
-    testLayout.layoutSettings.useLinks              = true;
-    testLayout.layoutSettings.useNamedAttributes    = true;
-    testLayout.layoutSettings.useVisualSpace        = true;
+    testBlueprint.blueprintSettings.useEntryNodes         = true;
+    testBlueprint.blueprintSettings.useGUIsettings        = true;
+    testBlueprint.blueprintSettings.useLinks              = true;
+    testBlueprint.blueprintSettings.useNamedAttributes    = true;
+    testBlueprint.blueprintSettings.useVisualSpace        = true;
 
-    testLayout.LayoutInitCommit();
-    testLayout.AddDataFieldName("try to add field after commit");
+    testBlueprint.BlueprintInitCommit();
+    testBlueprint.AddDataFieldName("try to add field after commit");
 
     indexSettings.indexFamilyType   = egIntFT;
     indexSettings.indexSizeBits     = 32;
-    testLayout.AddIndex("field_1",  indexSettings);
+    testBlueprint.AddIndex("field_1",  indexSettings);
 
     indexSettings.indexFamilyType   = egHashFT;
     indexSettings.indexSizeBits     = 64;
     indexSettings.hashFunctionID    = 2;
-    testLayout.AddIndex("field 3",  indexSettings);
+    testBlueprint.AddIndex("field 3",  indexSettings);
 
-    testLayout.AddIndex("bad index name", indexSettings);
+    testBlueprint.AddIndex("bad index name", indexSettings);
     
-    testLayout.LocalStoreLayout();
-    int res = testLayout.LocalLoadLayout();
-    // PrintDataNodeLayout(testLayout);
+    testBlueprint.LocalStoreBlueprint();
+    int res = testBlueprint.LocalLoadBlueprint();
+    // PrintDataNodeBlueprint(testBlueprint);
 
     return (res == 0);
 }
 
 int main() {
-    if (testDataNodeLayout())
+    if (testDataNodeBlueprint())
         cout << "PASS" << endl;
     else
         cout << "FAIL" << endl;    

@@ -12,32 +12,47 @@
 
 class EgLinksType {
 public:
+    EgDataNodesType linksDataStorage;
+    EgDataNodesMapType& dataMap; // shortcut to container nodes map,  for (auto iter : dataMap)
+    // bool linksDataStorageLoaded {false};
     // bool                        isConnected         { false };      // ? TODO nodes data status ( connected, no file, no server)
-    EgLayoutIDType              linkTypeID          { 0 };
-    std::string                 linkTypeName;
-    EgDatabaseType*             metaInfoDatabase    { nullptr };    
-    EgDataNodeLayoutType*       linksStorageLayout  { nullptr };
-    EgDataNodesContainerType*   linksStorage        { nullptr };
+    EgBlueprintIDType   linkTypeID          { 0 };
+    std::string         linkTypeName;
+
+    EgDatabaseType*             metaInfoDatabase    { nullptr };
+    // EgDataNodeBlueprintType*       linksStorageBlueprint  { nullptr };
+    // EgDataNodesContainerType*   linksStorage        { nullptr };
     // EgDataNodesContainerType* linkDataStorage;
+
     EgDataNodesContainerType* fromDataNodes         { nullptr };
     EgDataNodesContainerType* toDataNodes           { nullptr };
 
-    EgLinksType(std::string a_Name, EgDatabaseType* a_Database):
+    EgLinksType(): dataMap(linksDataStorage.dataMap) {}
+/*
+    EgLinksType(std::string a_Name): // , EgDatabaseType* a_Database):
             linkTypeName(a_Name),
-             metaInfoDatabase(a_Database),           
-            linksStorageLayout(new EgDataNodeLayoutType(a_Name)),
-            linksStorage (new EgDataNodesContainerType(a_Name, linksStorageLayout)) { initLinkLayout(linksStorageLayout); }
-
-    ~EgLinksType() { clear();  delete linksStorage; delete linksStorageLayout; }
+            // metaInfoDatabase(a_Database),           
+            linksStorageBlueprint(new EgDataNodeBlueprintType(a_Name)),
+            linksStorage (new EgDataNodesContainerType(a_Name, linksStorageBlueprint)) { initLinkBlueprint(linksStorageBlueprint); }
+*/
+    ~EgLinksType() { /* clear();  delete linksStorage; delete linksStorageBlueprint; */ }
     
     void clear();
-    void initLinkLayout(EgDataNodeLayoutType* linkLayout);
-    int ConnectToDatabase();
+
+    int  ConnectLinks(std::string& linkNameStr, EgDatabaseType& myDB); // links have another register place in metainfo
+    int  ConnectLinks(const char* linkName, EgDatabaseType& myDB)
+        { std::string name(linkName); return ConnectLinks(name, myDB); } // wrapper
+
+    // void initLinkBlueprint(EgDataNodeBlueprintType* linkBlueprint);
+    // int  Connect(EgDatabaseType& a_Database); // To Database
+
     void AddRawLink(EgDataNodeIDType fromID, EgDataNodeIDType toID);
-    int AddContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType toID);
+    int  AddNodeContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType toID);
+
     int LoadLinks();
     int StoreLinks();
-    void ConnectDataNodesTypes(EgDataNodesType& from, EgDataNodesType& to);
+
+    void ConnectLinkToNodesTypes(EgDataNodesType& from, EgDataNodesType& to);
     int ResolveNodesIDsToPtrs();
 };
 

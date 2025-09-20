@@ -4,65 +4,76 @@
 #include "../nodes/egDataNodesType.h"
 
 //  ============================================================================
-//          EXTERNAL TYPES
+    const std::string nodesTypesStorageName("nodesTypesStorageBlueprint");
+    const std::string linksTypesStorageName("linksTypesStorageBlueprint");
 //  ============================================================================
-    const std::string nodesTypesStorageName("nodesTypesStorageLayout");
-    const std::string linksTypesStorageName("linksTypesStorageLayout");
-//  ============================================================================
-
-// egdb/meta/....
 
 class EgDatabaseType {
 public:
-    EgDataNodeLayoutType* nodesTypesStorageLayout;
-    EgDataNodeLayoutType* linksTypesStorageLayout;
+    EgDataNodesType nodesTypesMetainfo;
+    EgDataNodesType linksTypesMetainfo;
+    bool nodesTypesMetainfoLoaded {false};
+    bool linksTypesMetainfoLoaded {false};
 
-    EgDataNodesContainerType* nodesTypesStorage;
-    EgDataNodesContainerType* linksTypesStorage;
+    EgDataNodeBlueprintType* nodeBlueprint {nullptr};
+    EgDataNodeBlueprintType* linkBlueprint {nullptr};
+    bool CreateNodeBlueprintFlag {false};
+    bool CreateLinkBlueprintFlag {false};
 
-    EgDataNodeLayoutType* newLayout {nullptr};
-    bool CreateNodeTypeFlag {true};
+    std::map <EgBlueprintIDType, EgDataNodesType*>  dataNodesTypes; // FIXME check if needed, use storage containers
 
-    std::map <EgLayoutIDType, EgDataNodesType*>  dataNodesTypes;
-
-    EgDatabaseType():   nodesTypesStorageLayout (new EgDataNodeLayoutType(nodesTypesStorageName)),
-                        linksTypesStorageLayout (new EgDataNodeLayoutType(linksTypesStorageName)),
-                        nodesTypesStorage (new EgDataNodesContainerType(nodesTypesStorageName, nodesTypesStorageLayout)),
-                        linksTypesStorage (new EgDataNodesContainerType(linksTypesStorageName, linksTypesStorageLayout)) 
-    { initLayouts(); }
+    EgDatabaseType() { initDatabase(); }
     
     ~EgDatabaseType() { 
         clear(); 
-        delete nodesTypesStorageLayout; delete linksTypesStorageLayout; delete nodesTypesStorage; delete linksTypesStorage;
+        /*delete nodesTypesStorageBlueprint; delete linksTypesStorageBlueprint; delete nodesTypesStorage; delete linksTypesStorage; */
     }
     
     void clear();
 
-    int ConnectDataNodesTypeRaw(EgLayoutIDType dntID, EgDataNodesType* dntPtr);
-    EgDataNodesType* GetNodeTypePtrByID(EgLayoutIDType nodeTypeID);
+    void initDatabase();
+    void initNodesMetainfo();
+    void initLinksMetainfo();
 
-    void initLayouts();
+    int InsertDataNodesTypeToMap(EgBlueprintIDType dntID, EgDataNodesType* dntPtr);
+    EgDataNodesType* GetNodeTypePtrByID(EgBlueprintIDType nodeTypeID);
 
-    void AddDataNodesTypeInfo(EgLayoutIDType layoutID, std::string& typeName);
-    void AddLinksTypeInfo(std::string& linksTypeName);
+    void AddDataNodesTypeInfo(EgBlueprintIDType& blueprintID, std::string& typeName);
+    void AddLinksTypeInfo(EgBlueprintIDType& blueprintID, std::string& linksTypeName);
+    int  LoadTypesInfo();
+    int  StoreTypesInfo();
+    int  LoadLinksInfo();
+    int  StoreLinksInfo();
 
-    int LoadTypesInfo();
-    int StoreTypesInfo();
+    bool nodeTypeIDByName(std::string& typeName, EgBlueprintIDType& nodeTypeID);
+    bool linkTypeIDByName(std::string& linkName, EgBlueprintIDType& linkTypeID);
+//  ============================================================================    
+    int  CreateNodeBlueprint (std::string& name) { return CreateNodeBlueprint(name.c_str());  }   // wrapper
+    int  CreateNodeBlueprint (const std::string& name) { return CreateNodeBlueprint(name.c_str()); } // wrapper
+    int  CreateNodeBlueprint (const char* name);
+    void AddNodeDataField(std::string& fieldName);
+    void AddNodeDataField(const char* typeName) { std::string name(typeName); return AddNodeDataField(name); }          // wrapper
+    void CommitNodeBlueprint();         // use AddDataField() prior to commit
+    void CommitSystemNodeBlueprint();   // use AddDataField() prior to commit
+//  ============================================================================
+    int  CreateLinkBlueprint(std::string& linkTypeName, std::string& nodesFrom, std::string& nodesTo); // between 2 (1) node types only
+    int  CreateLinkBlueprint(const char* name, const char* nodesFrom, const char* nodesTo) {
+        std::string nameStr(name); std::string nodeFStr(nodesFrom); std::string nodeTStr(nodesTo); 
+        return CreateLinkBlueprint(nameStr, nodeFStr, nodeTStr);  } // wrapper
 
-    int LoadLinksInfo();
-    int StoreLinksInfo();
+    int  CreateLinkWithDataBlueprint(std::string& linkTypeName, std::string& nodesFrom, std::string& nodesTo);
+    int  CreateLinkWithDataBlueprint(const char* name, const char* nodesFrom, const char* nodesTo) {
+        std::string nameStr(name); std::string nodeFStr(nodesFrom); std::string nodeTStr(nodesTo); 
+        return CreateLinkWithDataBlueprint(nameStr, nodeFStr, nodeTStr);  } // wrapper
+    void AddLinkDataField(std::string& fieldName);
+    void AddLinkDataField(const char* typeName) { std::string name(typeName); return AddLinkDataField(name); } // wrapper
+    void CommitLinkBlueprint(); // use AddLinkField() prior to commit
+//  ============================================================================
+    int  CreateFreeLinkBlueprint() { /* FIXME TODO */ return 0; } // between any node types, 4 IDs per link
 
-    bool checkTypenameExist(std::string& typeName);
-    bool checkLinknameExist(std::string& linkName);
+    int  CreateFreeLinkWithDataBlueprint(std::string& linkTypeName) { /* FIXME TODO */ return 0; }
+    int  CreateFreeLinkWithDataBlueprint(const char* linkTypeName) 
+        { std::string name(linkTypeName); return CreateFreeLinkWithDataBlueprint(name); } // wrapper
 
-    int  CreateNodeLayoutBlueprintClass (std::string& name);
-    int  CreateNodeLayoutBlueprintClass (const char* name) { std::string nameStr(name); return CreateNodeLayoutBlueprintClass(nameStr);  } // wrapper
-    void AddDataField(std::string& fieldName);
-    void AddDataField(const char* typeName)   { std::string name(typeName); return AddDataField(name); } // wrapper
-    void CommitNodeLayoutBlueprintClass();
-
-    int AddLinkType(std::string& linkTypeName); // , "locations", "locations");
-    int AddLinkType(const char* linkTypeName) { std::string name(linkTypeName); return AddLinkType(name);  } // wrapper
-
-    // delete data nodes layout
+    // FIXME TODO delete data nodes blueprint
 };

@@ -1,22 +1,22 @@
 #include <iostream>
 #include "egFlexLinksType.h"
 
-void EgFlexLinksType::clear() {
+void EgFreeLinksType::clear() {
     linksStorage->clear();
 }
 
-void EgFlexLinksType::initFlexLinkLayout(EgDataNodeLayoutType *linkLayout) {
-    linkLayout->LayoutInitStart();
-    linkLayout->AddDataFieldName("fromLayoutID");
-    linkLayout->AddDataFieldName("fromID");
-    linkLayout->AddDataFieldName("toLayoutID");
-    linkLayout->AddDataFieldName("toID");
-    linkLayout->layoutSettings.isServiceType = true;
-    linkLayout->layoutMode = egLayoutActive; // virtual, do NOT commit to db
+void EgFreeLinksType::initFlexLinkBlueprint(EgDataNodeBlueprintType *linkBlueprint) {
+    linkBlueprint->BlueprintInitStart();
+    linkBlueprint->AddDataFieldName("fromBlueprintID");
+    linkBlueprint->AddDataFieldName("fromID");
+    linkBlueprint->AddDataFieldName("toBlueprintID");
+    linkBlueprint->AddDataFieldName("toID");
+    linkBlueprint->blueprintSettings.isServiceType = true;
+    linkBlueprint->blueprintMode = egBlueprintActive; // virtual, do NOT commit to db
 }
 
-void EgFlexLinksType::AddRawLink(EgLayoutIDType fromLayID, EgDataNodeIDType fromID, EgLayoutIDType toLayID, EgDataNodeIDType toID) {
-    EgDataNodeType *newNode = new EgDataNodeType(linksStorageLayout);
+void EgFreeLinksType::AddRawLink(EgBlueprintIDType fromLayID, EgDataNodeIDType fromID, EgBlueprintIDType toLayID, EgDataNodeIDType toID) {
+    EgDataNodeType *newNode = new EgDataNodeType(linksStorageBlueprint);
     *newNode << fromLayID;
     *newNode << fromID;
     *newNode << toLayID;
@@ -25,21 +25,21 @@ void EgFlexLinksType::AddRawLink(EgLayoutIDType fromLayID, EgDataNodeIDType from
     *linksStorage << newNode;
 }
 
-void EgFlexLinksType::AddContainersLink(EgLayoutIDType fromLayID, EgDataNodeIDType fromID, EgLayoutIDType toLayID, EgDataNodeIDType toID) {
+void EgFreeLinksType::AddContainersLink(EgBlueprintIDType fromLayID, EgDataNodeIDType fromID, EgBlueprintIDType toLayID, EgDataNodeIDType toID) {
     // TODO check if nodes exists in the containers
     AddRawLink(fromLayID, fromID, toLayID, toID);
 }
 
-int EgFlexLinksType::LoadLinks() {
+int EgFreeLinksType::LoadLinks() {
     linksStorage->clear();
     return linksStorage->LoadAllLocalFileNodes();
 }
 
-int EgFlexLinksType::StoreLinks() {
+int EgFreeLinksType::StoreLinks() {
     return linksStorage->StoreToLocalFile();
 }
 
-int EgFlexLinksType::ResolveNodesIDsToPtrs() {
+int EgFreeLinksType::ResolveNodesIDsToPtrs() {
     int res{0};
     if (!metaInfoDatabase)
     {
@@ -52,7 +52,7 @@ int EgFlexLinksType::ResolveNodesIDsToPtrs() {
         // std::cout  << (int) *(nodesIter.second->operator[]("fromID").arrayData) << " -> "
         //          << (int) *(nodesIter.second->operator[]("toID").arrayData);
         EgDataNodesType *fromDataNodes =
-            (metaInfoDatabase->GetNodeTypePtrByID((EgLayoutIDType) * (nodesIter.second->operator[]("fromLayoutID").arrayData)));
+            (metaInfoDatabase->GetNodeTypePtrByID((EgBlueprintIDType) * (nodesIter.second->operator[]("fromBlueprintID").arrayData)));
         if (!fromDataNodes)
         {
             std::cout << "ResolveNodesIDsToPtrs() Error : FROM nodes type not found for " << linkTypeName << std::endl;
@@ -62,7 +62,7 @@ int EgFlexLinksType::ResolveNodesIDsToPtrs() {
         // std::cout  << "ResolveNodesIDsToPtrs() : FROM nodes type found " <<  linkTypeName << std::endl;
         EgDataNodeType *fromNodePtr = fromDataNodes->nodesContainer->GetNodePtrByID((EgDataNodeIDType) * (nodesIter.second->operator[]("fromID").arrayData));
         EgDataNodesType *toDataNodes =
-            (metaInfoDatabase->GetNodeTypePtrByID((EgLayoutIDType) * (nodesIter.second->operator[]("toLayoutID").arrayData)));
+            (metaInfoDatabase->GetNodeTypePtrByID((EgBlueprintIDType) * (nodesIter.second->operator[]("toBlueprintID").arrayData)));
         if (!toDataNodes)
         {
             std::cout << "ResolveNodesIDsToPtrs() Error : TO nodes type not found for " << linkTypeName << std::endl;
@@ -73,14 +73,14 @@ int EgFlexLinksType::ResolveNodesIDsToPtrs() {
         EgDataNodeType *toNodePtr = toDataNodes->nodesContainer->GetNodePtrByID((EgDataNodeIDType) * (nodesIter.second->operator[]("toID").arrayData));
         // connect
         if (fromNodePtr && toNodePtr)
-        { // <EgLayoutIDType, std::vector<EgDataNodeType*> >
+        { // <EgBlueprintIDType, std::vector<EgDataNodeType*> >
             // std::cout  << " Ok " << std::endl;
             auto iterFrom = fromNodePtr->outLinks.find(linkTypeID);
             if (iterFrom == fromNodePtr->outLinks.end())
             {
                 std::vector<EgDataNodeType *> newNodePtrs;
                 newNodePtrs.push_back(toNodePtr);
-                fromNodePtr->outLinks.insert(std::pair<EgLayoutIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
+                fromNodePtr->outLinks.insert(std::pair<EgBlueprintIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
             }
             else
                 iterFrom->second.push_back(toNodePtr);
@@ -90,7 +90,7 @@ int EgFlexLinksType::ResolveNodesIDsToPtrs() {
             {
                 std::vector<EgDataNodeType *> newNodePtrs;
                 newNodePtrs.push_back(fromNodePtr);
-                toNodePtr->inLinks.insert(std::pair<EgLayoutIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
+                toNodePtr->inLinks.insert(std::pair<EgBlueprintIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
             }
             else
                 iterTo->second.push_back(fromNodePtr);

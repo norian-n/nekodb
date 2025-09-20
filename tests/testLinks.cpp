@@ -5,24 +5,19 @@
 
 using namespace std;
 
-EgDatabaseType theDatabase;
-
 string field1 = "111111\0";
-const char* field2 = "test some string 2\0";
-string field3("just test 3");
-
+int field2 = 100;
+int field3 = 200;
+ 
 inline void addSampleDataNode(EgDataNodesType& dataNodes) {
-    EgDataNodeType* newNode = new EgDataNodeType(dataNodes.dataNodeLayout);
+    EgDataNodeType* newNode = new EgDataNodeType(dataNodes.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
     *newNode << field3;
     dataNodes << newNode;
 }
 
-bool testLinksResolving(EgLinksType& testLinks) {
-    EgDataNodesType fromType("testLinksFrom", &theDatabase);
-    EgDataNodesType toType  ("testLinksTo",   &theDatabase);
-
+bool testLinksResolving(EgLinksType& testLinks, EgDataNodesType& fromType, EgDataNodesType& toType) {
     addSampleDataNode(fromType);  // nodeID == 1
     addSampleDataNode(fromType);
     addSampleDataNode(fromType);
@@ -33,7 +28,7 @@ bool testLinksResolving(EgLinksType& testLinks) {
     addSampleDataNode(toType);
     addSampleDataNode(toType);
 
-    testLinks.ConnectDataNodesTypes(fromType, toType);
+    testLinks.ConnectLinkToNodesTypes(fromType, toType);
     testLinks.ResolveNodesIDsToPtrs();
 /*
     for (auto iter : fromType.nodesContainer-> dataNodes)
@@ -45,9 +40,6 @@ bool testLinksResolving(EgLinksType& testLinks) {
     for (auto iter : toType.nodesContainer-> dataNodes)
         PrintResolvedLinks(*(iter.second));
 */
-    // std::map < EgLinkLayoutIDType, std::vector<EgDataNodeType*> >  inLinks;
-    // std::map < EgLinkLayoutIDType, std::vector<EgDataNodeType*> >  outLinks;
-
     auto linksIterFrom = fromType[1].outLinks.begin();  // nodeID == 1, outLinks[0], 3 items
     auto linksIterTo   = toType[2].inLinks.begin();     // nodeID == 2, inLinks[0], 1 item
 
@@ -70,21 +62,57 @@ bool testLinksStorage(EgLinksType& testLinks) {
 
     // PrintDataNodesContainer(*(testLinks.linksStorage));
 
-    int count = testLinks.linksStorage-> dataNodes.size();
-
+    int count = testLinks.dataMap.size();
+/*
+    cout << "testLinksStorage() testLinks.dataMap.size(): " << count << endl;
+    cout << "testLinksStorage() testLinks.dataMap addr: " << std::hex << (int64_t) &(testLinks.dataMap)
+         << " container map addr: " << (int64_t) &(testLinks.linksDataStorage.nodesContainer-> dataNodes)
+         << " fake map addr: " << (int64_t) &(testLinks.linksDataStorage.fDataMap) << std::dec << endl;
+*/
     return (count == 4);
 }
 
-int main() {
+void initDatabase(EgDatabaseType& graphDB) {
+    // EgNodeTypeSettings typeSettings;
+    // typeSettings.useLocation = true;
+    // typeSettings.useLinks = true;
 
+    graphDB.CreateNodeBlueprint("testLinksFrom"); // , typeSettings);
+    graphDB.AddNodeDataField("name");
+    graphDB.AddNodeDataField("x");
+    graphDB.AddNodeDataField("y");    
+    graphDB.CommitNodeBlueprint();
+
+    graphDB.CreateNodeBlueprint("testLinksTo"); // , typeSettings);
+    graphDB.AddNodeDataField("name");
+    graphDB.AddNodeDataField("x");
+    graphDB.AddNodeDataField("y");    
+    graphDB.CommitNodeBlueprint();
+
+    graphDB.CreateLinkWithDataBlueprint("testBoundLinksWData", "testLinksFrom", "testLinksTo");
+    graphDB.AddLinkDataField("x");
+    graphDB.AddLinkDataField("y");
+    graphDB.CommitLinkBlueprint();
+}
+
+int main() {
     cout << "===== Test EgLinksType =====" << endl;
-    
     std::remove("testLinks.gdn");   // delete file
-    EgLinksType testLinks("testLinks", &theDatabase);
+
+    EgDatabaseType theDatabase;
+    EgDataNodesType fromType;
+    EgDataNodesType toType;
+    EgLinksType testLinks;
+
+    initDatabase(theDatabase);
+
+    fromType.Connect("testLinksFrom", theDatabase);
+    toType.Connect  ("testLinksTo", theDatabase);
+    testLinks.ConnectLinks("testBoundLinksWData", theDatabase);
     // std::remove("testNodes.gdn");  // delete data nodes file
 
     bool testStor   = testLinksStorage(testLinks);
-    bool testResolv = testLinksResolving(testLinks);
+    bool testResolv = testLinksResolving(testLinks, fromType, toType);
 
     if (testStor && testResolv)
         cout << "PASS" << endl;

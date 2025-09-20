@@ -1,53 +1,76 @@
 #pragma once
-// #include <iostream>
 #include "../core/egCoreTypes.h"
 #include "egHamSlicer.h"
 
-enum EgByteArrayModeEnum
-{
-    egNoAlloc,          // external memory provided
-    egHamSliceAlloc,    // by egHamSlicer.h
-    egSystemHeapAlloc   // usual heap ops
-};
-
-class EgByteArrayType {
+class EgByteArrayAbstractType {
 public:
-    EgHamSlicerType* theHamSlicer   {nullptr};
-    EgByteArrayModeEnum allocMode   {egNoAlloc};
-    EgHamBrickIDType    brickID     {0};
-    // bool dynamicDataAlloc   {false}; // support of static strings for testing
     uint64_t  dataSize      {0};
+    uint64_t  arrayCapacity {0};
     ByteType* arrayData     {nullptr};
 
-    EgByteArrayType () {} // allocMode == egNoAlloc
-    EgByteArrayType (EgHamSlicerType* a_HamSlicer, uint64_t init_size): 
-        theHamSlicer(a_HamSlicer), 
-        allocMode(egHamSliceAlloc),
-        dataSize(init_size)
-    { if(init_size) theHamSlicer-> getSlice(dataSize, brickID, arrayData); }
-    EgByteArrayType (uint64_t init_size): 
-        dataSize(init_size)
-    { if(init_size) arrayData = new ByteType[init_size]; allocMode = egSystemHeapAlloc; }
-    ~EgByteArrayType() { /*std::cout << "destr. of "; PrintByteArray(*this);*/ 
-        if (allocMode == egSystemHeapAlloc) delete arrayData;
-        else if (allocMode == egHamSliceAlloc) theHamSlicer-> freeSlice(brickID);
-    }
+    EgByteArrayAbstractType () {}
+    EgByteArrayAbstractType (uint64_t init_size): 
+        dataSize(init_size),
+        arrayCapacity(init_size) {}
+    EgByteArrayAbstractType (ByteType* init_data, uint64_t init_size):
+        dataSize(init_size),
+        arrayCapacity(init_size),
+        arrayData(init_data) {}
+    virtual ~EgByteArrayAbstractType() {}
 
-    void reassignDataArray();
+    virtual void reallocDataArray() { std::cout << "ERROR: reallocDataArray() of abstract class called" << std::endl; }
 };
 
-void ByteArrayFromCharStr(const char* str, EgByteArrayType& byteArray);
-template <typename T> void ByteArrayFromType(T&& value, EgByteArrayType& byteArray) {
-    // std::cout << " value: " << value << std::endl;
-    byteArray.dataSize  = sizeof(T);
-    if (byteArray.allocMode == egHamSliceAlloc) {
-        byteArray.theHamSlicer-> getSlice(byteArray.dataSize, byteArray.brickID, byteArray.arrayData);
-        memcpy((void*)byteArray.arrayData, (void*) &value, byteArray.dataSize);
-    } else if (byteArray.allocMode == egSystemHeapAlloc) {
-        byteArray.arrayData = new ByteType[byteArray.dataSize];
-        memcpy((void*)byteArray.arrayData, (void*) &value, byteArray.dataSize);
-    } else {
-        byteArray.arrayData = (ByteType *) &value;
+class EgByteArraySlicerType : public EgByteArrayAbstractType { // egBA with ham slicer mem allocator
+public:
+    EgHamSlicerType* theHamSlicer {nullptr};
+    EgHamBrickIDType brickID      {0};
+
+    EgByteArraySlicerType () = delete;
+    EgByteArraySlicerType (EgHamSlicerType* a_HamSlicer, uint64_t init_size = 0): EgByteArrayAbstractType(init_size)
+        , theHamSlicer(a_HamSlicer)
+        // allocMode(egHamSliceAlloc),
+        // dataSize(init_size)
+    { if(init_size) theHamSlicer-> getSlice(dataSize, brickID, arrayData); }
+    EgByteArraySlicerType (EgHamSlicerType& a_HamSlicer, uint64_t init_size = 0): EgByteArrayAbstractType(init_size)
+        , theHamSlicer(&a_HamSlicer)
+    { if(init_size) theHamSlicer-> getSlice(dataSize, brickID, arrayData); }
+    virtual ~EgByteArraySlicerType() {
+        if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID);
     }
+
+    EgByteArraySlicerType& operator = (const EgByteArraySlicerType& rightBA);
+
+    void reallocDataArray() override;
+};
+
+class EgByteArraySysallocType : public EgByteArrayAbstractType { // egBA with system mem allocator
+public:
+    EgByteArraySysallocType () {} 
+    EgByteArraySysallocType (uint64_t init_size): EgByteArrayAbstractType(init_size)
+        { if(init_size) arrayData = new ByteType[init_size]; }
+    virtual ~EgByteArraySysallocType() { /*std::cout << "destr. of "; PrintByteArray(*this);*/
+        if(dataSize) delete arrayData;
+    }
+
+    EgByteArraySysallocType& operator = (const EgByteArraySysallocType& rightBA);
+
+    void reallocDataArray() override;
+};
+
+void ByteArrayFromCharStr(const char* str, EgByteArrayAbstractType& byteArray);
+
+template <typename T> void ByteArrayFromType(T&& value, EgByteArrayAbstractType& byteArray) {
+    // std::cout << "ByteArrayFromType() value: " << value << std::endl;
+    byteArray.dataSize  = sizeof(value);
+    byteArray.reallocDataArray();
+    memcpy((void*)byteArray.arrayData, (void*) &value, byteArray.dataSize);
 }
-void PrintByteArray(EgByteArrayType& bArray, bool isStr = true);
+
+EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, char* str);
+EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const char* str);
+
+EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, int& intNum);
+EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, int intNum);
+
+void PrintByteArray(EgByteArrayAbstractType& bArray, bool isStr = true);

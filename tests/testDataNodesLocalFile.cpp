@@ -8,7 +8,7 @@ using namespace std;
 // #include "../nodes/egDataNodesType.h"
 #include "../nodes/egDataNodesLocalFile.h"
 
-EgDataNodeLayoutType testLayout("testLocalFile");
+EgDataNodeBlueprintType testBlueprint("testLocalFile");
 
 const int TEST_FIELDS_COUNT  {3}; 
 const char* field1 = "testField1\0";
@@ -23,25 +23,25 @@ inline void addSampleDataFields(EgDataNodeType& testDataNode) {
     // cout << "===== addSampleDataFields() out " << " =====" << endl;
 }
 
-bool initDataNodeLayout() {
-    // cout << "===== Test DataNodeLayout " << " =====" << endl;
+bool initDataNodeBlueprint() {
+    // cout << "===== Test DataNodeBlueprint " << " =====" << endl;
 
-    testLayout.LayoutInitStart();
+    testBlueprint.BlueprintInitStart();
 
-    testLayout.AddDataFieldName("field_1");
-    testLayout.AddDataFieldName("testField 2");
-    testLayout.AddDataFieldName("my_field 3");
+    testBlueprint.AddDataFieldName("field_1");
+    testBlueprint.AddDataFieldName("testField 2");
+    testBlueprint.AddDataFieldName("my_field 3");
 
-    testLayout.layoutSettings.useEntryNodes         = true;
-    testLayout.layoutSettings.useGUIsettings        = true;
-    testLayout.layoutSettings.useLinks              = true;
-    testLayout.layoutSettings.useNamedAttributes    = true;
-    testLayout.layoutSettings.useVisualSpace        = true;
+    testBlueprint.blueprintSettings.useEntryNodes         = true;
+    testBlueprint.blueprintSettings.useGUIsettings        = true;
+    testBlueprint.blueprintSettings.useLinks              = true;
+    testBlueprint.blueprintSettings.useNamedAttributes    = true;
+    testBlueprint.blueprintSettings.useVisualSpace        = true;
 
-    testLayout.LayoutInitCommit();
+    testBlueprint.BlueprintInitCommit();
 
-    testLayout.LocalStoreLayout();
-    testLayout.LocalLoadLayout();
+    testBlueprint.LocalStoreBlueprint();
+    testBlueprint.LocalLoadBlueprint();
     
     return true;
 }
@@ -51,32 +51,37 @@ int main()
 {
     int nodesCount  {0};
 
-    cout << "===== Test egDataNodeLocalFile (\"" << field1 << "\" " << " \""
+    cout << "===== Test egDataNodeLocalFile " /* (\"" << field1 << "\" " << " \""
          << field2 << "\" " << " \""
-         << field3 << "\" " << ") =====" << endl;
+         << field3 << "\" " << ")*/ << "=====" << endl;
 
-    std::remove("testLocalFile.dnl"); // delete layout file
-    std::remove("testLocalFile.gdn"); // delete layout file
+    std::remove("testLocalFile.dnl"); // delete blueprint file
+    std::remove("testLocalFile.gdn"); // delete blueprint file
 
     EgDataNodesLocalFileType testLocalFile;
-    initDataNodeLayout();
+    initDataNodeBlueprint();
 
-    EgDataNodeType testDataNode(&testLayout);
-    EgDataNodeType testNextNode(&testLayout);
-    // EgDataNodeLayoutType testLayout("testLocalFile");
-    // testDataNode.dataNodeLayout = &testLayout;
+    EgDataNodeType testDataNode(&testBlueprint);
+    EgDataNodeType testNextNode(&testBlueprint);
+    // EgDataNodeBlueprintType testBlueprint("testLocalFile");
+    // testDataNode.dataNodeBlueprint = &testBlueprint;
 
     // testDataNode.dataFieldsContainer.fieldsCount = TEST_FIELDS_COUNT;
     addSampleDataFields(testDataNode);
     // PrintEgDataNodeTypeFields(testDataNode);
         // write
-    testLocalFile.OpenFileToUpdate("testLocalFile");
+    std::string fname {"testLocalFile"};
+    testLocalFile.StartFileUpdate(fname);
     testDataNode.dataNodeID = 12121212;
     testLocalFile.WriteDataNode(&testDataNode);
+    // testLocalFile.PrintHeader();
     testDataNode.dataNodeID = 38383838;
     testLocalFile.WriteDataNode(&testDataNode);
+    // testLocalFile.PrintHeader();
     testDataNode.dataNodeID = 44444444;
     testLocalFile.WriteDataNode(&testDataNode);
+    // testLocalFile.PrintHeader();
+    testLocalFile.WriteHeader();
     testLocalFile.nodesFile.close();
 
     /* testLocalFile.OpenFileToRead("testLocalFile");
@@ -87,8 +92,9 @@ int main()
     return 0; */
 
         // read nodes
-    testDataNode.dataFieldsContainer.dataFields.clear();
-    testLocalFile.OpenFileToRead("testLocalFile");
+    testDataNode.clear();
+    // std::string fname {"testLocalFile"};
+    testLocalFile.OpenFileToRead(fname);
     testLocalFile.getFirstNodeOffset(testNextNode.dataFileOffset);
     nodesCount = 0;
     while (testNextNode.dataFileOffset) {
@@ -98,8 +104,8 @@ int main()
         testNextNode.dataFileOffset = testNextNode.nextNodeOffset;
         nodesCount++;
     }
+    // testLocalFile.PrintNodesChain();
     testLocalFile.nodesFile.close();
-
 
     if (nodesCount == 3)
         cout << "PASS" << endl;

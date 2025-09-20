@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include <QList>
 #include <QVariant>
+#include <QString>
 
 /*
 class QByteArray {
@@ -17,12 +18,18 @@ public:
 };
 */
 
-inline void ByteArrayToQtByteArray(EgByteArrayType& byteArray, QByteArray& qtBA);
+inline void ByteArrayToQtByteArray(EgByteArrayAbstractType& byteArray, QByteArray& qtBA);
+inline void QtByteArrayToByteArray(QByteArray& qtBA, EgByteArrayAbstractType& byteArray);
 
-inline void QtByteArrayToByteArray(QByteArray& qtBA, EgByteArrayType& byteArray);
+QByteArray& operator >> (QByteArray& qtBA, EgByteArrayAbstractType& byteArray);
 
-QByteArray& operator >> (QByteArray& qtBA, EgByteArrayType& byteArray);
-
-EgByteArrayType& operator >> (EgByteArrayType& byteArray, QByteArray& qtBA);
+EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QByteArray& qtBA);
 
 void egDataNodeFromList(EgDataNodeType& newNode, QList<QVariant>& addValues);
+
+EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QString& qtStr);
+
+EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, int& intNum);
+EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, int intNum);
+
+EgDataNodeType& operator << (EgDataNodeType& dataNode, QString& qtStr);

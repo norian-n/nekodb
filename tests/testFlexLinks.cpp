@@ -5,27 +5,19 @@
 
 using namespace std;
 
-EgDatabaseType theDatabase;
-
 string field1 = "111111\0";
-const char* field2 = "test some string 2\0";
-string field3("just test 3");
-
+int field2 = 100;
+int field3 = 200;
+ 
 inline void addSampleDataNode(EgDataNodesType& dataNodes) {
-    EgDataNodeType* newNode = new EgDataNodeType(dataNodes.dataNodeLayout);
+    EgDataNodeType* newNode = new EgDataNodeType(dataNodes.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
     *newNode << field3;
     dataNodes << newNode;
 }
 
-bool testLinksResolving(EgFlexLinksType& testLinks) {
-    EgDataNodesType fromType("testLinksFrom", &theDatabase);
-    EgDataNodesType toType  ("testLinksTo", &theDatabase);
-
-    theDatabase.ConnectDataNodesTypeRaw(1, &fromType);
-    theDatabase.ConnectDataNodesTypeRaw(2, &toType);
-
+bool testLinksResolving(EgFreeLinksType& testLinks, EgDataNodesType& fromType, EgDataNodesType& toType) {
     addSampleDataNode(fromType);  // nodeID == 1
     addSampleDataNode(fromType);
     addSampleDataNode(fromType);
@@ -36,9 +28,10 @@ bool testLinksResolving(EgFlexLinksType& testLinks) {
     addSampleDataNode(toType);
     addSampleDataNode(toType);
 
+    // testLinks.ConnectLinkToNodesTypes(fromType, toType);
     testLinks.ResolveNodesIDsToPtrs();
-
-    /* for (auto iter : fromType.nodesContainer-> dataNodes)
+/*
+    for (auto iter : fromType.nodesContainer-> dataNodes)
         PrintEgDataNodeTypeFields(fromType[iter.first]);
 
     for (auto iter : fromType.nodesContainer-> dataNodes)
@@ -46,11 +39,7 @@ bool testLinksResolving(EgFlexLinksType& testLinks) {
 
     for (auto iter : toType.nodesContainer-> dataNodes)
         PrintResolvedLinks(*(iter.second));
-    */
-
-    // std::map < EgLinkLayoutIDType, std::vector<EgDataNodeType*> >  inLinks;
-    // std::map < EgLinkLayoutIDType, std::vector<EgDataNodeType*> >  outLinks;
-
+*/
     auto linksIterFrom = fromType[1].outLinks.begin();  // nodeID == 1, outLinks[0], 3 items
     auto linksIterTo   = toType[2].inLinks.begin();     // nodeID == 2, inLinks[0], 1 item
 
@@ -60,13 +49,13 @@ bool testLinksResolving(EgFlexLinksType& testLinks) {
     return ((linksIterFrom->second.size() == 3) && (linksIterTo->second.size() == 1));
 }
 
-bool testLinksStorage(EgFlexLinksType& testLinks) {
+bool testLinksStorage(EgFreeLinksType& testLinks, EgBlueprintIDType fromNodesTypeID, EgBlueprintIDType toNodesTypeID) {
 
-    testLinks.AddRawLink(1, 1, 2, 2); // nodeID == 1, outLinks[0], 3 items
-    testLinks.AddRawLink(1, 1, 2, 3);
-    testLinks.AddRawLink(1, 1, 2, 4);
+    testLinks.AddRawLink(fromNodesTypeID, 1, toNodesTypeID, 2); // nodeID == 1, outLinks[0], 3 items
+    testLinks.AddRawLink(fromNodesTypeID, 1, toNodesTypeID, 3);
+    testLinks.AddRawLink(fromNodesTypeID, 1, toNodesTypeID, 4);
 
-    testLinks.AddRawLink(1, 3, 2, 4);
+    testLinks.AddRawLink(fromNodesTypeID, 3, toNodesTypeID, 4);
 
     testLinks.StoreLinks();
     testLinks.LoadLinks();
@@ -78,16 +67,58 @@ bool testLinksStorage(EgFlexLinksType& testLinks) {
     return (count == 4);
 }
 
+void initDatabase(EgDatabaseType& graphDB) {
+    // EgNodeTypeSettings typeSettings;
+    // typeSettings.useLocation = true;
+    // typeSettings.useLinks = true;
+
+    graphDB.CreateNodeBlueprint("testFreeLinksFrom"); // , typeSettings);
+    graphDB.AddNodeDataField("name");
+    graphDB.AddNodeDataField("x");
+    graphDB.AddNodeDataField("y");    
+    graphDB.CommitNodeBlueprint();
+
+    graphDB.CreateNodeBlueprint("testFreeLinksTo"); // , typeSettings);
+    graphDB.AddNodeDataField("name");
+    graphDB.AddNodeDataField("x");
+    graphDB.AddNodeDataField("y");    
+    graphDB.CommitNodeBlueprint();
+
+    graphDB.CreateFreeLinkWithDataBlueprint("testFreeLinksWData");
+    graphDB.AddLinkDataField("x");
+    graphDB.AddLinkDataField("y");
+    graphDB.CommitLinkBlueprint();
+}
+
 int main() {
+    cout << "===== Test EgFreeLinksType =====" << endl;
+    std::remove("testLinks.gdn");   // delete file
 
-    cout << "===== Test EgFlexLinksType =====" << endl;
+    EgDatabaseType theDatabase;
+    EgDataNodesType fromType;
+    EgDataNodesType toType;
 
-    EgFlexLinksType testLinks("testFlexLinks", &theDatabase);
-    std::remove("testFlexLinks.gdn");   // delete file
+    initDatabase(theDatabase);
+
+    fromType.Connect("testFreeLinksFrom", theDatabase);
+    toType.Connect  ("testFreeLinksTo", theDatabase);
+
+    std::string name("testFreeLinksWData");
+
+    EgFreeLinksType testLinks(name, theDatabase);
+    // testLinks.Connect(theDatabase);
     // std::remove("testNodes.gdn");  // delete data nodes file
 
-    bool testStor   = testLinksStorage(testLinks);
-    bool testResolv = testLinksResolving(testLinks);
+    EgBlueprintIDType fromNodesTypeID {0};
+    if (theDatabase.nodeTypeIDByName(fromType.dataNodesName, fromNodesTypeID)) // reverse return logic - true if not found
+        cout << "fromNodesTypeID not found in metainfo" << endl;
+
+    EgBlueprintIDType toNodesTypeID {0};
+    if (theDatabase.nodeTypeIDByName(toType.dataNodesName, toNodesTypeID)) // reverse return logic - true if not found
+        cout << "toNodesTypeID not found in metainfo" << endl;
+
+    bool testStor   = testLinksStorage(testLinks, fromNodesTypeID, toNodesTypeID);
+    bool testResolv = testLinksResolving(testLinks, fromType, toType);
 
     if (testStor && testResolv)
         cout << "PASS" << endl;

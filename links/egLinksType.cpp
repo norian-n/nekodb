@@ -2,31 +2,40 @@
 #include "egLinksType.h"
 
 void EgLinksType::clear() {
-    linksStorage->clear();
+    // linksStorage->clear();
 }
-
-void EgLinksType::initLinkLayout(EgDataNodeLayoutType *linkLayout) {
-    linkLayout->LayoutInitStart();
-    linkLayout->AddDataFieldName("fromID");
-    linkLayout->AddDataFieldName("toID");
-    linkLayout->layoutSettings.isServiceType = true;
-    linkLayout->layoutMode = egLayoutActive; // virtual, do NOT commit to db
+/*
+void EgLinksType::initLinkBlueprint(EgDataNodeBlueprintType *linkBlueprint) {
+    linkBlueprint-> BlueprintInitStart();
+    linkBlueprint-> AddDataFieldName("fromID");
+    linkBlueprint-> AddDataFieldName("toID");
+    linkBlueprint-> blueprintSettings.isServiceType = true;
+    linkBlueprint-> blueprintMode = egBlueprintActive; // virtual, do NOT commit to db
+    // linkBlueprint-> BlueprintInitCommit();
 }
+*/
+int EgLinksType::ConnectLinks(std::string& linkNameStr, EgDatabaseType& myDB) {
 
-int EgLinksType::ConnectToDatabase() {
+    metaInfoDatabase = &myDB;
+
+    if (linksDataStorage.ConnectSystemNodeType(linkNameStr + "_arrowLinks") != 0) {
+        std::cout << "ConnectLinks() not found storage: " << linkNameStr << std::endl;
+    }
+
+    dataMap = linksDataStorage.dataMap; // reset reference
 
     return 0;
 }
 
 void EgLinksType::AddRawLink(EgDataNodeIDType fromID, EgDataNodeIDType toID) {
-    EgDataNodeType *newNode = new EgDataNodeType(linksStorageLayout);
+    EgDataNodeType *newNode = new EgDataNodeType(linksDataStorage.dataNodeBlueprint);
     *newNode << fromID;
     *newNode << toID;
     // PrintEgDataNodeTypeFields(*newNode);
-    *linksStorage << newNode;
+    linksDataStorage << newNode;
 }
 
-int EgLinksType::AddContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType toID) {
+int EgLinksType::AddNodeContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType toID) {
     // check if nodes exists in the containers
     EgDataNodeType *fromNodePtr = fromDataNodes->GetNodePtrByID(fromID);
     EgDataNodeType *toNodePtr = toDataNodes->GetNodePtrByID(toID);
@@ -42,15 +51,15 @@ int EgLinksType::AddContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType toI
 }
 
 int EgLinksType::LoadLinks() {
-    linksStorage->clear();
-    return linksStorage->LoadAllLocalFileNodes();
+    linksDataStorage.clear();
+    return linksDataStorage.LoadAllNodes();
 }
 
 int EgLinksType::StoreLinks() {
-    return linksStorage->StoreToLocalFile();
+    return linksDataStorage.Store();
 }
 
-void EgLinksType::ConnectDataNodesTypes(EgDataNodesType &from, EgDataNodesType &to) {
+void EgLinksType::ConnectLinkToNodesTypes(EgDataNodesType &from, EgDataNodesType &to) {
     fromDataNodes = from.nodesContainer;
     toDataNodes = to.nodesContainer;
 }
@@ -62,7 +71,7 @@ int EgLinksType::ResolveNodesIDsToPtrs() {
         return -1;
     }
     // std::cout  << "ResolveLinksToPtrs() of \"" << linkTypeName << "\"" << std::endl;
-    for (auto nodesIter : linksStorage->dataNodes)
+    for (auto nodesIter : dataMap)
     {
         // std::cout  << (int) *(nodesIter.second->operator[]("fromID").arrayData) << " -> "
         //          << (int) *(nodesIter.second->operator[]("toID").arrayData);
@@ -70,14 +79,14 @@ int EgLinksType::ResolveNodesIDsToPtrs() {
         EgDataNodeType *toNodePtr = toDataNodes->GetNodePtrByID((EgDataNodeIDType) * (nodesIter.second->operator[]("toID").arrayData));
         // connect
         if (fromNodePtr && toNodePtr)
-        { // <EgLayoutIDType, std::vector<EgDataNodeType*> >
+        { // <EgBlueprintIDType, std::vector<EgDataNodeType*> >
             // std::cout  << " Ok " << std::endl;
             auto iterFrom = fromNodePtr->outLinks.find(linkTypeID);
             if (iterFrom == fromNodePtr->outLinks.end())
             {
                 std::vector<EgDataNodeType *> newNodePtrs;
                 newNodePtrs.push_back(toNodePtr);
-                fromNodePtr->outLinks.insert(std::pair<EgLayoutIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
+                fromNodePtr->outLinks.insert(std::pair<EgBlueprintIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
             }
             else
                 iterFrom->second.push_back(toNodePtr);
@@ -87,7 +96,7 @@ int EgLinksType::ResolveNodesIDsToPtrs() {
             {
                 std::vector<EgDataNodeType *> newNodePtrs;
                 newNodePtrs.push_back(fromNodePtr);
-                toNodePtr->inLinks.insert(std::pair<EgLayoutIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
+                toNodePtr->inLinks.insert(std::pair<EgBlueprintIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
             }
             else
                 iterTo->second.push_back(fromNodePtr);

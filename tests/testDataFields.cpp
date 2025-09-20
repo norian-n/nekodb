@@ -17,7 +17,8 @@ StaticLengthType    inputLength {123456789};
 StaticLengthType    testLength;
 
 EgFileType          testFile(fileName);
-EgDataFieldsType    testDataFields;
+// EgDataFieldsType    testDataFields;
+// EgPtrArrayType<EgByteArrayAbstractType*>* dataFieldsPtrs;
 
 EgHamSlicerType     hamSlicer;
 EgHamSlicerType     hamSlicerTest;
@@ -56,26 +57,28 @@ bool testHamSlicer() {
           && hamSlicerTest.hamBricksByFree.size() == 2 );
 }
 
-void addSampleDataFields() {
+void addSampleDataFields(EgDataNodeType& testNode) {
     // testDataFields.fieldsCount = TEST_FIELDS_COUNT;
 
-    EgByteArrayType* byteArray = new EgByteArrayType();
+    EgByteArrayAbstractType* byteArray = new EgByteArrayAbstractType();
     byteArray-> arrayData = (ByteType*) field1;                     // no alloc, ptr to global mem
     byteArray-> dataSize  = strlen(field1)+1;
-    testDataFields.dataFields.push_back(byteArray);
+    // testDataFields.dataFields.push_back(byteArray);
+    testNode.InsertDataFieldFromByteArray(*byteArray);
 
-    byteArray = new EgByteArrayType(strlen(field2)+1);              // sys heap alloc
+    byteArray = new EgByteArraySysallocType(strlen(field2)+1);              // sys heap alloc
     memcpy((void*)byteArray-> arrayData, (void*) field2, byteArray-> dataSize);
-    testDataFields.dataFields.push_back(byteArray);
+    // testDataFields.dataFields.push_back(byteArray);
+    testNode.InsertDataFieldFromByteArray(*byteArray);
 
-    byteArray = new EgByteArrayType(&hamSlicer, strlen(field3)+1);  // use ham slicer allocator
+    byteArray = new EgByteArraySlicerType(&hamSlicer, strlen(field3)+1);  // use ham slicer allocator
     memcpy((void*)byteArray-> arrayData, (void*) field3, byteArray-> dataSize);
-    testDataFields.dataFields.push_back(byteArray);
+    // testDataFields.dataFields.push_back(byteArray);
+    testNode.InsertDataFieldFromByteArray(*byteArray);
 }
 
 int main() {
     std::remove(fileName.c_str()); // delete file
-    addSampleDataFields();
 
     cout << "===== Test length convertor ( " << inputLength << " ) =====" << endl;
 
@@ -90,36 +93,44 @@ int main() {
         cout << "PASS" << endl;
     else
         cout << "FAIL" << endl;
-
+/*
     cout << "===== Test egDataFields (" << field1 << " " << strlen(field1) << " " 
                                         << field2 << " " << strlen(field2) << " "
                                         << field3 << " " << strlen(field3) <<  ") =====" << endl;
+*/
+    EgDataNodeBlueprintType testBlueprint("testNodes");
 
-    EgDataNodeLayoutType testLayout("testNodes");
+    testBlueprint.BlueprintInitStart();
+    testBlueprint.AddDataFieldName("nodesBlueprintID");
+    testBlueprint.AddDataFieldName("nodesTypeName");
+    testBlueprint.AddDataFieldName("nodesTypeData");
+    testBlueprint.blueprintSettings.isServiceType = true;
+    testBlueprint.blueprintMode = egBlueprintActive; // virtual, do NOT commit to db
 
-    testLayout.LayoutInitStart();
-    testLayout.AddDataFieldName("nodesLayoutID");
-    testLayout.AddDataFieldName("nodesTypeName");
-    testLayout.AddDataFieldName("nodesTypeData");
-    testLayout.layoutSettings.isServiceType = true;
-    testLayout.layoutMode = egLayoutActive; // virtual, do NOT commit to db
+    EgDataNodeType testNodeWrite(&testBlueprint);
+    EgDataNodeType testNodeRead(&testBlueprint);
 
-    EgDataNodeType testNode(&testLayout);
+    addSampleDataFields(testNodeWrite);
+    // cout << "===== testNodeWrite =====" << endl;
+    // PrintEgDataNodeTypeFields(testNodeWrite);
 
     testFile.openToWrite();
-    testNode.writeDataFieldsToFile(testDataFields, testFile);
+    testNodeWrite.writeDataFieldsToFile(testFile);
     testFile.close();
 
     testFile.openToRead();
-    testNode.readDataFieldsFromFile(testDataFields, testFile);
-    testFile.close();   
+    testNodeRead.readDataFieldsFromFile(testFile);
+    testFile.close();
 
-    for (const auto& field : testDataFields.dataFields)
-        PrintByteArray(*field) ;
+    // cout << "===== testNodeRead =====" << endl;
+    // PrintEgDataNodeTypeFields(testNodeRead);
+
+    // for (const auto& field : testDataFields.dataFields)
+    //    PrintByteArray(*field) ;
 
     // cout << endl << endl;
 
-    testDataFields.dataFields.clear();
+    // testDataFields.dataFields.clear();
 
     // cout << "===== Tests end =====" << endl << endl;
 

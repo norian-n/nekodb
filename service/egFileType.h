@@ -1,5 +1,6 @@
 #pragma once
 #include <fstream>
+#include <filesystem>
 
 #include "../core/egCoreTypes.h"
 #include "egDataStream.h"
@@ -21,7 +22,8 @@ public:
 
     inline bool good() { return fileStream.good(); }
 
-    inline bool checkIfExists()   { fileStream.open(fileName, std::ios::in | std::ios::binary); bool ret = fileStream.is_open(); fileStream.close(); return ret; }
+    // inline bool checkIfExists()   { fileStream.open(fileName, std::ios::in | std::ios::binary); bool ret = fileStream.is_open(); fileStream.close(); return ret; }
+    inline bool checkIfExists()   { return std::filesystem::exists(fileName); }
     inline EgFileOffsetType getFileSize() { fileStream.seekg (0, std::ios::end); return (EgFileOffsetType) fileStream.tellg(); }
 
     inline bool openToRead()   { if (fileStream.is_open()) return true; fileStream.open(fileName, std::ios::in  | std::ios::binary); return fileStream.is_open(); } 

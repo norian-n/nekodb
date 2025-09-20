@@ -1,44 +1,101 @@
-// #ifndef EG_BYTE_ARRAY_CPP
-// #define EG_BYTE_ARRAY_CPP
 #include <iostream>
 #include "egByteArray.h"
 
-
-void EgByteArrayType::reassignDataArray() {
+void EgByteArraySlicerType::reallocDataArray() {
     // std::cout << "reassign dynamicDataAlloc: " << dynamicDataAlloc << std::endl;
-    if (allocMode == egHamSliceAlloc) {
+    if (brickID)
         theHamSlicer-> freeSlice(brickID);
-        if (dataSize) theHamSlicer-> getSlice(dataSize, brickID, arrayData);
-    } else if (allocMode == egSystemHeapAlloc) {
-        delete arrayData;
-        if (dataSize)
-            arrayData = new ByteType[dataSize]; // FIXME TODO paged allocator
-        else
-            arrayData = nullptr; 
+    if (dataSize) 
+        theHamSlicer-> getSlice(dataSize, brickID, arrayData);
+    else {
+        brickID = 0;
+        arrayData = nullptr;
     }
 }
 
-void ByteArrayFromCharStr(const char* str, EgByteArrayType& byteArray) {
-    byteArray.dataSize  = strlen(str)+1;
-    if (byteArray.allocMode == egHamSliceAlloc) {
-        byteArray.theHamSlicer-> getSlice(byteArray.dataSize, byteArray.brickID, byteArray.arrayData);
-        memcpy((void*)byteArray.arrayData, (void*) str, byteArray.dataSize);
-    } else if (byteArray.allocMode == egSystemHeapAlloc) {
-        byteArray.arrayData = new ByteType[byteArray.dataSize];
-        memcpy((void*)byteArray.arrayData, (void*) str, byteArray.dataSize);
+EgByteArraySlicerType& EgByteArraySlicerType::operator = (const EgByteArraySlicerType& rightBA) {
+    // bool resizeFlag = (dataSize < rightBA.dataSize) || (! brickID); // FIXME add capacity size
+    bool resizeFlag = (dataSize != rightBA.dataSize);
+    dataSize = rightBA.dataSize;
+    if (resizeFlag)
+        reallocDataArray();
+    memcpy((void*)arrayData, (void*) rightBA.arrayData, dataSize);
+    return *this;
+}
+
+void EgByteArraySysallocType::reallocDataArray() {
+    // std::cout << "reassign dynamicDataAlloc: " << dynamicDataAlloc << std::endl;
+    delete arrayData;
+    if (dataSize)
+        arrayData = new ByteType[dataSize];
+    else
+        arrayData = nullptr;
+}
+
+EgByteArraySysallocType& EgByteArraySysallocType::operator = (const EgByteArraySysallocType& rightBA) {
+    // bool resizeFlag = (dataSize < rightBA.dataSize) || (! brickID); // FIXME add capacity size
+    bool resizeFlag = (dataSize != rightBA.dataSize);
+    dataSize = rightBA.dataSize;
+    if (resizeFlag)
+        reallocDataArray();
+    memcpy((void*)arrayData, (void*) rightBA.arrayData, dataSize);
+    return *this;
+}
+
+void ByteArrayFromCharStr(const char* str, EgByteArrayAbstractType& byteArray) {
+    // bool resizeFlag = byteArray.dataSize < newSize; // FIXME add capacity size
+    int64_t newSize = strlen(str) + 1;
+    if (newSize > 1) {
+        byteArray.dataSize = newSize;
+        byteArray.reallocDataArray();
+        memcpy((void *)byteArray.arrayData, (void *)str, newSize);
     } else {
-        byteArray.arrayData = (ByteType *) str;
+        byteArray.dataSize = 0;
+        byteArray.reallocDataArray();
     }
 }
-/*
-template <typename T> void ByteArrayFromType(T&& value, EgByteArrayType& byteArray) {
-    // std::cout << " value: " << value << std::endl;
-    byteArray.dataSize  = sizeof(T);
-    byteArray.reassignDataArray();
-    memcpy((void*)byteArray.arrayData, (void*) &value, byteArray.dataSize);
+
+EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, char* str) {
+        // str = reinterpret_cast<char*> (byteArray.arrayData);
+        // std::cout << "byteArray to int: " << std::dec << intNum << std::endl;
+        // PrintByteArray(byteArray);
+        memcpy((void*)str, (void*) byteArray.arrayData, byteArray.dataSize);
+        return byteArray;
 }
-*/
-void PrintByteArray(EgByteArrayType& bArray, bool isStr) {
+
+EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const char* str) {
+        // *(reinterpret_cast<int*> (byteArray.arrayData)) = intNum;
+        // std::cout << "byteArray to int: " << std::dec << intNum << std::endl;
+        // PrintByteArray(byteArray);
+        int64_t newSize = strlen(str)+1;
+        if (newSize > 1) {
+            byteArray.dataSize = newSize;
+            byteArray.reallocDataArray();
+            memcpy((void *)byteArray.arrayData, (void *)str, newSize);
+        } else {
+            byteArray.dataSize = 0;
+            byteArray.reallocDataArray();
+        }
+        return byteArray;
+}
+
+EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, int& intNum) {
+        intNum = *(reinterpret_cast<int*> (byteArray.arrayData));
+        // std::cout << "byteArray to int: " << std::dec << intNum << std::endl;
+        // PrintByteArray(byteArray);
+        return byteArray;
+}
+
+EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, int intNum) {
+        byteArray.dataSize = sizeof(int);
+        byteArray.reallocDataArray();    
+        *(reinterpret_cast<int*> (byteArray.arrayData)) = intNum;
+        // std::cout << "byteArray to int: " << std::dec << intNum << std::endl;
+        // PrintByteArray(byteArray);
+        return byteArray;
+}
+
+void PrintByteArray(EgByteArrayAbstractType& bArray, bool isStr) {
     std::cout << " size: " << std::dec << bArray.dataSize;
     if (bArray.dataSize) {
         // if ((bArray.dataSize > 1) && !bArray.arrayData[bArray.dataSize - 1] && bArray.arrayData[0] > 0x29)
@@ -69,5 +126,3 @@ void PrintHamSlices(EgHamSlicerType theSlicer) {
                   << " , ID: " << bricsFreeIter.second-> brickID << std::endl;
     }
 }
-
-// #endif // EG_BYTE_ARRAY_CPP

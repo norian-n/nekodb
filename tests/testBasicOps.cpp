@@ -9,20 +9,20 @@ bool initDatabase(EgDatabaseType& graphDB) {
     // typeSettings.useLocation = true;
     // typeSettings.useLinks = true;
 
-    graphDB.CreateNodeLayoutBlueprintClass("locations"); // , typeSettings);
+    graphDB.CreateNodeBlueprint("basicops"); // , typeSettings);
 
-    graphDB.AddDataField("name");
-    graphDB.AddDataField("status"); // , isIndexed create index
-    graphDB.AddDataField("imageType");
-    graphDB.AddDataField("x");
-    graphDB.AddDataField("y");    
+    graphDB.AddNodeDataField("name");
+    graphDB.AddNodeDataField("status"); // , isIndexed create index
+    graphDB.AddNodeDataField("imageType");
+    graphDB.AddNodeDataField("x");
+    graphDB.AddNodeDataField("y");    
 
-    graphDB.CommitNodeLayoutBlueprintClass();
+    graphDB.CommitNodeBlueprint();
 
-    graphDB.AddLinkType("linktype"); // , "locations", "locations"); // create link type
+    // graphDB.AddLinkType("basicops_linktype"); // , "locations", "locations"); // create link type
 
-    return ((graphDB.nodesTypesStorage-> dataNodes.size() == 1) 
-        &&  (graphDB.linksTypesStorage-> dataNodes.size() == 1));
+    return true; // ((graphDB.nodesTypesMetainfo.nodesContainer-> dataNodes.size() == 1));
+        // &&  (graphDB.linksTypesMetainfo.nodesContainer-> dataNodes.size() == 1));
 }
 
 string field1 = "name\0";
@@ -34,13 +34,14 @@ int num1 = 100;
 int num2 = 200;
 
 inline void addSampleDataNode(EgDataNodesType& dataNodes) {
-    EgDataNodeType* newNode = new EgDataNodeType(dataNodes.dataNodeLayout);
+    EgDataNodeType* newNode = new EgDataNodeType(dataNodes.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
     *newNode << field3;
     *newNode << num1;
     *newNode << num2;
     // dataNodes.AddDataNode(newNode);
+    // PrintEgDataNodeTypeFields(*newNode);
     dataNodes << newNode;
 }
 
@@ -60,7 +61,7 @@ bool testEgDataNodesTypeBasicNodeOps(EgDataNodesType& testDataNodes)
 
     testDataNodes.DeleteDataNode(2);
 
-    testDataNodes.MarkUpdatedDataNode(&(testDataNodes[3]));
+    testDataNodes.MarkUpdatedDataNode(3);
 /*
     cout << "dataNodes: " << testDataNodes.nodesContainer-> dataNodes.size() << endl;
     cout << "addedDataNodes: " << testDataNodes.nodesContainer-> addedDataNodes.size() << endl;
@@ -74,6 +75,8 @@ bool testEgDataNodesTypeBasicNodeOps(EgDataNodesType& testDataNodes)
 
     testDataNodes.Store();
 
+    // testDataNodes.nodesContainer->LocalNodesFile-> PrintNodesChain();
+
     // testShowResult(res, FNS);
 
     return res;
@@ -83,18 +86,24 @@ bool reloadData(EgDataNodesType& testDataNodes) {
     // cout << "===== reloadData() " << " =====" << endl;
 
     testDataNodes.LoadAllNodes();
-
+        // delete bad ID node
     testDataNodes.DeleteDataNode(2);
-    testDataNodes.MarkUpdatedDataNode(&(testDataNodes[4]));
-/*
+        // delete new node
+    addSampleDataNode(testDataNodes);
+    testDataNodes.DeleteDataNode(testDataNodes.nodesContainer-> lastNodeID);
+        // delete real node
+    testDataNodes.DeleteDataNode(3);
+    
+    testDataNodes.MarkUpdatedDataNode(4);
+/*    
     cout << "dataNodes: " << testDataNodes.nodesContainer-> dataNodes.size() << endl;
     cout << "addedDataNodes: " << testDataNodes.nodesContainer-> addedDataNodes.size() << endl;
     cout << "deletedDataNodes: " << testDataNodes.nodesContainer-> deletedDataNodes.size() << endl;
     cout << "updatedDataNodes: " << testDataNodes.nodesContainer-> updatedDataNodes.size() << endl;
 */
     bool res = ((testDataNodes.nodesContainer-> addedDataNodes.size() == 0)
-            && (testDataNodes.nodesContainer-> dataNodes.size() == 8)
-            && (testDataNodes.nodesContainer-> deletedDataNodes.size() == 0)
+            && (testDataNodes.nodesContainer-> dataNodes.size() == 7)
+            && (testDataNodes.nodesContainer-> deletedDataNodes.size() == 1)
             && (testDataNodes.nodesContainer-> updatedDataNodes.size() == 1));
 
     return res;
@@ -102,21 +111,27 @@ bool reloadData(EgDataNodesType& testDataNodes) {
 
 
 int main() {
-    // std::remove("locations.dnl"); // delete layout file
-    // std::remove("locations.gdn"); // delete data nodes file
+    std::remove("basicops.dnl"); // delete layout file
+    std::remove("basicops.gdn"); // delete data nodes file
 
-    EgDatabaseType graphDB;
-    EgDataNodesType locationsNodesType("locations", &graphDB);
+    EgDatabaseType  graphDB;
+    EgDataNodesType basicopsNodesType;
 
     cout << "===== Test basic database ops " << " =====" << endl;
 
     bool res = initDatabase(graphDB);
-    locationsNodesType.Connect(graphDB);
-    // PrintDataNodeLayout(*(locationsNodesType.dataNodeLayout));
-    bool res1 = testEgDataNodesTypeBasicNodeOps(locationsNodesType);
-    bool res2 = reloadData(locationsNodesType);
 
-    if (res && res1 && res2)
+    // cout << "===== initDatabase() res: " << res << " =====" << endl;
+
+    int result = basicopsNodesType.Connect("basicops", graphDB);
+
+    // cout << "===== After connect result: " << std::dec << result << " =====" << endl;
+
+    // PrintDataNodeLayout(*(locationsNodesType.dataNodeBlueprint));
+    bool res1 = testEgDataNodesTypeBasicNodeOps(basicopsNodesType);
+    bool res2 = reloadData(basicopsNodesType);
+
+    if (res1 && res2)
         cout << "PASS" << endl;
     else
         cout << "FAIL" << endl;

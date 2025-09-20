@@ -1,24 +1,21 @@
 #pragma once
-// #include <iostream>
-#include <map>
-// #include "egDataFields.h"
-#include "egDataNodeLayout.h"
-// #include "../service/egByteArray.h"
 
 // #define EG_NODE_OFFSETS_DEBUG
 
 #include <vector>
-#include "../service/egByteArray.h"
+#include <map>
+
+#include "egDataNodeBlueprint.h"
 #include "../service/egFileType.h"
-
-// class EgDataNodeLayoutType;
-
+#include "../service/egPtrArray.h"
+/*
 struct EgDataFieldsType {
     // EgFieldsCountType               fieldsCount {0};
     // uint64_t                        dataFieldSizeTmp;
-    std::vector<EgByteArrayType*>   dataFields;  // FIXME move to dynamic array
+    std::vector<EgByteArrayAbstractType*>   dataFields;  // FIXME move vector to dynamic array
+    // std::vector<void*>              extDataPtrs;
 };
-
+*/
 class EgDataNodeType {
 public:
     EgDataNodeIDType        dataNodeID      { 0 };
@@ -27,35 +24,56 @@ public:
     EgFileOffsetType        nextNodeOffset  { 0 };
     EgFileOffsetType        prevNodeOffset  { 0 };
 #endif
-    EgDataNodeLayoutType*   dataNodeLayout  { nullptr };    // layout == class == type of data nodes
-    EgDataFieldsType        dataFieldsContainer;            // vector of egByteArrays
+    EgDataNodeBlueprintType*    dataNodeBlueprint   { nullptr };    // blueprint == class == type of data nodes
+    void*                       serialDataPtr       { nullptr };    // link to ext data for serialization
+    // EgDataFieldsType            dataFieldsContainer;                // vector of egByteArrays
+    EgPtrArrayType<EgByteArrayAbstractType*>* dataFieldsPtrs;
+    int insertIndex {0};
 
-    std::map < EgLayoutIDType, std::vector<EgDataNodeType*> >  inLinks;
-    std::map < EgLayoutIDType, std::vector<EgDataNodeType*> >  outLinks;
+    std::map < EgBlueprintIDType, std::vector<EgDataNodeType*> >  inLinks; // links resolving to ptrs
+    std::map < EgBlueprintIDType, std::vector<EgDataNodeType*> >  outLinks;
 
-    EgDataNodeType() {} // for debug only
+    EgDataNodeType() = delete; // {} // for debug only
 
-    EgDataNodeType(EgDataNodeLayoutType* a_dataNodeLayout);
-    ~EgDataNodeType() { /*std::cout << "EgDataNodeType destructor, ID = " << dataNodeID << std::endl;*/ clear(); }
+    EgDataNodeType(EgDataNodeBlueprintType* a_dataNodeBlueprint, bool initMe = true);
+    EgDataNodeType(EgDataNodeBlueprintType* a_dataNodeBlueprint, void* a_serialDataPtr);
+    ~EgDataNodeType() { /*std::cout << "EgDataNodeType destructor, ID = " << dataNodeID << std::endl; clear(); */ }
 
     void clear();
-    EgByteArrayType& operator[](std::string fieldStrName);  // field data by name
-    EgByteArrayType& operator[](const char* fieldCharName);
+    void init();
+
+    EgByteArrayAbstractType& operator[](std::string& fieldStrName);  // field data by name
+    EgByteArrayAbstractType& operator[](const char* fieldCharName);
        
-    void writeDataFieldsToFile(EgDataFieldsType& df, EgFileType &theFile);  // local file operations
-    void readDataFieldsFromFile(EgDataFieldsType& df, EgFileType& theFile);
+    void writeDataFieldsToFile(EgFileType &theFile);  // EgDataFieldsType& df,  local file operations
+    void readDataFieldsFromFile(EgFileType& theFile);
+
+    // EgDataNodeType& operator << (EgDataNodeType& egNode, const char* str); // { AddNextDataFieldFromCharStr(str, egNode); return egNode; }
+    // EgDataNodeType& operator << (EgDataNodeType& egNode, std::string& s); //  { AddNextDataFieldFromCharStr(s.c_str(), egNode); return egNode; }
+    // EgDataNodeType& operator << (EgDataNodeType& egNode, EgByteArraySlicerType& ba);
+
+    void InsertDataFieldFromCharStr(const char* str);
+    void InsertDataFieldFromByteArray(EgByteArrayAbstractType& ba);
+    void InsertRawByteArrayPtr(EgByteArraySlicerType* baPtr);
+
+    EgDataNodeType& operator << (const char* str) { InsertDataFieldFromCharStr(str); return *this; }
+    EgDataNodeType& operator << (std::string& s)  { InsertDataFieldFromCharStr(s.c_str()); return *this; }
+    EgDataNodeType& operator << (EgByteArraySlicerType& ba) { InsertDataFieldFromByteArray(ba); return *this; }
+
+    template <typename T> EgDataNodeType& operator << (T&& i) { AddNextDataFieldFromType<T>(i); return *this; }
+
+    template <typename T> void AddNextDataFieldFromType(T&& value) {
+        if (insertIndex < dataNodeBlueprint->fieldsCount) {
+            EgByteArraySlicerType *byteArray = new EgByteArraySlicerType(dataNodeBlueprint->theHamSlicer, sizeof(value)); // use ham slicer allocator
+            memcpy((void *)byteArray->arrayData, (void *)&value, sizeof(value));
+            // dataFieldsContainer.dataFields.push_back(byteArray);
+            dataFieldsPtrs->ptrsArray[insertIndex++] = byteArray; // static_cast<EgByteArrayAbstractType> (byteArray);
+            // PrintPtrsArray<EgByteArrayAbstractType*> (*dataFieldsPtrs);
+        } else
+            std::cout << "ERROR: AddNextDataFieldFromType() fields count overflow: " << dataNodeBlueprint-> blueprintName << std::endl;
+    }
 };
 
-// ======================== DataFields ========================
-
-void AddNextDataFieldFromCharStr(const char* str, EgDataNodeType& theNode);
-// template <typename T> void AddNextDataFieldFromType(T&& value, EgDataNodeType& theNode);
-template <typename T> void AddNextDataFieldFromType(T&& value, EgDataNodeType& theNode) {
-    // EgByteArrayType* byteArray = new EgByteArrayType();
-    EgByteArrayType* byteArray = new EgByteArrayType(&(theNode.dataNodeLayout-> theHamSlicer), 0);  // use ham slicer allocator
-    ByteArrayFromType<T> (value, *byteArray);
-    theNode.dataFieldsContainer.dataFields.push_back(byteArray);    
-}
 // convert fixed length dataset size to variable length one to save file space 
 uint8_t egConvertStaticToFlex(StaticLengthType staticVal, ByteType* flexibleVal);
 
@@ -69,8 +87,4 @@ void PrintEgDataNodeTypeFields (const EgDataNodeType& dataNode);
 
 // ===================== Operators =======================
 
-EgDataNodeType& operator << (EgDataNodeType& egNode, const char* str); // { AddNextDataFieldFromCharStr(str, egNode); return egNode; }
-EgDataNodeType& operator << (EgDataNodeType& egNode, std::string& s); //  { AddNextDataFieldFromCharStr(s.c_str(), egNode); return egNode; }
-EgDataNodeType& operator << (EgDataNodeType& egNode, EgByteArrayType& ba);
 
-template <typename T> EgDataNodeType& operator << (EgDataNodeType& egNode, T&& i) { AddNextDataFieldFromType<T>(i, egNode); return egNode; }

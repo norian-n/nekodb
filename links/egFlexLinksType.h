@@ -12,28 +12,28 @@
 
 // egdb/meta/....
 
-class EgFlexLinksType {
+class EgFreeLinksType {
 public:
     // bool                        isConnected         { false };      // ? TODO nodes data status ( connected, no file, no server)
-    EgLayoutIDType              linkTypeID          { 0 };
+    EgBlueprintIDType              linkTypeID          { 0 };
     std::string                 linkTypeName;
     EgDatabaseType*             metaInfoDatabase    { nullptr };    
-    EgDataNodeLayoutType*       linksStorageLayout  { nullptr };
+    EgDataNodeBlueprintType*       linksStorageBlueprint  { nullptr };
     EgDataNodesContainerType*   linksStorage        { nullptr };
     // EgDataNodesContainerType* linkDataStorage;
 
-    EgFlexLinksType(std::string a_Name, EgDatabaseType* a_Database):
+    EgFreeLinksType(std::string& a_Name, EgDatabaseType& a_Database):
             linkTypeName(a_Name),
-             metaInfoDatabase(a_Database),           
-            linksStorageLayout(new EgDataNodeLayoutType(a_Name)),
-            linksStorage (new EgDataNodesContainerType(a_Name, linksStorageLayout)) { initFlexLinkLayout(linksStorageLayout); }
+             metaInfoDatabase(&a_Database),           
+            linksStorageBlueprint(new EgDataNodeBlueprintType(a_Name)),
+            linksStorage (new EgDataNodesContainerType()) { linksStorage->init(linksStorageBlueprint); initFlexLinkBlueprint(linksStorageBlueprint); }
 
-    ~EgFlexLinksType() { clear(); delete linksStorage; delete linksStorageLayout; }
+    ~EgFreeLinksType() { clear(); delete linksStorage; delete linksStorageBlueprint; }
     
     void clear();
-    void initFlexLinkLayout(EgDataNodeLayoutType* linkLayout);
-    void AddRawLink(EgLayoutIDType fromLayID, EgDataNodeIDType fromID, EgLayoutIDType toLayID, EgDataNodeIDType toID);
-    void AddContainersLink(EgLayoutIDType fromLayID, EgDataNodeIDType fromID, EgLayoutIDType toLayID, EgDataNodeIDType toID);
+    void initFlexLinkBlueprint(EgDataNodeBlueprintType* linkBlueprint);
+    void AddRawLink(EgBlueprintIDType fromLayID, EgDataNodeIDType fromID, EgBlueprintIDType toLayID, EgDataNodeIDType toID);
+    void AddContainersLink(EgBlueprintIDType fromLayID, EgDataNodeIDType fromID, EgBlueprintIDType toLayID, EgDataNodeIDType toID);
     int LoadLinks();
     int StoreLinks();
     int ResolveNodesIDsToPtrs();

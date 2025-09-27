@@ -5,11 +5,10 @@
 
 EgDataNodeBlueprintType bpNotFound("nodeNotFound");
 EgDataNodeType nodeNotFound(&bpNotFound);  // dummy data node for GUI if no data found
-EgDataNodesMapType fakeDataMap;
 
 EgDataNodesType::EgDataNodesType(): 
     nodesContainer (new EgDataNodesContainerType), 
-    dataMap(nodesContainer-> dataNodes), fDataMap(fakeDataMap) {}// real container init at Connect() so set fake ref
+    dataMap(nodesContainer-> dataNodes) {}// real container init at Connect() so set fake ref
 
 int EgDataNodesType::Connect(std::string& nodesNameStr, EgDatabaseType &myDB) {
     if (isConnected) {

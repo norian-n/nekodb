@@ -78,22 +78,32 @@ int EgFreeLinksType::ResolveNodesIDsToPtrs() {
             auto iterFrom = fromNodePtr->outLinks.find(linkTypeID);
             if (iterFrom == fromNodePtr->outLinks.end())
             {
-                std::vector<EgDataNodeType *> newNodePtrs;
-                newNodePtrs.push_back(toNodePtr);
-                fromNodePtr->outLinks.insert(std::pair<EgBlueprintIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
+                // std::vector<EgDataNodeType *> newNodePtrs;
+                // newNodePtrs.push_back(toNodePtr);
+                // fromNodePtr->outLinks.insert(std::pair<EgBlueprintIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
+                EgDataLinksMapType newNodePtrs; // std::vector<EgDataNodeType *> newNodePtrs;
+                // newNodePtrs.push_back(toNodePtr);
+                newNodePtrs.insert(std::pair<EgBlueprintIDType, EgDataNodeType *>(nodesIter.first, toNodePtr));
+                fromNodePtr->outLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkTypeID, newNodePtrs));
             }
             else
-                iterFrom->second.push_back(toNodePtr);
+                // iterFrom->second.push_back(toNodePtr);
+                iterFrom->second.insert(std::pair<EgBlueprintIDType, EgDataNodeType *>(nodesIter.first, toNodePtr));
 
             auto iterTo = toNodePtr->inLinks.find(linkTypeID);
             if (iterTo == toNodePtr->inLinks.end())
             {
-                std::vector<EgDataNodeType *> newNodePtrs;
-                newNodePtrs.push_back(fromNodePtr);
-                toNodePtr->inLinks.insert(std::pair<EgBlueprintIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
+                // std::vector<EgDataNodeType *> newNodePtrs;
+                // newNodePtrs.push_back(fromNodePtr);
+                // toNodePtr->inLinks.insert(std::pair<EgBlueprintIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
+                EgDataLinksMapType newNodePtrs; // std::vector<EgDataNodeType *> newNodePtrs;
+                // newNodePtrs.push_back(toNodePtr);
+                newNodePtrs.insert(std::pair<EgBlueprintIDType, EgDataNodeType *>(nodesIter.first, fromNodePtr));
+                toNodePtr->inLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkTypeID, newNodePtrs));
             }
             else
-                iterTo->second.push_back(fromNodePtr);
+                // iterTo->second.push_back(fromNodePtr);
+                iterTo->second.insert(std::pair<EgBlueprintIDType, EgDataNodeType *>(nodesIter.first, fromNodePtr));
         }
         else
         {
@@ -112,12 +122,12 @@ void PrintResolvedLinksFlex(const EgDataNodeType& node) {
         std::cout << "OUT links of node " << std::dec << (int)node.dataNodeID << " : ";
         for (auto outLinksIter : node.outLinks) // 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
             for (auto outNodesIter : outLinksIter.second)
-                std::cout << "OutLinkTypeID: " << (int)outLinksIter.first << " Node ID: " << (int)outNodesIter->dataNodeID << std::endl;
+                std::cout << "OutLinkTypeID: " << (int)outLinksIter.first << " Node ID: " << (int)outNodesIter.second->dataNodeID << std::endl;
     }
     if (node.inLinks.size()) {
         std::cout << "IN links of node " << std::dec << (int)node.dataNodeID << " : ";
         for (auto inLinksIter : node.inLinks) // 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
             for (auto inNodesIter : inLinksIter.second)
-                std::cout << "InLinkTypeID: " << (int)inLinksIter.first << " Node ID: " << (int)inNodesIter->dataNodeID << std::endl;
+                std::cout << "InLinkTypeID: " << (int)inLinksIter.first << " Node ID: " << (int)inNodesIter.second->dataNodeID << std::endl;
     }
-} 
+}

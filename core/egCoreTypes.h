@@ -18,5 +18,6 @@ typedef uint64_t    StaticLengthType;
 class EgDataNodeType;
 
 typedef std::map <EgDataNodeIDType, EgDataNodeType*>  EgDataNodesMapType;
+typedef std::map <EgDataLinkIDType, EgDataNodeType*>  EgDataLinksMapType;
 
 const uint64_t egDefaultHamBrickSize = 1024; // 1024*1; // TODO FIXME add flex bricksize to pre-launch system settings

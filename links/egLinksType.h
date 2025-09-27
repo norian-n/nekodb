@@ -52,8 +52,8 @@ public:
     int LoadLinks();
     int StoreLinks();
 
-    void ConnectLinkToNodesTypes(EgDataNodesType& from, EgDataNodesType& to);
-    int ResolveNodesIDsToPtrs();
+    // void ConnectLinkToNodesTypes(EgDataNodesType& from, EgDataNodesType& to);
+    int ResolveNodesIDsToPtrs(EgDataNodesType &from, EgDataNodesType &to);
 };
 
 // ======================== Debug ========================

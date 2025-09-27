@@ -8,14 +8,7 @@
 #include "egDataNodeBlueprint.h"
 #include "../service/egFileType.h"
 #include "../service/egPtrArray.h"
-/*
-struct EgDataFieldsType {
-    // EgFieldsCountType               fieldsCount {0};
-    // uint64_t                        dataFieldSizeTmp;
-    std::vector<EgByteArrayAbstractType*>   dataFields;  // FIXME move vector to dynamic array
-    // std::vector<void*>              extDataPtrs;
-};
-*/
+
 class EgDataNodeType {
 public:
     EgDataNodeIDType        dataNodeID      { 0 };
@@ -30,8 +23,9 @@ public:
     EgPtrArrayType<EgByteArrayAbstractType*>* dataFieldsPtrs;
     int insertIndex {0};
 
-    std::map < EgBlueprintIDType, std::vector<EgDataNodeType*> >  inLinks; // links resolving to ptrs
-    std::map < EgBlueprintIDType, std::vector<EgDataNodeType*> >  outLinks;
+    // typedef std::map <EgDataLinkIDType, EgDataNodeType*>  EgDataLinksMapType;
+    std::map < EgBlueprintIDType, EgDataLinksMapType >  inLinks; // links resolving to ptrs FIXME to egPtrArray
+    std::map < EgBlueprintIDType, EgDataLinksMapType >  outLinks;
 
     EgDataNodeType() = delete; // {} // for debug only
 

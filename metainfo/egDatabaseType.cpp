@@ -152,6 +152,12 @@ int EgDatabaseType::CreateNodeBlueprint(const char* name) { //,  EgNodeTypeSetti
 void EgDatabaseType::AddNodeDataField(std::string& fieldName) {
     if (CreateNodeBlueprintFlag)
         nodeBlueprint-> AddDataFieldName(fieldName);
+    if (CreateLinkBlueprintFlag) {
+        std::cout << "WARNING: AddNodeDataField() called inside link blueprint setup: ";
+        if (linkBlueprint)
+            std::cout << linkBlueprint->blueprintName << std::endl;
+        std::cout << std::endl;
+    }
 }
 
 void EgDatabaseType::CommitNodeBlueprint() {
@@ -218,6 +224,12 @@ int EgDatabaseType::CreateLinkWithDataBlueprint(std::string& linkTypeName, std::
 void EgDatabaseType::AddLinkDataField(std::string& fieldName) {
     if (CreateLinkBlueprintFlag)
         linkBlueprint-> AddDataFieldName(fieldName);
+    if (CreateNodeBlueprintFlag) {
+        std::cout << "WARNING: AddLinkDataField() called inside data node blueprint setup: ";
+        if (nodeBlueprint)
+            std::cout << nodeBlueprint->blueprintName << std::endl;
+        std::cout << std::endl;
+    }
 }
 
 void EgDatabaseType::CommitLinkBlueprint() {

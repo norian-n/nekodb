@@ -23,12 +23,11 @@ public:
     EgDataNodeBlueprintType*    dataNodeBlueprint   { nullptr };    // layout == blueprint == class == type of these data nodes
     EgDataNodesContainerType*   nodesContainer      { nullptr };    // data storage of all these nodes
     EgDataNodesMapType&         dataMap;                            // shortcut to container nodes map,  for (auto iter : dataMap)
-    EgDataNodesMapType&         fDataMap;
 
     serialLoadFunctionType      serialLoadFunction  { nullptr };    // function for automated data load from node to void* localDataPtr
     serialStoreFunctionType     serialStoreFunction { nullptr };    // function for automated data store to node form void* localDataPtr
 
-    std::map < std::string, EgLinksType* >    linksNames;
+    // std::map < std::string, EgLinksType* >    linksNames;
 
     // EgIndexConditionsTree* index_tree       {nullptr};       // indexed fields operations
     // std::vector <uint64_t> IndexOffsets;                     // offsets returned by index, for index-based operations (AND, OR)

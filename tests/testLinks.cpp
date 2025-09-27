@@ -28,8 +28,8 @@ bool testLinksResolving(EgLinksType& testLinks, EgDataNodesType& fromType, EgDat
     addSampleDataNode(toType);
     addSampleDataNode(toType);
 
-    testLinks.ConnectLinkToNodesTypes(fromType, toType);
-    testLinks.ResolveNodesIDsToPtrs();
+    // testLinks.ConnectLinkToNodesTypes(fromType, toType);
+    testLinks.ResolveNodesIDsToPtrs(fromType, toType);
 /*
     for (auto iter : fromType.nodesContainer-> dataNodes)
         PrintEgDataNodeTypeFields(fromType[iter.first]);

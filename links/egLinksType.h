@@ -52,7 +52,7 @@ public:
     int LoadLinks();
     int StoreLinks();
 
-    // void ConnectLinkToNodesTypes(EgDataNodesType& from, EgDataNodesType& to);
+    int AddLinkPtrsToNodes(EgDataLinkIDType linkID, EgDataNodeType &from, EgDataNodeType &to);
     int ResolveNodesIDsToPtrs(EgDataNodesType &from, EgDataNodesType &to);
 };
 

@@ -31,8 +31,11 @@ int EgDataNodesContainerType::LoadLocalBlueprint() {
 
 EgDataNodeType *EgDataNodesContainerType::GetNodePtrByID(EgDataNodeIDType nodeID) {
     auto iter = dataNodes.find(nodeID); // search all nodes
-    if (iter != dataNodes.end())
+    if (iter != dataNodes.end()) {
+        // std::cout << "GetNodePtrByID() node found for ID: " << std::dec <<  nodeID << std::endl;
         return iter->second;
+    }
+    // std::cout << "GetNodePtrByID() node NOT found for ID: " << std::dec <<  nodeID << std::endl;
     return nullptr;
 }
 

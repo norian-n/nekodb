@@ -64,6 +64,18 @@ void EgLinksType::ConnectLinkToNodesTypes(EgDataNodesType &from, EgDataNodesType
     toDataNodes = to.nodesContainer;
 } */
 
+int EgLinksType::AddLinkPtrsToNodes(EgDataLinkIDType linkID,EgDataNodeType &from, EgDataNodeType &to) {
+    EgDataLinksMapType newNodePtrsFrom;
+    newNodePtrsFrom.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linkID, &to));
+    from.outLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkTypeID, newNodePtrsFrom));
+
+    EgDataLinksMapType newNodePtrsTo;
+    newNodePtrsTo.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linkID, &from));
+    to.inLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkTypeID, newNodePtrsTo));
+
+    return 0;
+}
+
 int EgLinksType::ResolveNodesIDsToPtrs(EgDataNodesType &from, EgDataNodesType &to) {
     fromDataNodes = from.nodesContainer;
     toDataNodes = to.nodesContainer;
@@ -73,6 +85,21 @@ int EgLinksType::ResolveNodesIDsToPtrs(EgDataNodesType &from, EgDataNodesType &t
         return -1;
     } */
     // std::cout  << "ResolveLinksToPtrs() of \"" << linksDataStorage.dataNodesName << "\"" << std::endl;
+    /*for (auto nodesIter : dataMap)
+    {
+        std::cout  << std::dec << (int) *(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("fromID").arrayData)) << " -> "
+                   <<  (int) *(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("toID").arrayData)) << std::endl;
+        EgDataNodeType *fromNodePtr = fromDataNodes-> GetNodePtrByID(*(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("fromID").arrayData)));
+        EgDataNodeType *toNodePtr = toDataNodes-> GetNodePtrByID(*(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("toID").arrayData)));
+        // connect
+        if (fromNodePtr && toNodePtr) {
+            fromNodePtr-> outLinks.clear();
+            fromNodePtr-> inLinks.clear();
+            toNodePtr-> outLinks.clear();
+            toNodePtr-> inLinks.clear();            
+        }
+    } */
+
     for (auto nodesIter : dataMap)
     {
         // std::cout  << std::dec << (int) *(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("fromID").arrayData)) << " -> "

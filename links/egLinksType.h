@@ -16,7 +16,7 @@ public:
     EgDataNodesMapType& dataMap; // shortcut to container nodes map,  for (auto iter : dataMap)
     // bool linksDataStorageLoaded {false};
     // bool                        isConnected         { false };      // ? TODO nodes data status ( connected, no file, no server)
-    EgBlueprintIDType   linkTypeID          { 0 };
+    EgBlueprintIDType   linkBlueprintID          { 0 };
     std::string         linkTypeName;
 
     EgDatabaseType*             metaInfoDatabase    { nullptr };

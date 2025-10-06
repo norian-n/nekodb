@@ -63,7 +63,7 @@ void EgDataNodeBlueprintType::AddIndex(std::string fieldName, EgIndexSettingsTyp
 }
 
 inline void EgDataNodeBlueprintType::writeDataFieldsNames() {
-    blueprintFile.writeType<EgFieldsCountType>((EgFieldsCountType)dataFieldsNames.size());
+    // blueprintFile.writeType<EgFieldsCountType>((EgFieldsCountType)dataFieldsNames.size());
     for (auto fieldsIter : dataFieldsNames)
     { // 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
         // blueprintFile.writeType<EgFieldNameLengthType>((EgFieldNameLengthType) fieldsIter.first.size());
@@ -74,12 +74,12 @@ inline void EgDataNodeBlueprintType::writeDataFieldsNames() {
 }
 
 inline void EgDataNodeBlueprintType::readDataFieldsNames() {
-    EgFieldsCountType fieldsCountTmp{0};
+    // EgFieldsCountType fieldsCountTmp{0};
     EgFieldsCountType order{0};
     std::string fieldName;
-    blueprintFile.readType<EgFieldsCountType>(fieldsCountTmp);
-    // std::cout << "fieldsCountTmp: " << std::dec << (int) fieldsCountTmp << std::endl;
-    for (EgFieldsCountType i = 0; i < fieldsCountTmp; i++)
+    // blueprintFile.readType<EgFieldsCountType>(fieldsCountTmp);
+    // std::cout << "readDataFieldsNames() fieldsCountTmp: " << std::dec << (int) fieldsCountTmp << std::endl;
+    for (EgFieldsCountType i = 0; i < fieldsCount; i++)
     {
         fieldName.clear();
         blueprintFile >> fieldName;
@@ -120,6 +120,7 @@ int EgDataNodeBlueprintType::LocalStoreBlueprint() {
     blueprintFile.openToWrite();
 
     blueprintFile << fieldsCount;
+    // std::cout << "LocalStoreBlueprint() fieldsCount: " << std::dec << (int) fieldsCount << std::endl;
     // blueprintFile << nodesCount;
     // blueprintFile << nextNodeID;
 
@@ -146,6 +147,8 @@ int EgDataNodeBlueprintType::LocalLoadBlueprint() {
         return -1;
 
     blueprintFile >> fieldsCount;
+
+    // std::cout << "LocalLoadBlueprint() fieldsCount: " << std::dec << (int) fieldsCount << std::endl;
     // blueprintFile >> nodesCount;
     // blueprintFile >> nextNodeID;
 

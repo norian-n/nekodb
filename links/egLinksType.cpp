@@ -22,8 +22,6 @@ int EgLinksType::ConnectLinks(std::string& linkNameStr, EgDatabaseType& myDB) {
         std::cout << "ConnectLinks() not found storage: " << linkNameStr << std::endl;
     }
 
-    dataMap = linksDataStorage.dataMap; // reset reference
-
     return 0;
 }
 
@@ -65,13 +63,25 @@ void EgLinksType::ConnectLinkToNodesTypes(EgDataNodesType &from, EgDataNodesType
 } */
 
 int EgLinksType::AddLinkPtrsToNodes(EgDataLinkIDType linkID,EgDataNodeType &from, EgDataNodeType &to) {
-    EgDataLinksMapType newNodePtrsFrom;
-    newNodePtrsFrom.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linkID, &to));
-    from.outLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkTypeID, newNodePtrsFrom));
+    std::cout << "AddLinkPtrsToNodes() linkID " << linkID << " fromID: " << from.dataNodeID << " toID: " << to.dataNodeID << std::endl;
+    
+    auto iterFrom = from.outLinks.find(linkBlueprintID);
+    if (iterFrom == from.outLinks.end()) {
+        EgDataLinksMapType newNodePtrsFrom;
+        newNodePtrsFrom.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linkID, &to));
+        from.outLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkBlueprintID, newNodePtrsFrom));
+    }
+    else
+        iterFrom->second.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linkID, &to));
 
-    EgDataLinksMapType newNodePtrsTo;
-    newNodePtrsTo.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linkID, &from));
-    to.inLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkTypeID, newNodePtrsTo));
+    auto iterTo = to.inLinks.find(linkBlueprintID);
+    if (iterTo == to.inLinks.end()) {
+        EgDataLinksMapType newNodePtrsTo;
+        newNodePtrsTo.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linkID, &from));
+        to.inLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkBlueprintID, newNodePtrsTo));
+    }
+    else
+        iterTo->second.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linkID, &from));
 
     return 0;
 }
@@ -79,11 +89,11 @@ int EgLinksType::AddLinkPtrsToNodes(EgDataLinkIDType linkID,EgDataNodeType &from
 int EgLinksType::ResolveNodesIDsToPtrs(EgDataNodesType &from, EgDataNodesType &to) {
     fromDataNodes = from.nodesContainer;
     toDataNodes = to.nodesContainer;
-    /* if (!(fromDataNodes && toDataNodes))
+    if (!(fromDataNodes && toDataNodes))
     {
         std::cout << "ResolveNodesIDsToPtrs() Error : nodes types not connected for link type " << linkTypeName << std::endl;
         return -1;
-    } */
+    }
     // std::cout  << "ResolveLinksToPtrs() of \"" << linksDataStorage.dataNodesName << "\"" << std::endl;
     /*for (auto nodesIter : dataMap)
     {
@@ -100,49 +110,39 @@ int EgLinksType::ResolveNodesIDsToPtrs(EgDataNodesType &from, EgDataNodesType &t
         }
     } */
 
-    for (auto nodesIter : dataMap)
+    for (auto linksDataIter : dataMap)
     {
-        // std::cout  << std::dec << (int) *(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("fromID").arrayData)) << " -> "
-        //           <<  (int) *(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("toID").arrayData)) << std::endl;
-        EgDataNodeType *fromNodePtr = fromDataNodes-> GetNodePtrByID(*(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("fromID").arrayData)));
-        EgDataNodeType *toNodePtr = toDataNodes-> GetNodePtrByID(*(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("toID").arrayData)));
+        // std::cout  << std::dec << (int) *(reinterpret_cast<EgDataNodeIDType*> (linksDataIter.second->operator[]("fromID").arrayData)) << " -> "
+        //           <<  (int) *(reinterpret_cast<EgDataNodeIDType*> (linksDataIter.second->operator[]("toID").arrayData)) << std::endl;
+        EgDataNodeType *fromNodePtr = fromDataNodes-> GetNodePtrByID(*(reinterpret_cast<EgDataNodeIDType*> (linksDataIter.second->operator[]("fromID").arrayData)));
+        EgDataNodeType *toNodePtr = toDataNodes-> GetNodePtrByID(*(reinterpret_cast<EgDataNodeIDType*> (linksDataIter.second->operator[]("toID").arrayData)));
         // connect
         if (fromNodePtr && toNodePtr)
         { // <EgBlueprintIDType, std::vector<EgDataNodeType*> >
             // std::cout  << " Ok " << std::endl;
-            auto iterFrom = fromNodePtr->outLinks.find(linkTypeID);
-            if (iterFrom == fromNodePtr->outLinks.end())
-            {
-                EgDataLinksMapType newNodePtrs; // std::vector<EgDataNodeType *> newNodePtrs;
-                // newNodePtrs.push_back(toNodePtr);
-                newNodePtrs.insert(std::pair<EgBlueprintIDType, EgDataNodeType *>(nodesIter.first, toNodePtr));
-                fromNodePtr->outLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkTypeID, newNodePtrs));
+            auto iterFrom = fromNodePtr->outLinks.find(linkBlueprintID);
+            if (iterFrom == fromNodePtr->outLinks.end()) {
+                EgDataLinksMapType newNodePtrs;
+                newNodePtrs.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linksDataIter.first, toNodePtr));
+                fromNodePtr->outLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkBlueprintID, newNodePtrs));
             }
             else
-                // iterFrom->second.push_back(toNodePtr);
-                iterFrom->second.insert(std::pair<EgBlueprintIDType, EgDataNodeType *>(nodesIter.first, toNodePtr));
+                iterFrom->second.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linksDataIter.first, toNodePtr));
 
-            auto iterTo = toNodePtr->inLinks.find(linkTypeID);
-            if (iterTo == toNodePtr->inLinks.end())
-            {
-                // std::vector<EgDataNodeType *> newNodePtrs;
-                // newNodePtrs.push_back(fromNodePtr);
-                // toNodePtr->inLinks.insert(std::pair<EgBlueprintIDType, std::vector<EgDataNodeType *>>(linkTypeID, newNodePtrs));
-
-                EgDataLinksMapType newNodePtrs; // std::vector<EgDataNodeType *> newNodePtrs;
-                // newNodePtrs.push_back(toNodePtr);
-                newNodePtrs.insert(std::pair<EgBlueprintIDType, EgDataNodeType *>(nodesIter.first, fromNodePtr));
-                toNodePtr->inLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkTypeID, newNodePtrs));
+            auto iterTo = toNodePtr->inLinks.find(linkBlueprintID);
+            if (iterTo == toNodePtr->inLinks.end()) {
+                EgDataLinksMapType newNodePtrsTo;
+                newNodePtrsTo.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linksDataIter.first, fromNodePtr));
+                toNodePtr->inLinks.insert(std::pair<EgBlueprintIDType, EgDataLinksMapType>(linkBlueprintID, newNodePtrsTo));
             }
             else
-                // iterTo->second.push_back(fromNodePtr);
-                iterTo->second.insert(std::pair<EgBlueprintIDType, EgDataNodeType *>(nodesIter.first, fromNodePtr));
+                iterTo->second.insert(std::pair<EgDataLinkIDType, EgDataNodeType *>(linksDataIter.first, fromNodePtr));
         }
         else
         {
             std::cout << " : ResolveNodesIDsToPtrs() ERROR : Nodes ptrs NOT found for some IDs of " << linksDataStorage.dataNodesName << std::dec 
-                << " " << (int) *(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("fromID").arrayData)) << " -> "
-                <<  (int) *(reinterpret_cast<EgDataNodeIDType*> (nodesIter.second->operator[]("toID").arrayData)) << std::endl;
+                << " " << (int) *(reinterpret_cast<EgDataNodeIDType*> (linksDataIter.second->operator[]("fromID").arrayData)) << " -> "
+                <<  (int) *(reinterpret_cast<EgDataNodeIDType*> (linksDataIter.second->operator[]("toID").arrayData)) << std::endl;
             return -2;
         }
     }

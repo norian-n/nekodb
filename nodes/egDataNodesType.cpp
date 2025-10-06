@@ -72,6 +72,7 @@ int EgDataNodesType::ConnectSystemNodeType(std::string a_dataNodesName) { // sai
     }
     nodesContainer->init(dataNodeBlueprint);
     isConnected = true;
+    // std::cout << "ConnectSystemNodeType() done for " << dataNodesName << ".dnl" << std::endl;
     return 0;
 }
 
@@ -133,13 +134,16 @@ int EgDataNodesType::Store() {
 
 int EgDataNodesType::LoadAllNodes() {
     if (! isConnected) {
-        std::cout << "ERROR: EgDataNodesType is not connected to database: " << dataNodesName << std::endl;
+        std::cout << "ERROR: LoadAllNodes(): EgDataNodesType is not connected to database: " << dataNodesName << std::endl;
         return -1;
     }
     int res = nodesContainer-> LoadAllLocalFileNodes();
+    // std::cout << "LoadAllNodes() res: " << res << std::endl;
     if (serialLoadFunction)
-        for (auto nodesIter : nodesContainer-> dataNodes)
+        for (auto nodesIter : nodesContainer-> dataNodes) {
             (*serialLoadFunction)(*nodesIter.second);
+            // std::cout << "iter nodeID: " << nodesIter.second-> dataNodeID << std::endl;
+        }
     return res;
 }
 

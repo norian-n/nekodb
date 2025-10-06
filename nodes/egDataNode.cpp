@@ -14,7 +14,7 @@ ByteType            egMask80                {0x80}; // not last byte flag
 EgDataNodeType::EgDataNodeType(EgDataNodeBlueprintType* a_dataNodeBlueprint, bool initMe):
     dataNodeBlueprint(a_dataNodeBlueprint) {
     if (dataNodeBlueprint) {
-        // std::cout << "EgDataNodeType() dataNodeBlueprint-> fieldsCount: " << std::dec << (int) dataNodeBlueprint-> fieldsCount << std::endl;
+        // std::cout << "EgDataNodeType() dataNodeBlueprint-> fieldsCount: " << dataNodeBlueprint->blueprintName << " " << std::dec << (int) dataNodeBlueprint-> fieldsCount << std::endl;
         dataFieldsPtrs = new EgPtrArrayType<EgByteArrayAbstractType*> (dataNodeBlueprint->theHamSlicer, dataNodeBlueprint-> fieldsCount);
         if (initMe)
             init();
@@ -54,23 +54,23 @@ void EgDataNodeType::clear() {
 }
 
 EgByteArrayAbstractType& EgDataNodeType::operator[](std::string& fieldStrName) { // field value by name as stg::string
-    if (dataNodeBlueprint) {
-        auto iter = dataNodeBlueprint->dataFieldsNames.find(fieldStrName);
-        if (iter != dataNodeBlueprint->dataFieldsNames.end())
-            // return *dataFieldsContainer.dataFields[iter->second];
-            return *(dataFieldsPtrs-> ptrsArray[iter->second]);
+    auto iter = dataNodeBlueprint->dataFieldsNames.find(fieldStrName);
+    if (iter != dataNodeBlueprint->dataFieldsNames.end()) {
+        // std::cout << "EgDataNodeType[]: " << dataNodeBlueprint->blueprintName << " field found: " << fieldStrName << std::endl;
+        return *(dataFieldsPtrs->ptrsArray[iter->second]);
     }
+    std::cout << "ERROR: EgDataNodeType[]: " << dataNodeBlueprint->blueprintName << " field NOT found: " << fieldStrName << std::endl;
     return dataNodeBlueprint-> egNotFound;
 }
 
 EgByteArrayAbstractType& EgDataNodeType::operator[](const char *fieldCharName) { // field value by name as char* literal
-    if (dataNodeBlueprint) {
-        auto iter = dataNodeBlueprint->dataFieldsNames.find(std::string(fieldCharName));
-        if (iter != dataNodeBlueprint->dataFieldsNames.end())
-            // return *dataFieldsContainer.dataFields[iter->second];
-            return *(dataFieldsPtrs-> ptrsArray[iter->second]);
+    auto iter = dataNodeBlueprint->dataFieldsNames.find(std::string(fieldCharName));
+    if (iter != dataNodeBlueprint->dataFieldsNames.end()) {
+        // std::cout << "EgDataNodeType[]: " << dataNodeBlueprint->blueprintName << " field found: " << fieldCharName << std::endl;
+        return *(dataFieldsPtrs->ptrsArray[iter->second]);
     }
-    return dataNodeBlueprint-> egNotFound;
+    std::cout << "ERROR: EgDataNodeType[]: " << dataNodeBlueprint->blueprintName << " field NOT found: " << fieldCharName << std::endl;
+    return dataNodeBlueprint->egNotFound;
 }
 
 // ======================== Debug ========================
@@ -90,8 +90,18 @@ void PrintEgDataNodeTypeFields(const EgDataNodeType& dataNode){
     // std::cout << "dataFieldsContainer size: " << dataNode.dataFieldsContainer.dataFields.size() << " Fields: " << std::endl;
     // for (const auto &field : dataNode.dataFieldsContainer.dataFields)
         // PrintByteArray(*field);
-    for (int i =0; i < dataNode.dataNodeBlueprint->fieldsCount; i++)
+
+    /*for (int i =0; i < dataNode.dataNodeBlueprint->fieldsCount; i++) {
+        std::cout << dataNode.dataNodeBlueprint-> dataFieldsNames[i] << " ";
         PrintByteArray(*(dataNode.dataFieldsPtrs->ptrsArray[i]));
+    }*/
+
+    for (auto fieldsIter : dataNode.dataNodeBlueprint-> dataFieldsNames) {
+        std::cout << fieldsIter.first << " : ";
+        PrintByteArray(*(dataNode.dataFieldsPtrs->ptrsArray[fieldsIter.second]), 
+            dataNode.dataFieldsPtrs->ptrsArray[fieldsIter.second]->dataSize != 4);  // FIXME stub
+        // std::cout << std::endl;
+    }
 }
 
 // ======================== DataFields ========================
@@ -202,10 +212,15 @@ void EgDataNodeType::writeDataFieldsToFile(EgFileType &theFile) {
             return;
         } else {
             // PrintByteArray(*field);
-            uint8_t lenSize = egConvertStaticToFlex(field-> dataSize, lengthRawData);
-            // std::cout << "lenSize: " << (int) lenSize << " lengthRawData[0]: " << (int) lengthRawData[0] << std::endl;
-            theFile.fileStream.write((const char *)lengthRawData, lenSize);                    // write size
-            theFile.fileStream.write((const char *)(field->arrayData), field-> dataSize); // write data
+            if (field-> dataSize) { // not empty field
+                uint8_t lenSize = egConvertStaticToFlex(field->dataSize, lengthRawData);
+                // std::cout << "writeDataFieldsToFile() lenSize: " << (int) lenSize << " lengthRawData[0]: " << (int) lengthRawData[0] << std::endl;
+                theFile.fileStream.write((const char *)lengthRawData, lenSize);              // write size
+                theFile.fileStream.write((const char *)(field->arrayData), field->dataSize); // write data
+            } else {
+                // std::cout << "writeDataFieldsToFile(): zero field size" << std::endl;
+                theFile.fileStream << (ByteType) 0;
+            }
         }
     }
     // std::cout << "writeDataFieldsToFile() exit " << std::endl;
@@ -227,8 +242,13 @@ void EgDataNodeType::readDataFieldsFromFile(EgFileType& theFile) {
         uint8_t lenSize = egConvertFlexToStatic(lengthRawData, dataFieldSizeTmp);
         // std::cout << "newField.dataSize: " << std::dec << (int) df.dataSize;
         newField = new EgByteArraySlicerType(dataNodeBlueprint-> theHamSlicer, dataFieldSizeTmp); // +1
-        theFile.seekRead(savePos + lenSize);
-        theFile.fileStream.read((char *)(newField->arrayData), dataFieldSizeTmp); // read data
+        if (dataFieldSizeTmp) { // not empty field
+            theFile.seekRead(savePos + lenSize);
+            theFile.fileStream.read((char *)(newField->arrayData), dataFieldSizeTmp); // read data
+        } else {
+            theFile.seekRead(savePos + 1);
+            // std::cout << "readDataFieldsFromFile(): zero field size" << std::endl;
+        }
         // newField->arrayData[dataFieldSizeTmp] = 0;
         // std::cout << " newField.arrayData: " << (char *)(newField->arrayData) << std::endl;
         // df.dataFields[i] = newField;

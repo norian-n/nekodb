@@ -107,8 +107,8 @@ void PrintByteArray(EgByteArrayAbstractType& bArray, bool isStr) {
         for (int i = 0; i < bArray.dataSize; i++)
             // std::cout << " \"" << std::hex << (int) field.arrayData[i] << "\"";
             std::cout << (int)bArray.arrayData[i] << " ";
-        std::cout << std::endl;
     }
+    std::cout << std::endl;
 }
 
 void PrintHamSlices(EgHamSlicerType theSlicer) {

@@ -143,7 +143,12 @@ int EgDataNodesContainerType::LoadAllLocalFileNodes() {
         // std::cout  << "getFirstNodeOffset() nextOffset = " << std::hex << nextOffset << std::endl;
         newNode = new EgDataNodeType(dataNodeBlueprint);
         newNode-> dataFileOffset = nextOffset;
-        LocalNodesFile->ReadDataNode(newNode, nextOffset);
+        LocalNodesFile-> ReadDataNode(newNode, nextOffset);
+        if (newNode-> dataFileOffset == nextOffset) {
+            std::cout << "ERROR: loadAllLocalNodes() nextOffset loop:  " << std::hex << nextOffset << std::dec << " " 
+                      << dataNodeBlueprint-> blueprintName << ".gdn" << std::endl;
+            return -2;
+        }
         dataNodes.insert(std::make_pair(newNode->dataNodeID, newNode));
     }
     LocalNodesFile-> nodesFile.close();

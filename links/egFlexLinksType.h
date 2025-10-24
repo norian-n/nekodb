@@ -15,10 +15,11 @@
 class EgFreeLinksType {
 public:
     // bool                        isConnected         { false };      // ? TODO nodes data status ( connected, no file, no server)
-    EgBlueprintIDType              linkTypeID          { 0 };
+    // EgBlueprintIDType              linkTypeID          { 0 };
+    EgBlueprintIDType           linkBlueprintID          { 0 };
     std::string                 linkTypeName;
     EgDatabaseType*             metaInfoDatabase    { nullptr };    
-    EgDataNodeBlueprintType*       linksStorageBlueprint  { nullptr };
+    EgDataNodeBlueprintType*    linksStorageBlueprint  { nullptr };
     EgDataNodesContainerType*   linksStorage        { nullptr };
     // EgDataNodesContainerType* linkDataStorage;
 

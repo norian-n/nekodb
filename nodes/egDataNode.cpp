@@ -53,6 +53,74 @@ void EgDataNodeType::clear() {
     outLinks.clear();
 }
 
+EgLinkDataPtrsNodePtrsMapType* EgDataNodeType::getInLinksMap(EgBlueprintIDType linkBlueprintID) {
+    auto inLinksMapIter = inLinks.find(linkBlueprintID);
+    if (inLinksMapIter != inLinks.end()) {
+        std::cout << "getInLinksMap() the map found for ID: " << linkBlueprintID << std::endl;        
+        return &(inLinksMapIter-> second);
+    }
+    std::cout << "getInLinksMap() the map NOT found for ID: " << linkBlueprintID << std::endl; 
+    return nullptr;
+}
+
+EgLinkDataPtrsNodePtrsMapType* EgDataNodeType::getOutLinksMap(EgBlueprintIDType linkBlueprintID) {
+    auto outLinksMapIter = outLinks.find(linkBlueprintID);
+    if (outLinksMapIter != outLinks.end()) {
+        std::cout << "getOutLinksMap() the map found for ID: " << linkBlueprintID << std::endl;        
+        return &(outLinksMapIter-> second);
+    }
+    std::cout << "getOutLinksMap() the map NOT found for ID: " << linkBlueprintID << std::endl; 
+    return nullptr;
+}
+
+void* EgDataNodeType::getNextInLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr) {
+    EgLinkDataPtrsNodePtrsMapType* inLinksMap = getInLinksMap(linkBlueprintID);
+    if (inLinksMap) {
+        if (prevLinkDataPtr) { // null to get first, else get next
+            auto inLinksMapIter = inLinksMap-> find(prevLinkDataPtr);
+            if (inLinksMapIter != inLinksMap-> end()) {
+                ++inLinksMapIter;
+                if (inLinksMapIter != inLinksMap-> end()) {
+                    std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
+                    return inLinksMapIter->first-> serialDataPtr;
+                }
+            }
+        } else { // get first
+            auto inLinksMapIter = inLinksMap-> begin();
+            if (inLinksMapIter != inLinksMap-> end()) {
+                std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
+                return inLinksMapIter->first-> serialDataPtr;
+            }            
+        }
+    }
+    std::cout << "getNextInLinkSerialPtr() NOT found for BP ID: " << linkBlueprintID << " prev: " << std::hex << prevLinkDataPtr << std::endl;
+    return nullptr;
+}
+
+void* EgDataNodeType::getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr) {
+    EgLinkDataPtrsNodePtrsMapType* outLinksMap = getOutLinksMap(linkBlueprintID);
+    if (outLinksMap) {
+        if (prevLinkDataPtr) { // null to get first, else get next
+            auto outLinksMapIter = outLinksMap-> find(prevLinkDataPtr);
+            if (outLinksMapIter != outLinksMap-> end()) {
+                ++outLinksMapIter;
+                if (outLinksMapIter != outLinksMap-> end()) {
+                    std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
+                    return outLinksMapIter->first-> serialDataPtr;
+                }
+            }
+        } else { // get first
+            auto outLinksMapIter = outLinksMap-> begin();
+            if (outLinksMapIter != outLinksMap-> end()) {
+                std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
+                return outLinksMapIter->first-> serialDataPtr;
+            }            
+        }
+    }
+    std::cout << "getNextInLinkSerialPtr() NOT found for BP ID: " << linkBlueprintID << " prev: " << std::hex << prevLinkDataPtr << std::endl;
+    return nullptr;
+}
+
 EgByteArrayAbstractType& EgDataNodeType::operator[](std::string& fieldStrName) { // field value by name as stg::string
     auto iter = dataNodeBlueprint->dataFieldsNames.find(fieldStrName);
     if (iter != dataNodeBlueprint->dataFieldsNames.end()) {

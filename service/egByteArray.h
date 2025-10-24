@@ -1,4 +1,5 @@
 #pragma once
+#include <cstring>
 #include "../core/egCoreTypes.h"
 #include "egHamSlicer.h"
 

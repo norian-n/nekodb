@@ -24,8 +24,11 @@ public:
     int insertIndex {0};
 
     // typedef std::map <EgDataLinkIDType, EgDataNodeType*>  EgDataLinksMapType;
-    std::map < EgBlueprintIDType, EgDataLinksMapType >  inLinks; // links resolving to ptrs FIXME to egPtrArray
-    std::map < EgBlueprintIDType, EgDataLinksMapType >  outLinks;
+    // std::map < EgBlueprintIDType, EgLinkIDsNodePtrsMapType >  inLinks; // links resolving to ptrs FIXME to egPtrArray
+    // std::map < EgBlueprintIDType, EgLinkIDsNodePtrsMapType >  outLinks;
+
+    std::map < EgBlueprintIDType, EgLinkDataPtrsNodePtrsMapType >  inLinks; // links resolving to ptrs FIXME to egPtrArray
+    std::map < EgBlueprintIDType, EgLinkDataPtrsNodePtrsMapType >  outLinks;    
 
     EgDataNodeType() = delete; // {} // for debug only
 
@@ -35,6 +38,17 @@ public:
 
     void clear();
     void init();
+
+    EgLinkDataPtrsNodePtrsMapType* getInLinksMap(EgBlueprintIDType linkBlueprintID);
+    EgLinkDataPtrsNodePtrsMapType* getOutLinksMap(EgBlueprintIDType linkBlueprintID);
+
+    void* getNextInLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr); // link data, not linked node
+    void* getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr);
+
+    // EgDataNodeType* getNextInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr); // node, not link
+    // EgDataNodeType* getNextOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr);     
+
+   
 
     EgByteArrayAbstractType& operator[](std::string& fieldStrName);  // field data by name
     EgByteArrayAbstractType& operator[](const char* fieldCharName);

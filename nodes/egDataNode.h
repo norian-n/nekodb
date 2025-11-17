@@ -42,13 +42,17 @@ public:
     EgLinkDataPtrsNodePtrsMapType* getInLinksMap(EgBlueprintIDType linkBlueprintID);
     EgLinkDataPtrsNodePtrsMapType* getOutLinksMap(EgBlueprintIDType linkBlueprintID);
 
-    void* getNextInLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr); // link data, not linked node
+    void* getNextInLinkSerialPtr (EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr); // link data, not linked node
     void* getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr);
+
+    void deleteInLink (EgBlueprintIDType linkBlueprintID, EgDataNodeType* delLinkNodePtr); // link data, not linked node
+    void deleteOutLink(EgBlueprintIDType linkBlueprintID, EgDataNodeType* delLinkNodePtr);
+
+    EgDataNodeType* getInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* linkNodePtr); // node, not link
+    EgDataNodeType* getOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* linkNodePtr);     
 
     // EgDataNodeType* getNextInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr); // node, not link
     // EgDataNodeType* getNextOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr);     
-
-   
 
     EgByteArrayAbstractType& operator[](std::string& fieldStrName);  // field data by name
     EgByteArrayAbstractType& operator[](const char* fieldCharName);
@@ -92,7 +96,3 @@ uint8_t egConvertFlexToStatic(ByteType* flexibleVal, StaticLengthType& staticVal
 
 void PrintEgDataNodeTypeOffsets(const EgDataNodeType& dataNode);
 void PrintEgDataNodeTypeFields (const EgDataNodeType& dataNode);
-
-// ===================== Operators =======================
-
-

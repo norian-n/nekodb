@@ -14,28 +14,17 @@ class EgLinksType {
 public:
     EgDataNodesType linksDataStorage;
     EgDataNodesMapType& dataMap; // shortcut to container nodes map,  for (auto iter : dataMap)
-    // bool linksDataStorageLoaded {false};
     // bool                        isConnected         { false };      // ? TODO nodes data status ( connected, no file, no server)
-    EgBlueprintIDType   linkBlueprintID          { 0 };
+    EgBlueprintIDType   linkBlueprintID         { 0 };
     std::string         linkTypeName;
 
-    EgDatabaseType*             metaInfoDatabase    { nullptr };
-    // EgDataNodeBlueprintType*       linksStorageBlueprint  { nullptr };
-    // EgDataNodesContainerType*   linksStorage        { nullptr };
-    // EgDataNodesContainerType* linkDataStorage;
-
-    EgDataNodesContainerType* fromDataNodes         { nullptr };
-    EgDataNodesContainerType* toDataNodes           { nullptr };
+    EgDataNodeBlueprintType*  dataNodeBlueprint {nullptr}; // storage shortcut
+    EgDatabaseType*           metaInfoDatabase  { nullptr };
+    EgDataNodesContainerType* fromDataNodes     { nullptr };
+    EgDataNodesContainerType* toDataNodes       { nullptr };
 
     EgLinksType(): dataMap(linksDataStorage.dataMap) {}
-/*
-    EgLinksType(std::string a_Name): // , EgDatabaseType* a_Database):
-            linkTypeName(a_Name),
-            // metaInfoDatabase(a_Database),           
-            linksStorageBlueprint(new EgDataNodeBlueprintType(a_Name)),
-            linksStorage (new EgDataNodesContainerType(a_Name, linksStorageBlueprint)) { initLinkBlueprint(linksStorageBlueprint); }
-*/
-    ~EgLinksType() { /* clear();  delete linksStorage; delete linksStorageBlueprint; */ }
+    ~EgLinksType() { linksDataStorage.clear(); }
     
     void clear();
 
@@ -43,17 +32,22 @@ public:
     int  ConnectLinks(const char* linkName, EgDatabaseType& myDB)
         { std::string name(linkName); return ConnectLinks(name, myDB); } // wrapper
 
-    // void initLinkBlueprint(EgDataNodeBlueprintType* linkBlueprint);
-    // int  Connect(EgDatabaseType& a_Database); // To Database
-
     void AddRawLink(EgDataNodeIDType fromID, EgDataNodeIDType toID);
     int  AddNodeContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType toID);
+
+    EgLinksType& operator << (EgDataNodeType* newNode) { linksDataStorage.AddDataNode(newNode); return *this; }
+    EgLinksType& operator << (EgDataNodeType& newNode) { linksDataStorage.AddDataNode(newNode); return *this; }
+
+    EgDataNodeIDType getAddedNodeID() {return linksDataStorage.getAddedNodeID();}
 
     int LoadLinks();
     int StoreLinks();
 
     int AddLinkPtrsToNodes(EgDataNodeType& link, EgDataNodeType& from, EgDataNodeType& to);
     int ResolveNodesIDsToPtrs(EgDataNodesType& from, EgDataNodesType& to);
+
+    int  MarkUpdatedLink(EgDataNodeIDType linkNodeID) {return linksDataStorage.MarkUpdatedDataNode(linkNodeID);}
+    void DeleteLink(EgDataLinkIDType linkID);
 };
 
 // ======================== Debug ========================

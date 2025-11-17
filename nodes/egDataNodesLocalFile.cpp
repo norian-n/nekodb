@@ -153,39 +153,16 @@ bool EgDataNodesLocalFileType::WriteDataNode(EgDataNodeType* theNode) { // write
     theNode-> dataFileOffset = nodeOffset;
     // std::cout  << "dataNodeID:" << std::dec << theNode-> dataNodeID;
     // std::cout << " nodeOffset: " <<  std::hex << nodeOffset << std::endl;
-    // nodesFileHeader.lastNode
-/*
-    EgFileOffsetType headerLastNodeOffset{0};
-    nodesFile.seekRead(lastNodePtrOffset); // save previous last node in chain
-    nodesFile >> headerLastNodeOffset;
-    // std::cout << "nodeOffset: " <<  std::hex << nodeOffset << std::endl;
-    nodesFile.seekWrite(lastNodePtrOffset); // update last node in chain ptr
-    nodesFile << nodeOffset;                       // to this node offset
-*/
     if (nodesFileHeader.lastNode) {
         nodesFile.seekWrite(nodesFileHeader.lastNode + sizeof(EgDataNodeIDType));
         nodesFile << nodeOffset; // update "next" pointer of prev node
     }
-    // nodesFileHeader.firstNode
-/*    EgFileOffsetType headerFirstNodeOffset{0};
-    nodesFile.seekRead(firstNodePtrOffset);
-    nodesFile >> headerFirstNodeOffset;
-
-    if (!headerFirstNodeOffset)
-    {
-        nodesFile.seekWrite(firstNodePtrOffset);
-        nodesFile << nodeOffset; // update "next" pointer of prev node
-    }
-    */
-    // std::cout << "WriteDataNode() nodeOffset: " <<  std::hex << nodeOffset << std::endl;
     nodesFile.seekWrite(nodeOffset);
     nodesFile << theNode-> dataNodeID;
-    nodesFile.writeType<EgFileOffsetType>(0); // pointer to next node = nullptr
-    nodesFile << nodesFileHeader.lastNode;        // pointer to prev node
-    // std::cout << "ID: " << std::dec << theNode-> dataNodeID << ", headerLastNodeOffset: " <<  std::hex << headerLastNodeOffset << std::endl;
-    // std::cout << "container size: " << std::dec << (int) theNode-> dataNodeLayout-> fieldsCount << " " << theNode-> dataFieldsContainer.dataFields.size() << std::endl;
+    nodesFile.writeType<EgFileOffsetType>(0);   // pointer to next node = nullptr
+    nodesFile << nodesFileHeader.lastNode;      // pointer to prev node
     theNode-> writeDataFieldsToFile(nodesFile);
-    nodesFileHeader.lastNode = nodeOffset; // upd last ptr
+    nodesFileHeader.lastNode = nodeOffset;      // upd last node ptr in the header
     nodesFileHeader.lastID = std::max(theNode-> dataNodeID, nodesFileHeader.lastID);
     return nodesFile.fileStream.good();
 }

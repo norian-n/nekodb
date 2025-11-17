@@ -20,9 +20,7 @@ void EgDataNodesContainerType::clear() {
 
 int EgDataNodesContainerType::GetLastID() {
     LocalNodesFile-> GetLastID(dataNodeBlueprint-> blueprintName, lastNodeID);          
-    return 0; // std::cout << "lastNodeID: " << std::dec << lastNodeID << std::endl;
-    // else
-    //    return -1;    
+    return 0; // std::cout << "lastNodeID: " << std::dec << lastNodeID << std::endl;  
 }
 
 int EgDataNodesContainerType::LoadLocalBlueprint() {
@@ -96,29 +94,6 @@ int EgDataNodesContainerType::StoreToLocalFile() {
     // std::cout << "StoreToLocalFile() start update" << std::endl;
     if (isOk) {
         isOk = LocalNodesFile-> UpdateNodesFile(dataNodeBlueprint-> blueprintName, addedDataNodes, deletedDataNodes, updatedDataNodes);
-/*
-    for (auto delNodesIter : deletedDataNodes) { // 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
-        // PrintEgDataNodeTypeFields(*(delNodesIter.second));
-        LocalNodesFile-> DeleteDataNode(delNodesIter.second);
-    }
-    // std::cout << "===== After DeleteDataNode() =====" << std::endl;
-    for (auto updNodesIter : updatedDataNodes)
-    {
-        // PrintEgDataNodeTypeFields(*(updNodesIter.second));
-        LocalNodesFile-> DeleteDataNode(updNodesIter.second);
-        LocalNodesFile-> WriteDataNode (updNodesIter.second);
-    }
-    // std::cout << "===== After WriteDataNode 1 =====" << std::endl;
-    for (auto newNodesIter : addedDataNodes) {
-        // PrintEgDataNodeTypeFields(*(newNodesIter.second));
-        // std::cout << "StoreToLocalFile() container fieldsCount: " << std::dec << (int) ((newNodesIter.second)-> dataNodeBlueprint-> fieldsCount) << std::endl;
-        std::cout << "StoreToLocalFile() container size: " << std::dec << (int) ((newNodesIter.second)-> dataFieldsContainer.dataFields.size()) << std::endl;
-        // std::cout << "newNodesIter.second: " << std::hex << (uint64_t) &((newNodesIter.second)-> dataFieldsContainer.dataFields) << std::endl;
-        // std::cout << "* (newNodesIter.second) : " << std::hex << (uint64_t) &((*(newNodesIter.second)).dataFieldsContainer.dataFields) << std::endl;
-        LocalNodesFile-> WriteDataNode(newNodesIter.second);
-    }
-*/
-    // std::cout << "===== After WriteDataNode 2 =====" << std::endl;
         LocalNodesFile-> nodesFile.close(); // close anyway
         updatedDataNodes.clear(); // ?
         deletedDataNodes.clear();
@@ -126,7 +101,6 @@ int EgDataNodesContainerType::StoreToLocalFile() {
     }
     if (! isOk)
         return -1;
-    // std::cout << "===== StoreToLocalFile() exit =====" << std::endl;
     return 0;
 }
 

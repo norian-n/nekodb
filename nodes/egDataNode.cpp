@@ -56,7 +56,7 @@ void EgDataNodeType::clear() {
 EgLinkDataPtrsNodePtrsMapType* EgDataNodeType::getInLinksMap(EgBlueprintIDType linkBlueprintID) {
     auto inLinksMapIter = inLinks.find(linkBlueprintID);
     if (inLinksMapIter != inLinks.end()) {
-        std::cout << "getInLinksMap() the map found for ID: " << linkBlueprintID << std::endl;        
+        // std::cout << "getInLinksMap() the map found for ID: " << linkBlueprintID << std::endl;        
         return &(inLinksMapIter-> second);
     }
     std::cout << "getInLinksMap() the map NOT found for ID: " << linkBlueprintID << std::endl; 
@@ -66,7 +66,7 @@ EgLinkDataPtrsNodePtrsMapType* EgDataNodeType::getInLinksMap(EgBlueprintIDType l
 EgLinkDataPtrsNodePtrsMapType* EgDataNodeType::getOutLinksMap(EgBlueprintIDType linkBlueprintID) {
     auto outLinksMapIter = outLinks.find(linkBlueprintID);
     if (outLinksMapIter != outLinks.end()) {
-        std::cout << "getOutLinksMap() the map found for ID: " << linkBlueprintID << std::endl;        
+        // std::cout << "getOutLinksMap() the map found for ID: " << linkBlueprintID << std::endl;        
         return &(outLinksMapIter-> second);
     }
     std::cout << "getOutLinksMap() the map NOT found for ID: " << linkBlueprintID << std::endl; 
@@ -81,14 +81,14 @@ void* EgDataNodeType::getNextInLinkSerialPtr(EgBlueprintIDType linkBlueprintID, 
             if (inLinksMapIter != inLinksMap-> end()) {
                 ++inLinksMapIter;
                 if (inLinksMapIter != inLinksMap-> end()) {
-                    std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
+                    // std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
                     return inLinksMapIter->first-> serialDataPtr;
                 }
             }
         } else { // get first
             auto inLinksMapIter = inLinksMap-> begin();
             if (inLinksMapIter != inLinksMap-> end()) {
-                std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
+                // std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
                 return inLinksMapIter->first-> serialDataPtr;
             }            
         }
@@ -105,14 +105,14 @@ void* EgDataNodeType::getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID,
             if (outLinksMapIter != outLinksMap-> end()) {
                 ++outLinksMapIter;
                 if (outLinksMapIter != outLinksMap-> end()) {
-                    std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
+                    // std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
                     return outLinksMapIter->first-> serialDataPtr;
                 }
             }
         } else { // get first
             auto outLinksMapIter = outLinksMap-> begin();
             if (outLinksMapIter != outLinksMap-> end()) {
-                std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
+                // std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
                 return outLinksMapIter->first-> serialDataPtr;
             }            
         }
@@ -120,6 +120,59 @@ void* EgDataNodeType::getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID,
     std::cout << "getNextInLinkSerialPtr() NOT found for BP ID: " << linkBlueprintID << " prev: " << std::hex << prevLinkDataPtr << std::endl;
     return nullptr;
 }
+
+void EgDataNodeType::deleteInLink (EgBlueprintIDType linkBlueprintID, EgDataNodeType* delLinkNodePtr) {
+    EgLinkDataPtrsNodePtrsMapType* inLinksMap = getInLinksMap(linkBlueprintID);
+    if (inLinksMap) {
+        auto inLinksMapIter = inLinksMap->find(delLinkNodePtr);
+        if (inLinksMapIter != inLinksMap->end()) {
+            inLinksMap->erase(inLinksMapIter);
+            inLinksMapIter = inLinksMap->begin();
+            if (inLinksMapIter == inLinksMap->end()) // empty map
+                inLinks.erase(linkBlueprintID);
+            // std::cout << "deleteInLink() deleted link: " << std::hex << delLinkDataPtr << std::endl;
+        }
+    }
+}
+
+void EgDataNodeType::deleteOutLink (EgBlueprintIDType linkBlueprintID, EgDataNodeType* delLinkDataPtr) {
+    EgLinkDataPtrsNodePtrsMapType* outLinksMap = getOutLinksMap(linkBlueprintID);
+    if (outLinksMap) {
+        auto outLinksMapIter = outLinksMap->find(delLinkDataPtr);
+        if (outLinksMapIter != outLinksMap->end()) {
+            outLinksMap->erase(outLinksMapIter);
+            outLinksMapIter = outLinksMap-> begin();
+            if (outLinksMapIter == outLinksMap->end()) // empty map
+                outLinks.erase(linkBlueprintID);
+            // std::cout << "deleteOutLink() deleted link: " << std::hex << delLinkDataPtr << std::endl;
+        }
+    }
+}
+
+EgDataNodeType* EgDataNodeType::getInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* linkNodePtr) {
+    EgLinkDataPtrsNodePtrsMapType* inLinksMap = getInLinksMap(linkBlueprintID);
+    if (inLinksMap) {
+        auto inLinksMapIter = inLinksMap->find(linkNodePtr);
+        if (inLinksMapIter != inLinksMap->end()) {
+            return inLinksMapIter-> second;
+            // std::cout << "deleteInLink() deleted link: " << std::hex << delLinkDataPtr << std::endl;
+        }
+    }
+    return nullptr;
+}
+
+EgDataNodeType* EgDataNodeType::getOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* linkNodePtr) {
+    EgLinkDataPtrsNodePtrsMapType* outLinksMap = getOutLinksMap(linkBlueprintID);
+    if (outLinksMap) {
+        auto outLinksMapIter = outLinksMap->find(linkNodePtr);
+        if (outLinksMapIter != outLinksMap->end()) {
+            return outLinksMapIter-> second;
+            // std::cout << "deleteOutLink() deleted link: " << std::hex << delLinkDataPtr << std::endl;
+        }
+    }
+    return nullptr;
+}
+
 
 EgByteArrayAbstractType& EgDataNodeType::operator[](std::string& fieldStrName) { // field value by name as stg::string
     auto iter = dataNodeBlueprint->dataFieldsNames.find(fieldStrName);

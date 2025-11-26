@@ -1,6 +1,6 @@
 #pragma once
 #include <cstring>
-#include "../core/egCoreTypes.h"
+// #include "../core/egCoreTypes.h" // included in hamSlicer
 #include "egHamSlicer.h"
 
 class EgByteArrayAbstractType {

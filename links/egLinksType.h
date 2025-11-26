@@ -1,15 +1,6 @@
 #pragma once
 #include "../metainfo/egDatabaseType.h"
 
-//  ============================================================================
-//          EXTERNAL TYPES
-//  ============================================================================
-
-// class EgDataNodeLinksType;
-// EgDataNodeType notFound;  // dummy data node for GUI if no data found
-
-//  ============================================================================
-
 class EgLinksType {
 public:
     EgDataNodesType linksDataStorage;
@@ -18,7 +9,7 @@ public:
     EgBlueprintIDType   linkBlueprintID         { 0 };
     std::string         linkTypeName;
 
-    EgDataNodeBlueprintType*  dataNodeBlueprint {nullptr}; // storage shortcut
+    EgDataNodeBlueprintType*  dataNodeBlueprint { nullptr }; // storage shortcut
     EgDatabaseType*           metaInfoDatabase  { nullptr };
     EgDataNodesContainerType* fromDataNodes     { nullptr };
     EgDataNodesContainerType* toDataNodes       { nullptr };
@@ -47,9 +38,10 @@ public:
     int ResolveNodesIDsToPtrs(EgDataNodesType& from, EgDataNodesType& to);
 
     int  MarkUpdatedLink(EgDataNodeIDType linkNodeID) {return linksDataStorage.MarkUpdatedDataNode(linkNodeID);}
-    void DeleteLink(EgDataLinkIDType linkID);
+    
+    void DeleteBidirectLink(EgDataLinkIDType linkID);
+    void DeleteInLink(EgDataLinkIDType linkID);    
+    void DeleteOutLink(EgDataLinkIDType linkID);
 };
-
-// ======================== Debug ========================
 
 void PrintResolvedLinks(const EgDataNodeType& node);

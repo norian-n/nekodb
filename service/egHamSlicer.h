@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cstdint>
 #include <map>
-#include "../core/egCoreTypes.h"
+#include "../metainfo/egCoreTypes.h"
 
 typedef uint32_t EgHamBrickIDType;
 

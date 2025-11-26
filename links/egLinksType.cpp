@@ -37,19 +37,45 @@ int EgLinksType::AddNodeContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType
     return 0;
 }
 
-void EgLinksType::DeleteLink(EgDataLinkIDType linkID) {
+void EgLinksType::DeleteBidirectLink(EgDataLinkIDType linkID) {
     EgDataNodeType*  linkDataNode = &(linksDataStorage[linkID]);
+    if (fromDataNodes) {
+        EgDataNodeIDType nodeID = *(reinterpret_cast<EgDataNodeIDType *>(linkDataNode->operator[]("fromID").arrayData));
+        EgDataNodeType* nodePtr = fromDataNodes->GetNodePtrByID(nodeID);
+        if (nodePtr)
+            nodePtr-> deleteOutLink(linkBlueprintID, linkDataNode);
+    }
+    if (toDataNodes) {
+        EgDataNodeIDType nodeID = *(reinterpret_cast<EgDataNodeIDType *>(linkDataNode->operator[]("toID").arrayData));
+        EgDataNodeType* nodePtr = toDataNodes->GetNodePtrByID(nodeID);
+        if (nodePtr)
+            nodePtr-> deleteInLink(linkBlueprintID, linkDataNode);
+    }
+    std::cout << "DeleteBidirectLink() link ID: " << std::dec << linkID << std::endl;
+    linksDataStorage.DeleteDataNode(linkID);
+}
 
-    EgDataNodeIDType nodeID = *(reinterpret_cast<EgDataNodeIDType*> (linkDataNode->operator[]("fromID").arrayData));
-    EgDataNodeType*  nodePtr = fromDataNodes-> GetNodePtrByID(nodeID);
-    if (nodePtr)
-        nodePtr-> deleteOutLink (linkBlueprintID, linkDataNode);
+void EgLinksType::DeleteOutLink(EgDataLinkIDType linkID) {
+    EgDataNodeType*  linkDataNode = &(linksDataStorage[linkID]);
+    if (toDataNodes) {
+        EgDataNodeIDType nodeID = *(reinterpret_cast<EgDataNodeIDType *>(linkDataNode->operator[]("toID").arrayData));
+        EgDataNodeType* nodePtr = toDataNodes->GetNodePtrByID(nodeID);
+        if (nodePtr)
+            nodePtr-> deleteInLink(linkBlueprintID, linkDataNode);
+    }
+    std::cout << "DeleteOutLink() link ID: " << std::dec << linkID << std::endl;
+    linksDataStorage.DeleteDataNode(linkID);
+}
 
-    nodeID  = *(reinterpret_cast<EgDataNodeIDType*> (linkDataNode->operator[]("toID").arrayData));
-    nodePtr = fromDataNodes-> GetNodePtrByID(nodeID);
-    if (nodePtr)    
-        nodePtr-> deleteInLink (linkBlueprintID, linkDataNode);
-
+void EgLinksType::DeleteInLink(EgDataLinkIDType linkID) {
+    EgDataNodeType*  linkDataNode = &(linksDataStorage[linkID]);
+    if (fromDataNodes) {
+        EgDataNodeIDType nodeID = *(reinterpret_cast<EgDataNodeIDType *>(linkDataNode->operator[]("fromID").arrayData));
+        EgDataNodeType* nodePtr = fromDataNodes->GetNodePtrByID(nodeID);
+        if (nodePtr)
+            nodePtr-> deleteOutLink(linkBlueprintID, linkDataNode);
+    }
+    std::cout << "DeleteInLink() link ID: " << std::dec << linkID << std::endl;
     linksDataStorage.DeleteDataNode(linkID);
 }
 
@@ -69,7 +95,6 @@ void EgLinksType::ConnectLinkToNodesTypes(EgDataNodesType &from, EgDataNodesType
 
 int EgLinksType::AddLinkPtrsToNodes(EgDataNodeType& link, EgDataNodeType &from, EgDataNodeType &to) {
     // std::cout << "AddLinkPtrsToNodes() linkID " << link.dataNodeID << " fromID: " << from.dataNodeID << " toID: " << to.dataNodeID << std::endl;
-    
     auto iterFrom = from.outLinks.find(linkBlueprintID);
     if (iterFrom == from.outLinks.end()) {
         // EgLinkIDsNodePtrsMapType newNodePtrsFrom;

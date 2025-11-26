@@ -2,7 +2,7 @@
 #include <fstream>
 #include <filesystem>
 
-#include "../core/egCoreTypes.h"
+#include "../metainfo/egCoreTypes.h"
 #include "egDataStream.h"
 
 typedef uint64_t        EgFileOffsetType;

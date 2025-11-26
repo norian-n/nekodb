@@ -6,17 +6,21 @@
 //  ============================================================================
     const std::string nodesTypesStorageName("nodesTypesStorageBlueprint");
     const std::string linksTypesStorageName("linksTypesStorageBlueprint");
+    const std::string layersStorageName    ("layersStorageBlueprint");
 //  ============================================================================
 
 class EgDatabaseType {
 public:
     EgDataNodesType nodesTypesMetainfo;
     EgDataNodesType linksTypesMetainfo;
+    EgDataNodesType layersMetainfo;
     bool nodesTypesMetainfoLoaded {false};
     bool linksTypesMetainfoLoaded {false};
+    bool layersMetainfoLoaded     {false};    
 
     EgDataNodeBlueprintType* nodeBlueprint {nullptr};
     EgDataNodeBlueprintType* linkBlueprint {nullptr};
+    EgDataNodeBlueprintType* layersBlueprint {nullptr};
     bool CreateNodeBlueprintFlag {false};
     bool CreateLinkBlueprintFlag {false};
 
@@ -34,19 +38,24 @@ public:
     void initDatabase();
     void initNodesMetainfo();
     void initLinksMetainfo();
+    void initLayersMetainfo();
 
     int InsertDataNodesTypeToMap(EgBlueprintIDType dntID, EgDataNodesType* dntPtr);
     EgDataNodesType* GetNodeTypePtrByID(EgBlueprintIDType nodeTypeID);
 
     void AddDataNodesTypeInfo(EgBlueprintIDType& blueprintID, std::string& typeName);
     void AddLinksTypeInfo(EgBlueprintIDType& blueprintID, std::string& linksTypeName);
+    void AddLayersTypeInfo(EgBlueprintIDType& blueprintID, std::string& linksTypeName);
     int  LoadTypesInfo();
     int  StoreTypesInfo();
     int  LoadLinksInfo();
     int  StoreLinksInfo();
+    int  LoadLayersInfo();
+    int  StoreLayersInfo();
 
     bool nodeTypeIDByName(std::string& typeName, EgBlueprintIDType& nodeTypeID);
     bool linkTypeIDByName(std::string& linkName, EgBlueprintIDType& linkTypeID);
+    bool layersTypeIDByName(std::string& layersName, EgBlueprintIDType& layersTypeID);
 //  ============================================================================    
     int  CreateNodeBlueprint (std::string& name) { return CreateNodeBlueprint(name.c_str());  }   // wrapper
     int  CreateNodeBlueprint (const std::string& name) { return CreateNodeBlueprint(name.c_str()); } // wrapper
@@ -74,6 +83,8 @@ public:
     int  CreateFreeLinkWithDataBlueprint(std::string& linkTypeName) { /* FIXME TODO */ return 0; }
     int  CreateFreeLinkWithDataBlueprint(const char* linkTypeName) 
         { std::string name(linkTypeName); return CreateFreeLinkWithDataBlueprint(name); } // wrapper
+//  ============================================================================
+    int CreateLayersBlueprint(std::string& layersTypeName);
 
-    // FIXME TODO delete data nodes blueprint
+    // FIXME TODO delete nodes, links, layers blueprint
 };

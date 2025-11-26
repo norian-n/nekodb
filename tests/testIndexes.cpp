@@ -1,8 +1,8 @@
 #include "../indexes/egIndexes.h"
-#include "../indexes/egIndexes.cpp"
-#include "../indexes/egFingers.cpp"
+// #include "../indexes/egIndexes.cpp"
+// #include "../indexes/egFingers.cpp"
 #include <iostream>
-#include <cstring>
+// #include <cstring>
 using namespace std;
 
 EgIndexes<uint32_t> testIndexes("testIndexes");
@@ -28,8 +28,10 @@ int main() {
     std::remove("testIndexes.fng"); // delete files
     std::remove("testIndexes.ind"); // delete files
 
-    if ( testAddFirstChunk() && testAddIndex(0x35, 0x11111111) && testUpdateDataOffset(0x44, 0xcdef4455, 0x222222)
-                             && testDeleteIndex(0x55, 0xabcdef) && testDeleteIndex(0x66, 0x12345678) )
+    if ( testAddFirstChunk() && testAddIndex(0x35, 0x11111111)
+                             && testUpdateDataOffset(0x44, 0xcdef4455, 0x222222)
+                             && testDeleteIndex(0x55, 0xabcdef)
+                             && testDeleteIndex(0x66, 0x12345678) )
         cout << "PASS" << endl;
     else
         cout << "FAIL" << endl;

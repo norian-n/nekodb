@@ -3,18 +3,11 @@
 #include <map>
 #include <iostream>
 
-#include "../core/egCoreTypes.h"
+// #include "../metainfo/egCoreTypes.h" // included in hamSlicer
 #include "../indexes/egCoreIndexTypes.h"
 #include "../service/egByteArray.h"
 #include "../service/egFileType.h"
 #include "../service/egHamSlicer.h"
-
-//  ============================================================================
-//          EXTERNAL TYPES
-//  ============================================================================
-
-// class EgDatabaseType;          // peer database (graph)
-//  ============================================================================
 
 enum EgBlueprintModeEnum
 {

@@ -64,10 +64,10 @@ bool testDeleteAllAddSome(EgDataNodesType& testDataNodes)
     testDataNodes.Store();
     testDataNodes.LoadAllNodes();    
 
-    cout << "dataNodes: " << testDataNodes.nodesContainer-> dataNodes.size() << endl;
+    /*cout << "dataNodes: " << testDataNodes.nodesContainer-> dataNodes.size() << endl;
     cout << "addedDataNodes: " << testDataNodes.nodesContainer-> addedDataNodes.size() << endl;
     cout << "deletedDataNodes: " << testDataNodes.nodesContainer-> deletedDataNodes.size() << endl;
-    cout << "updatedDataNodes: " << testDataNodes.nodesContainer-> updatedDataNodes.size() << endl;
+    cout << "updatedDataNodes: " << testDataNodes.nodesContainer-> updatedDataNodes.size() << endl;*/
 
     bool res = ((testDataNodes.nodesContainer-> addedDataNodes.size() == 0)
             && (testDataNodes.nodesContainer-> dataNodes.size() == 2)

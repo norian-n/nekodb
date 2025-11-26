@@ -105,14 +105,14 @@ void* EgDataNodeType::getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID,
             if (outLinksMapIter != outLinksMap-> end()) {
                 ++outLinksMapIter;
                 if (outLinksMapIter != outLinksMap-> end()) {
-                    // std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
+                    // std::cout << "getNextOutLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
                     return outLinksMapIter->first-> serialDataPtr;
                 }
             }
         } else { // get first
             auto outLinksMapIter = outLinksMap-> begin();
             if (outLinksMapIter != outLinksMap-> end()) {
-                // std::cout << "getNextInLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
+                // std::cout << "getNextOutLinkSerialPtr() found next LinkDataPtr, prev: " << std::hex << prevLinkDataPtr << std::endl;
                 return outLinksMapIter->first-> serialDataPtr;
             }            
         }
@@ -130,7 +130,7 @@ void EgDataNodeType::deleteInLink (EgBlueprintIDType linkBlueprintID, EgDataNode
             inLinksMapIter = inLinksMap->begin();
             if (inLinksMapIter == inLinksMap->end()) // empty map
                 inLinks.erase(linkBlueprintID);
-            // std::cout << "deleteInLink() deleted link: " << std::hex << delLinkDataPtr << std::endl;
+            std::cout << "deleteInLink() deleted link: " << std::hex << delLinkNodePtr << std::endl;
         }
     }
 }
@@ -144,7 +144,7 @@ void EgDataNodeType::deleteOutLink (EgBlueprintIDType linkBlueprintID, EgDataNod
             outLinksMapIter = outLinksMap-> begin();
             if (outLinksMapIter == outLinksMap->end()) // empty map
                 outLinks.erase(linkBlueprintID);
-            // std::cout << "deleteOutLink() deleted link: " << std::hex << delLinkDataPtr << std::endl;
+            std::cout << "deleteOutLink() deleted link: " << std::hex << delLinkDataPtr << std::endl;
         }
     }
 }
@@ -155,7 +155,7 @@ EgDataNodeType* EgDataNodeType::getInLinkedNode(EgBlueprintIDType linkBlueprintI
         auto inLinksMapIter = inLinksMap->find(linkNodePtr);
         if (inLinksMapIter != inLinksMap->end()) {
             return inLinksMapIter-> second;
-            // std::cout << "deleteInLink() deleted link: " << std::hex << delLinkDataPtr << std::endl;
+            // std::cout << "getInLinkedNode() link: " << std::hex << linkNodePtr << std::endl;
         }
     }
     return nullptr;

@@ -90,7 +90,7 @@ int EgDataNodesContainerType::StoreToLocalFile() {
         std::cout << "DEBUG: StoreToLocalFile() all nodes maps empty: " << dataNodeBlueprint-> blueprintName << std::endl;
         return 0;
     }
-    bool isOk = LocalNodesFile->StartFileUpdate(dataNodeBlueprint-> blueprintName);
+    bool isOk = LocalNodesFile-> StartFileUpdate(dataNodeBlueprint-> blueprintName);
     // std::cout << "StoreToLocalFile() start update" << std::endl;
     if (isOk) {
         isOk = LocalNodesFile-> UpdateNodesFile(dataNodeBlueprint-> blueprintName, addedDataNodes, deletedDataNodes, updatedDataNodes);
@@ -129,6 +129,27 @@ int EgDataNodesContainerType::LoadAllLocalFileNodes() {
     return 0;
 }
 
+int EgDataNodesContainerType::LoadLocalNodesByOffsets(std::set<EgFileOffsetType>& index_offsets) {
+    clear();
+    EgFileOffsetType tmpOffset{0};
+    EgDataNodeType *newNode;
+    if (!LocalNodesFile->OpenFileToRead(dataNodeBlueprint-> blueprintName)) {
+        // std::cout << "ERROR: loadAllLocalNodes() can't open file " << dataNodesTypeName << ".gdn" << std::endl;
+        return -1;
+    }
+
+    for (auto nextOffset : index_offsets) {
+        // std::cout  << "getFirstNodeOffset() nextOffset = " << std::hex << nextOffset << std::endl;
+        newNode = new EgDataNodeType(dataNodeBlueprint);
+        newNode-> dataFileOffset = nextOffset;
+        LocalNodesFile-> ReadDataNode(newNode, tmpOffset);
+        dataNodes.insert(std::make_pair(newNode->dataNodeID, newNode));
+    }
+    LocalNodesFile-> nodesFile.close();
+    return 0;
+}
+
+
 EgDataNodesContainerType& EgDataNodesContainerType::operator << (EgDataNodeType* newNode) {
     AddDataNode(newNode); 
     return *this; 
@@ -139,21 +160,21 @@ EgDataNodesContainerType& EgDataNodesContainerType::operator << (EgDataNodeType*
 void EgDataNodesContainerType::PrintDataNodesContainer() {
     std::cout << "EgDataNodesContainer nodes: " << dataNodeBlueprint-> blueprintName << std::endl;
     for (auto nodesIter : dataNodes) // 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
-        PrintEgDataNodeTypeFields(*(nodesIter.second));
+        PrintEgDataNodeFields(*(nodesIter.second));
     if (addedDataNodes.size()) {
          std::cout << "EgDataNodesContainer added nodes: " << std::endl;
         for (auto nodesIter : addedDataNodes)
-            PrintEgDataNodeTypeFields(*(nodesIter.second));
+            PrintEgDataNodeFields(*(nodesIter.second));
     }
     if (deletedDataNodes.size()) {
         std::cout << "EgDataNodesContainer deleted nodes: " << std::endl;
         for (auto nodesIter : deletedDataNodes)
-            PrintEgDataNodeTypeFields(*(nodesIter.second));
+            PrintEgDataNodeFields(*(nodesIter.second));
     }
     if (updatedDataNodes.size()) {    
         std::cout << "EgDataNodesContainer updated nodes: " << std::endl;
         for (auto nodesIter : updatedDataNodes)
-            PrintEgDataNodeTypeFields(*(nodesIter.second));
+            PrintEgDataNodeFields(*(nodesIter.second));
     }
 }
 

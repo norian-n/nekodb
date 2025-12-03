@@ -36,6 +36,11 @@ public:
     EgByteArraySlicerType (EgHamSlicerType& a_HamSlicer, uint64_t init_size = 0): EgByteArrayAbstractType(init_size)
         , theHamSlicer(&a_HamSlicer)
     { if(init_size) theHamSlicer-> getSlice(dataSize, brickID, arrayData); }
+
+    EgByteArraySlicerType (EgByteArraySlicerType& copySliceBA) // copy constructor
+    { dataSize = copySliceBA.dataSize; if(dataSize) { theHamSlicer-> getSlice(dataSize, brickID, arrayData); 
+      memcpy((void*)arrayData, (void*) copySliceBA.arrayData, dataSize);} }
+
     virtual ~EgByteArraySlicerType() {
         if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID);
     }

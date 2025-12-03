@@ -8,7 +8,10 @@ using namespace std;
 EgIndexes<uint32_t> testIndexes("testIndexes");
 
 bool testAddIndex(uint32_t theKey, uint64_t dataOffset) {
-    return testIndexes.AddNewIndex(theKey, dataOffset);
+    EgByteArrayAbstractType* byteArray = new EgByteArrayAbstractType();
+    byteArray-> arrayData = (ByteType*) &theKey;                     // no alloc, ptr to global mem
+    byteArray-> dataSize  = sizeof(theKey);
+    return testIndexes.AddNewIndex(*byteArray, dataOffset);
 }
 
 bool testAddFirstChunk() {
@@ -16,11 +19,17 @@ bool testAddFirstChunk() {
 }
 
 bool testUpdateDataOffset(uint32_t theKey, uint64_t oldDataOffset, uint64_t newDataOffset) {
-    return testIndexes.UpdateDataOffset(theKey, oldDataOffset, newDataOffset);
+    EgByteArrayAbstractType* byteArray = new EgByteArrayAbstractType();
+    byteArray-> arrayData = (ByteType*) &theKey;                     // no alloc, ptr to global mem
+    byteArray-> dataSize  = sizeof(theKey);
+    return testIndexes.UpdateDataOffset(*byteArray, oldDataOffset, newDataOffset);
 }
 
 bool testDeleteIndex(uint32_t theKey, uint64_t dataOffset) {
-    return testIndexes.DeleteIndex(theKey, dataOffset);
+    EgByteArrayAbstractType* byteArray = new EgByteArrayAbstractType();
+    byteArray-> arrayData = (ByteType*) &theKey;                     // no alloc, ptr to global mem
+    byteArray-> dataSize  = sizeof(theKey);    
+    return testIndexes.DeleteIndex(*byteArray, dataOffset);
 }
 
 int main() {

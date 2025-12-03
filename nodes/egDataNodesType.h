@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "egDataNodesContainer.h"
+#include "../indexes/egIndexConditions.h"
 
 //  ============================================================================
 //          EXTERNAL TYPES
@@ -27,25 +28,16 @@ public:
     serialLoadFunctionType      serialLoadFunction  { nullptr };    // function for automated data load from node to void* localDataPtr
     serialStoreFunctionType     serialStoreFunction { nullptr };    // function for automated data store to node form void* localDataPtr
 
-    // std::map < std::string, EgLinksType* >    linksNames;
-
-    // EgIndexConditionsTree* index_tree       {nullptr};       // indexed fields operations
-    // std::vector <uint64_t> IndexOffsets;                     // offsets returned by index, for index-based operations (AND, OR)
-
     EgDataNodesType();
     ~EgDataNodesType() { clear(); delete dataNodeBlueprint; delete nodesContainer; }
 
     void clear();
+    int  ConnectSystemNodeType(std::string a_dataNodesName); // for local testing or inside database
+    int  OpenLocalBlueprint();    
 
     int  Connect(std::string& nodesNameStr, EgDatabaseType& myDB);
     int  Connect(const char*  nodesName, EgDatabaseType& myDB) 
         { std::string name = std::string(nodesName); return Connect(name, myDB); } // wrapper
-    // int  ConnectLink(std::string& linkNameStr, EgDatabaseType& myDB); // links have another register place in metainfo
-    // int  ConnectLink(const char* linkName, EgDatabaseType& myDB)
-    //    { std::string name(linkName); return ConnectLink(name, myDB); } // wrapper
-    int  ConnectSystemNodeType(std::string a_dataNodesName); // for local testing or inside database
-
-    int  OpenLocalBlueprint();
 
     int  AddDataNode(EgDataNodeType& newNode);
     int  AddDataNode(EgDataNodeType* newNode);
@@ -60,6 +52,11 @@ public:
 
     int  Store();
     int  LoadAllNodes();
+    // int  LoadNodesEQ(std::string& indexName, EgByteArrayAbstractType& value) { return 0; } // FIXME STUB
+    template <typename KeyType> int LoadIndexedNodes(EgIndexConditionType<KeyType>& indexCondition) { return 0; }
+    // Projects.LoadIndexedNodes(IC<int>("owner", EQ, 2) &&  IC<int>("status", EQ, 3));
+
+    // int  LoadNodesByOffsets() { return nodesContainer-> LoadLocalNodesByOffsets(indexOffsets); }
     
     EgDataNodeType& operator[](EgDataNodeIDType nodeID);
 };

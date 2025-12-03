@@ -14,7 +14,8 @@ template <typename KeyType> EgIndexes<KeyType>::EgIndexes(std::string a_indexNam
 //          INDEXES TOP API
 //  ============================================================================
 
-template <typename KeyType> bool EgIndexes<KeyType>::AddNewIndex(KeyType& key, uint64_t dataOffset) {
+template <typename KeyType> bool EgIndexes<KeyType>::AddNewIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) {
+    KeyType key = *(reinterpret_cast<KeyType*> (keyBA.arrayData));
     bool res {true};
     if(! CheckIfIndexFileExists()) { // add new index and finger FIXME TODO files
         res = res && indexFileStream.openToWrite();
@@ -129,7 +130,8 @@ template <typename KeyType> inline void EgIndexes<KeyType>::DeleteIndexesChunk(u
     }
 }
 
-template <typename KeyType> bool EgIndexes<KeyType>::DeleteIndex(KeyType& key, uint64_t dataOffset) {
+template <typename KeyType> bool EgIndexes<KeyType>::DeleteIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) {
+    KeyType key = *(reinterpret_cast<KeyType*> (keyBA.arrayData));
     theKey = key;
     theDataOffset = dataOffset;
     bool res = fingersTree-> FindIndexChunkEQ(key); // get currentFinger
@@ -168,7 +170,8 @@ template <typename KeyType> bool EgIndexes<KeyType>::DeleteIndex(KeyType& key, u
     return res;
 }
 
-template <typename KeyType> bool EgIndexes<KeyType>::UpdateDataOffset(KeyType& key, uint64_t oldDataOffset, uint64_t newDataOffset) {
+template <typename KeyType> bool EgIndexes<KeyType>::UpdateDataOffset(EgByteArrayAbstractType& keyBA, uint64_t oldDataOffset, uint64_t newDataOffset) {
+    KeyType key = *(reinterpret_cast<KeyType*> (keyBA.arrayData));
     bool res {true};
     theKey = key;
     theDataOffset = oldDataOffset;

@@ -30,14 +30,14 @@ bool testDataNodeBlueprint() {
 
     indexSettings.indexFamilyType   = egIntFT;
     indexSettings.indexSizeBits     = 32;
-    testBlueprint.AddIndex("field_1",  indexSettings);
+    // testBlueprint.AddIndex("field_1",  indexSettings);
 
     indexSettings.indexFamilyType   = egHashFT;
     indexSettings.indexSizeBits     = 64;
     indexSettings.hashFunctionID    = 2;
-    testBlueprint.AddIndex("field 3",  indexSettings);
+    // testBlueprint.AddIndex("field 3",  indexSettings);
 
-    testBlueprint.AddIndex("bad index name", indexSettings);
+    // testBlueprint.AddIndex("bad index name", indexSettings);
     
     testBlueprint.LocalStoreBlueprint();
     int res = testBlueprint.LocalLoadBlueprint();

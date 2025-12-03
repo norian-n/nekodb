@@ -2,11 +2,9 @@
 
 // #define EG_NODE_OFFSETS_DEBUG
 
-#include <vector>
 #include <map>
 
 #include "egDataNodeBlueprint.h"
-#include "../service/egFileType.h"
 #include "../service/egPtrArray.h"
 
 class EgDataNodeType {
@@ -19,15 +17,13 @@ public:
 #endif
     EgDataNodeBlueprintType*    dataNodeBlueprint   { nullptr };    // blueprint == class == type of data nodes
     void*                       serialDataPtr       { nullptr };    // link to ext data for serialization
-    // EgDataFieldsType            dataFieldsContainer;                // vector of egByteArrays
+
     EgPtrArrayType<EgByteArrayAbstractType*>* dataFieldsPtrs;
-    int insertIndex {0};
+    int insertIndex {0}; // stored index for AddNextDataFieldFromType() FIXME check reset
 
-    // typedef std::map <EgDataLinkIDType, EgDataNodeType*>  EgDataLinksMapType;
-    // std::map < EgBlueprintIDType, EgLinkIDsNodePtrsMapType >  inLinks; // links resolving to ptrs FIXME to egPtrArray
-    // std::map < EgBlueprintIDType, EgLinkIDsNodePtrsMapType >  outLinks;
+    std::map < std::string, EgByteArraySlicerType* >  indexedFieldsOldValues; // store old value for index update
 
-    std::map < EgBlueprintIDType, EgLinkDataPtrsNodePtrsMapType >  inLinks; // links resolving to ptrs FIXME to egPtrArray
+    std::map < EgBlueprintIDType, EgLinkDataPtrsNodePtrsMapType >  inLinks;   // links IDs resolving to ptrs
     std::map < EgBlueprintIDType, EgLinkDataPtrsNodePtrsMapType >  outLinks;    
 
     EgDataNodeType() = delete; // {} // for debug only
@@ -56,13 +52,6 @@ public:
 
     EgByteArrayAbstractType& operator[](std::string& fieldStrName);  // field data by name
     EgByteArrayAbstractType& operator[](const char* fieldCharName);
-       
-    void writeDataFieldsToFile(EgFileType &theFile);  // EgDataFieldsType& df,  local file operations
-    void readDataFieldsFromFile(EgFileType& theFile);
-
-    // EgDataNodeType& operator << (EgDataNodeType& egNode, const char* str); // { AddNextDataFieldFromCharStr(str, egNode); return egNode; }
-    // EgDataNodeType& operator << (EgDataNodeType& egNode, std::string& s); //  { AddNextDataFieldFromCharStr(s.c_str(), egNode); return egNode; }
-    // EgDataNodeType& operator << (EgDataNodeType& egNode, EgByteArraySlicerType& ba);
 
     void InsertDataFieldFromCharStr(const char* str);
     void InsertDataFieldFromByteArray(EgByteArrayAbstractType& ba);
@@ -72,7 +61,7 @@ public:
     EgDataNodeType& operator << (std::string& s)  { InsertDataFieldFromCharStr(s.c_str()); return *this; }
     EgDataNodeType& operator << (EgByteArraySlicerType& ba) { InsertDataFieldFromByteArray(ba); return *this; }
 
-    template <typename T> EgDataNodeType& operator << (T&& i) { AddNextDataFieldFromType<T>(i); return *this; }
+    template <typename T> EgDataNodeType& operator << (T&& rvalue) { AddNextDataFieldFromType<T>(rvalue); return *this; }
 
     template <typename T> void AddNextDataFieldFromType(T&& value) {
         if (insertIndex < dataNodeBlueprint->fieldsCount) {
@@ -84,6 +73,11 @@ public:
         } else
             std::cout << "ERROR: AddNextDataFieldFromType() fields count overflow: " << dataNodeBlueprint-> blueprintName << std::endl;
     }
+
+    void makeIndexedFieldCopy(std::string& fieldName);
+
+    void writeDataFieldsToFile(EgFileType &theFile);  // EgDataFieldsType& df,  local file operations
+    void readDataFieldsFromFile(EgFileType& theFile);
 };
 
 // convert fixed length dataset size to variable length one to save file space 
@@ -94,5 +88,5 @@ uint8_t egConvertFlexToStatic(ByteType* flexibleVal, StaticLengthType& staticVal
 
 // ======================== Debug ========================
 
-void PrintEgDataNodeTypeOffsets(const EgDataNodeType& dataNode);
-void PrintEgDataNodeTypeFields (const EgDataNodeType& dataNode);
+void PrintEgDataNodeOffsets(const EgDataNodeType& dataNode);
+void PrintEgDataNodeFields (const EgDataNodeType& dataNode);

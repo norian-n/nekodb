@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <set>
 #include "egDataNodesLocalFile.h"
 
 class EgDataNodesContainerType {
@@ -14,15 +15,14 @@ public:
     EgDataNodesMapType updatedDataNodes;
     EgDataNodesMapType deletedDataNodes; // TODO : clear all addons on node delete
 
-    EgDataNodesContainerType(): // DEBUG - standalone blueprint
+    EgDataNodesContainerType():
             LocalNodesFile (new EgDataNodesLocalFileType()) {}
-    void init(EgDataNodeBlueprintType* a_dataNodeBlueprint); // get blueprint from upper layer
+    void init(EgDataNodeBlueprintType* a_dataNodeBlueprint); // get blueprint from upper layer TODO init indexes by blueprint
     ~EgDataNodesContainerType() { clear(); /* delete dataNodeBlueprint;*/ delete LocalNodesFile; } // FIXME check dynamic blueprint
 
-    int GetLastID();
     void clear();
-    int LoadLocalBlueprint();
-
+    int  GetLastID();
+    int  LoadLocalBlueprint();
     EgDataNodeType* GetNodePtrByID(EgDataNodeIDType nodeID);
 
     int  AddDataNode(EgDataNodeType* newNode);
@@ -33,6 +33,7 @@ public:
 
     int  StoreToLocalFile();
     int  LoadAllLocalFileNodes();
+    int  LoadLocalNodesByOffsets(std::set<EgFileOffsetType>& index_offsets);
         // ======================== Debug ========================
     void PrintDataNodesContainer();
     void PrintNodesChain();

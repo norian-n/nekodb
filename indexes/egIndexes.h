@@ -7,8 +7,18 @@
 #include "egCoreIndexTypes.h"
 #include "../service/egByteArray.h"
 #include "../service/egFileType.h"
+
 template <typename KeyType> class EgFingers;
-template <typename KeyType> class EgIndexes { public: // indexes chain part of indexes-fingers complex
+
+class EgIndexesAbstractType { public:
+    virtual bool AddNewIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) = 0;
+    virtual bool DeleteIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) = 0;
+    virtual bool UpdateDataOffset(EgByteArrayAbstractType& keyBA, uint64_t oldDataOffset, uint64_t newDataOffset) = 0;
+
+    virtual ~EgIndexesAbstractType() {}
+};
+
+template <typename KeyType> class EgIndexes : EgIndexesAbstractType { public: // indexes chain part of indexes-fingers complex
     const uint64_t            indexHeaderSize       = sizeof(uint64_t);
     const egMaxStreamSizeType oneIndexSize          = sizeof(KeyType) + sizeof(uint64_t); // key and data offset
     const egMaxStreamSizeType fwdPtrPosition        = egIndexesNamespace::egChunkCapacity * oneIndexSize;
@@ -37,16 +47,18 @@ template <typename KeyType> class EgIndexes { public: // indexes chain part of i
     EgFileType              indexFileStream;        // file operations
     std::string             indexFileName;
     EgIndexes(std::string a_indexName);
-    ~EgIndexes() { delete localStream; }
+    virtual ~EgIndexes() { delete localStream; }
         // top API
-    bool AddNewIndex(KeyType& key, uint64_t dataOffset);
-    bool DeleteIndex(KeyType& key, uint64_t dataOffset);
-    bool UpdateDataOffset(KeyType& key, uint64_t oldDataOffset, uint64_t newDataOffset);
+    bool AddNewIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) override;
+    bool DeleteIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) override ;
+    bool UpdateDataOffset(EgByteArrayAbstractType& keyBA, uint64_t oldDataOffset, uint64_t newDataOffset) override;
         // load data top API
     bool LoadAllDataFirst(std::set<uint64_t>& index_offsets, uint64_t& maxQuantity);
     bool LoadDataNextUp (std::set<uint64_t>& index_offsets, uint64_t& maxQuantity);
+
     bool LoadDataEQFirst(std::set<uint64_t>& index_offsets, KeyType& key,  uint64_t& maxQuantity); // FIXME TODO
     bool LoadDataEQNext (std::set<uint64_t>& index_offsets, KeyType& key,  uint64_t& maxQuantity);
+    
     bool LoadDataGEFirst(std::set<uint64_t>& index_offsets, KeyType& key,  uint64_t& maxQuantity);
     bool LoadDataGTFirst(std::set<uint64_t>& index_offsets, KeyType& key,  uint64_t& maxQuantity);
     bool LoadDataLEFirst(std::set<uint64_t>& index_offsets, KeyType& key,  uint64_t& maxQuantity);

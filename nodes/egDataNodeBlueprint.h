@@ -1,9 +1,9 @@
 #pragma once
-#include <vector>
+
 #include <map>
+#include <set>
 #include <iostream>
 
-// #include "../metainfo/egCoreTypes.h" // included in hamSlicer
 #include "../indexes/egCoreIndexTypes.h"
 #include "../service/egByteArray.h"
 #include "../service/egFileType.h"
@@ -27,6 +27,12 @@ struct EgNodeBlueprintSettingsType
     bool useNamedAttributes { false };  // flexible named attributes/properties/tags
 };
 
+struct EgFieldSettingsType {
+    EgFieldsCountType index {0};
+    uint8_t indexSizeBytes {0}; // 0 means not indexed
+    uint8_t indexSubType   {0}; // int, float, etc.
+};
+
 //  ============================================================================
 
 class EgDataNodeBlueprintType
@@ -42,8 +48,8 @@ public:
     EgNodeBlueprintSettingsType    blueprintSettings;   // add-ons for blueprint type
     EgFieldsCountType              fieldsCount {0};
 
-    std::map < std::string, EgFieldsCountType >           dataFieldsNames;    // map  data node field names to fields order
-    std::map < EgFieldsCountType, EgIndexSettingsType >   indexedFields;      // map indexed fields names to structure
+    std::map < std::string, EgFieldsCountType/*EgFieldSettingsType*/ > dataFieldsNames;    // map  data node field names to fields order
+    std::set < std::string > indexedFields;
 
     EgByteArrayAbstractType egNotFound;
     const char* egNotFoundStr {"<Data Not Found>"};
@@ -54,17 +60,16 @@ public:
 
     void clear() { dataFieldsNames.clear(); indexedFields.clear(); }
 
-    int AddDataFieldsNames(std::vector<std::string>& fieldsNames, EgNodeBlueprintSettingsType& settings);
-    int BlueprintInitStart();
-    void AddDataFieldName(std::string fieldName);
+    int  BlueprintInitStart();
+    void AddDataFieldName(std::string fieldName, uint8_t indexSizeBytes = 0, uint8_t indexSubType = 0);
     void BlueprintInitCommit();
 
-    void AddIndex(std::string fieldName, EgIndexSettingsType& indexSet);
+    bool isIndexedField(std::string& name) { return indexedFields.contains(name); }
     
     inline void writeDataFieldsNames();
     inline void readDataFieldsNames();
-    inline void writeIndexedFields();
-    inline void readIndexesFields();
+    // inline void writeIndexedFields();
+    // inline void readIndexesFields();
     
     int  LocalStoreBlueprint();
     int  LocalLoadBlueprint();

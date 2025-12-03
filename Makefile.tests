@@ -5,7 +5,7 @@ all: maketests testlocalfile clean
 
 CC = g++ 
 LDLIBS += -lstdc++fs
-CPPFLAGS = 
+CPPFLAGS = -std=c++20
 # -fPIC
 INCLUDES = 
 # -I/home/fran/some_directory
@@ -32,7 +32,7 @@ maketests:   $(APPS)
 # the rule(a .c file) and $@: the name of the target of the rule (a .o file)
 
 %.o : %.cpp
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) -c $< -o $@
 
 %.exe : %.o
 	$(CC) $< $(EGDBLIB) -o $@
@@ -43,7 +43,7 @@ tests/testDataNodesLocalFile.cpp nodes/egDataNodesLocalFile.cpp
 LOCAL_FILE_OBJ = testDataNodesLocalFile.o egDataNodesLocalFile.o egByteArray.o egDataNode.o egDataNodeBlueprint.o
 LOCAL_FILE_BIN = tests/testDataNodesLocalFile.exe
 testlocalfile:
-	g++ -c $(LOCAL_FILE_SRC) -D EG_NODE_OFFSETS_DEBUG
+	g++ $(CPPFLAGS) -c $(LOCAL_FILE_SRC) -D EG_NODE_OFFSETS_DEBUG
 	g++ -o $(LOCAL_FILE_BIN) $(LOCAL_FILE_OBJ)
 
 clean:

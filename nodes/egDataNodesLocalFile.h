@@ -1,6 +1,7 @@
 #pragma once
 #include "egDataNode.h"
 #include "egDataNodeBlueprint.h"
+#include "../indexes/egIndexConditions.h"
 
 struct EgLocalFileHeader {
         EgDataNodeIDType lastID;
@@ -19,9 +20,11 @@ class EgDataNodesLocalFileType
 {
 public:
     EgFileType nodesFile;
-    bool inSubTransact {false};
+    bool localTransactOk {false};
     EgLocalFileHeader nodesFileHeader;
-    // EgDataNodeIDType  maxID;
+        // local indexes
+    std::map < std::string, EgIndexesAbstractType* >  localIndexes;
+    EgIndexConditionsTree* index_tree       {nullptr};              // indexed fields operations    
 
     EgDataNodesLocalFileType()  {}
     ~EgDataNodesLocalFileType() {}
@@ -46,6 +49,9 @@ public:
     bool WriteDataNode(EgDataNodeType* theNode);
     bool ReadDataNode(EgDataNodeType* theNode, EgFileOffsetType& nextOffset);
     bool DeleteDataNode(EgDataNodeType* theNode);
+
+    bool AddLocalIndex(std::string& indexName, EgDataNodeType* theNode);
+
     void PrintNodesChain();
 };
 

@@ -6,7 +6,7 @@ EgDataNodeIDType EgDataNodeBlueprintType::getNextID() {
     return nextNodeID++;
 }
 */
-
+/*
 int EgDataNodeBlueprintType::AddDataFieldsNames(std::vector<std::string> &fieldsNames, EgNodeBlueprintSettingsType &settings) {
     if (BlueprintInitStart()) // commit not initiated
         return -1;
@@ -15,7 +15,7 @@ int EgDataNodeBlueprintType::AddDataFieldsNames(std::vector<std::string> &fields
     blueprintSettings = settings;
     BlueprintInitCommit();
     return 0;
-}
+} */
 
 int EgDataNodeBlueprintType::BlueprintInitStart() {
     blueprintFile.fileName = blueprintName + ".dnl";
@@ -28,13 +28,13 @@ int EgDataNodeBlueprintType::BlueprintInitStart() {
     {
         fieldsCount = 0;
         dataFieldsNames.clear();
-        indexedFields.clear();
+        // indexedFields.clear();
         blueprintMode = egBlueprintInit;
     }
     return 0;
 }
 
-void EgDataNodeBlueprintType::AddDataFieldName(std::string fieldName) {
+void EgDataNodeBlueprintType::AddDataFieldName(std::string fieldName, uint8_t indexSizeBytes, uint8_t indexSubType) {
     if (blueprintMode != egBlueprintInit)
         std::cout << "ERROR: Can't add field \"" << fieldName << "\" to DataNodeBlueprint: \"" << blueprintName << "\". Call BlueprintInitStart() first" << std::endl;
     else
@@ -52,6 +52,7 @@ void EgDataNodeBlueprintType::BlueprintInitCommit() {
         std::cout << "ERROR: Can't commit fields to DataNodeBlueprint: \"" << blueprintName << "\". Call BlueprintInitStart() first" << std::endl;
 }
 
+/*
 void EgDataNodeBlueprintType::AddIndex(std::string fieldName, EgIndexSettingsType &indexSet) {
     auto iter = dataFieldsNames.find(fieldName);
     if (iter != dataFieldsNames.end())
@@ -60,7 +61,7 @@ void EgDataNodeBlueprintType::AddIndex(std::string fieldName, EgIndexSettingsTyp
     }
     else
         std::cout << "ERROR: AddIndex for DataNodeBlueprint: \"" << blueprintName << "\" field name \"" << fieldName << "\" not found" << std::endl;
-}
+}*/
 
 inline void EgDataNodeBlueprintType::writeDataFieldsNames() {
     // blueprintFile.writeType<EgFieldsCountType>((EgFieldsCountType)dataFieldsNames.size());
@@ -88,7 +89,7 @@ inline void EgDataNodeBlueprintType::readDataFieldsNames() {
         dataFieldsNames.insert(std::make_pair(fieldName, order));
     }
 }
-
+/*
 inline void EgDataNodeBlueprintType::writeIndexedFields() {
     blueprintFile.writeType<EgFieldsCountType>((EgFieldsCountType)indexedFields.size());
     for (auto fieldsIter : indexedFields)
@@ -98,8 +99,8 @@ inline void EgDataNodeBlueprintType::writeIndexedFields() {
         blueprintFile << fieldsIter.second.indexSizeBits;
         blueprintFile << fieldsIter.second.hashFunctionID;
     }
-}
-
+}*/
+/*
 inline void EgDataNodeBlueprintType::readIndexesFields() {
     EgFieldsCountType fieldsCountTmp{0};
     EgFieldsCountType index{0};
@@ -113,7 +114,7 @@ inline void EgDataNodeBlueprintType::readIndexesFields() {
         blueprintFile >> indexSettings.hashFunctionID;
         indexedFields.insert(std::make_pair(index, indexSettings));
     }
-}
+}*/
 
 int EgDataNodeBlueprintType::LocalStoreBlueprint() {
     blueprintFile.fileName = blueprintName + ".dnl";
@@ -133,7 +134,7 @@ int EgDataNodeBlueprintType::LocalStoreBlueprint() {
     blueprintFile << blueprintSettings.useGUIsettings;
 
     writeDataFieldsNames();
-    writeIndexedFields();
+    // writeIndexedFields();
 
     blueprintFile.close();
     return 0;
@@ -162,7 +163,7 @@ int EgDataNodeBlueprintType::LocalLoadBlueprint() {
 
     // std::cout << "Names file pos: " << std::hex << (int) blueprintFile.fileStream.tellg() << std::endl;
     readDataFieldsNames();
-    readIndexesFields();
+    // readIndexesFields();
 
     blueprintFile.close();
     return 0;
@@ -191,7 +192,7 @@ void PrintDataNodeBlueprint(EgDataNodeBlueprintType& blueprint) {
         std::cout << std::endl;
     }
     // indexes
-    std::cout << "Indexes (" << blueprint.indexedFields.size() << "):" << std::endl;
+    /* std::cout << "Indexes (" << blueprint.indexedFields.size() << "):" << std::endl;
     for (auto indIter : blueprint.indexedFields)
     { // [first, second] = indexedFields.begin(); indIter != indexedFields.end(); ++indIter) {
         std::cout << "index fieldNum: \"" << (int)indIter.first;
@@ -199,5 +200,5 @@ void PrintDataNodeBlueprint(EgDataNodeBlueprintType& blueprint) {
         std::cout << " index indexSizeBits: " << indIter.second.indexSizeBits;
         std::cout << " index hashFunctionID: " << indIter.second.hashFunctionID;
         std::cout << std::endl;
-    }
+    } */
 }

@@ -6,14 +6,15 @@
 #include "egCoreIndexTypes.h"
 #include "../service/egByteArray.h"
 #include "../service/egFileType.h"
-#include "egIndexes.h"
+// #include "egIndexes.h"
+template <typename KeyType> class EgIndexes;
 // Finger in the file: KeyMin KeyMax nextChunkOffset isLeaf(root only)
 // Chunk in the file:  FingersArray parentFingerOffset chunkIsLeaf fingersCount 
 template <typename KeyType> class EgFingers { public: // fingers tree (N-M type) part of indexes-fingers complex
     const egMaxStreamSizeType nextChunkOffsetPosition  = sizeof(KeyType) * 2; //  + sizeof(keysCountType); 
     const egMaxStreamSizeType oneFingerSize        = nextChunkOffsetPosition + sizeof(uint64_t);  // last is next chunk offset
     const egMaxStreamSizeType rootHeaderSize       = oneFingerSize + sizeof(uint8_t); // bool isLeaf as uint8_t
-    const egMaxStreamSizeType parentChunkOffsetPosition = egIndexesNamespace::egChunkCapacity * oneFingerSize;
+    const egMaxStreamSizeType parentChunkOffsetPosition = egIndexesSpace::egChunkCapacity * oneFingerSize;
     const egMaxStreamSizeType chunkIsLeafPosition  = parentChunkOffsetPosition + sizeof(uint64_t);
     const egMaxStreamSizeType chunkCountPosition   = chunkIsLeafPosition  + sizeof(uint8_t);
     const egMaxStreamSizeType fingersChunkSize     = chunkCountPosition  + + sizeof(keysCountType); // bool isLeaf as uint8_t

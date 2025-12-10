@@ -25,23 +25,16 @@ bool testDataNodeBlueprint() {
     testBlueprint.blueprintSettings.useNamedAttributes    = true;
     testBlueprint.blueprintSettings.useVisualSpace        = true;
 
+    testBlueprint.AddIndex("field 3", 4, egIndexesSpace::egIntFT);
+    testBlueprint.AddIndex("bad index name", 4, egIndexesSpace::egFloatFT);
+
     testBlueprint.BlueprintInitCommit();
     testBlueprint.AddDataFieldName("try to add field after commit");
-
-    indexSettings.indexFamilyType   = egIntFT;
-    indexSettings.indexSizeBits     = 32;
-    // testBlueprint.AddIndex("field_1",  indexSettings);
-
-    indexSettings.indexFamilyType   = egHashFT;
-    indexSettings.indexSizeBits     = 64;
-    indexSettings.hashFunctionID    = 2;
-    // testBlueprint.AddIndex("field 3",  indexSettings);
-
-    // testBlueprint.AddIndex("bad index name", indexSettings);
     
     testBlueprint.LocalStoreBlueprint();
     int res = testBlueprint.LocalLoadBlueprint();
-    // PrintDataNodeBlueprint(testBlueprint);
+    
+    PrintDataNodeBlueprint(testBlueprint);
 
     return (res == 0);
 }

@@ -60,6 +60,10 @@ int main()
 
     EgDataNodesLocalFileType testLocalFile;
     initDataNodeBlueprint();
+    testLocalFile.dataNodeBlueprint = &testBlueprint;
+    // std::string fileName {"testLocalFile"};
+    // testLocalFile.InitFile(fileName);
+    // testLocalFile.initIndexes();
 
     EgDataNodeType testDataNode(&testBlueprint);
     EgDataNodeType testNextNode(&testBlueprint);

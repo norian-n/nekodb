@@ -20,7 +20,7 @@ public:
     EgFileType(const std::string& a_name): fileName(a_name), dataStream(streamBufSize) {}
     ~EgFileType() { if (fileStream.is_open()) fileStream.close(); }
 
-    inline bool good() { return fileStream.good(); }
+    inline bool good() { return /* (bool) fileStream.good();*/ ! (fileStream.bad() || fileStream.fail()); }
 
     // inline bool checkIfExists()   { fileStream.open(fileName, std::ios::in | std::ios::binary); bool ret = fileStream.is_open(); fileStream.close(); return ret; }
     inline bool checkIfExists()   { return std::filesystem::exists(fileName); }

@@ -22,14 +22,17 @@ public:
     EgFileType nodesFile;
     bool localTransactOk {false};
     EgLocalFileHeader nodesFileHeader;
-        // local indexes
+    EgDataNodeBlueprintType* dataNodeBlueprint   { nullptr };    // blueprint == class == type of data nodes    
+
     std::map < std::string, EgIndexesAbstractType* >  localIndexes;
     EgIndexConditionsTree* index_tree       {nullptr};              // indexed fields operations    
 
-    EgDataNodesLocalFileType()  {}
+    EgDataNodesLocalFileType() {}
     ~EgDataNodesLocalFileType() {}
 
-    inline bool InitFile(std::string& layoutName);
+    void initIndexes();
+
+    bool InitFile(std::string& layoutName);
     bool GetLastID(std::string& layoutName, EgDataNodeIDType& lastID);
 
     inline bool ReadHeader();    // from opened nodesFile to beforeHeader
@@ -50,7 +53,7 @@ public:
     bool ReadDataNode(EgDataNodeType* theNode, EgFileOffsetType& nextOffset);
     bool DeleteDataNode(EgDataNodeType* theNode);
 
-    bool AddLocalIndex(std::string& indexName, EgDataNodeType* theNode);
+    // bool AddLocalIndex(std::string& indexName, EgDataNodeType* theNode);
 
     void PrintNodesChain();
 };

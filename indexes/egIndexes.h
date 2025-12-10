@@ -7,21 +7,23 @@
 #include "egCoreIndexTypes.h"
 #include "../service/egByteArray.h"
 #include "../service/egFileType.h"
-
-template <typename KeyType> class EgFingers;
+#include "egFingers.h"
+// template <typename KeyType> class EgFingers;
 
 class EgIndexesAbstractType { public:
     virtual bool AddNewIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) = 0;
     virtual bool DeleteIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) = 0;
     virtual bool UpdateDataOffset(EgByteArrayAbstractType& keyBA, uint64_t oldDataOffset, uint64_t newDataOffset) = 0;
 
+    virtual bool LoadAllDataEQ(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) = 0;
+
     virtual ~EgIndexesAbstractType() {}
 };
 
-template <typename KeyType> class EgIndexes : EgIndexesAbstractType { public: // indexes chain part of indexes-fingers complex
+template <typename KeyType> class EgIndexes : public EgIndexesAbstractType { public: // indexes chain part of indexes-fingers complex
     const uint64_t            indexHeaderSize       = sizeof(uint64_t);
     const egMaxStreamSizeType oneIndexSize          = sizeof(KeyType) + sizeof(uint64_t); // key and data offset
-    const egMaxStreamSizeType fwdPtrPosition        = egIndexesNamespace::egChunkCapacity * oneIndexSize;
+    const egMaxStreamSizeType fwdPtrPosition        = egIndexesSpace::egChunkCapacity * oneIndexSize;
     const egMaxStreamSizeType backPtrPosition       = fwdPtrPosition   + sizeof(uint64_t);
     const egMaxStreamSizeType chunkCountPosition    = backPtrPosition  + sizeof(uint64_t);
     const egMaxStreamSizeType fingersChunkOffsetPosition  = chunkCountPosition + sizeof(keysCountType);
@@ -46,7 +48,8 @@ template <typename KeyType> class EgIndexes : EgIndexesAbstractType { public: //
     EgIndexStruct<KeyType>  indexData;              // index data wrapper for flexibility
     EgFileType              indexFileStream;        // file operations
     std::string             indexFileName;
-    EgIndexes(std::string a_indexName);
+    
+    EgIndexes(const std::string a_indexName);
     virtual ~EgIndexes() { delete localStream; }
         // top API
     bool AddNewIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) override;
@@ -56,6 +59,8 @@ template <typename KeyType> class EgIndexes : EgIndexesAbstractType { public: //
     bool LoadAllDataFirst(std::set<uint64_t>& index_offsets, uint64_t& maxQuantity);
     bool LoadDataNextUp (std::set<uint64_t>& index_offsets, uint64_t& maxQuantity);
 
+    bool LoadAllDataEQ(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA);
+    
     bool LoadDataEQFirst(std::set<uint64_t>& index_offsets, KeyType& key,  uint64_t& maxQuantity); // FIXME TODO
     bool LoadDataEQNext (std::set<uint64_t>& index_offsets, KeyType& key,  uint64_t& maxQuantity);
     
@@ -97,7 +102,9 @@ template <typename KeyType> class EgIndexes : EgIndexesAbstractType { public: //
     inline bool AppendIndexChunk(KeyType& key, uint64_t& dataOffset, uint64_t& fwdPtr, uint64_t& backPtr);
     // int SplitIndexChunk(); // TODO
     typedef bool (*CompareFunctionType) (KeyType&, KeyType&);
-    static bool CompareEQ (KeyType& currentIndex, KeyType& key) {return (currentIndex == key);}
+    static bool CompareEQ (KeyType& currentIndex, KeyType& key) {
+        // EG_LOG_STUB << "currentIndex : " << (int) currentIndex << " key: " << key << FN;
+        return (currentIndex == key); }
     static bool CompareGT (KeyType& currentIndex, KeyType& key) {return (currentIndex > key);}
     static bool CompareGE (KeyType& currentIndex, KeyType& key) {return (currentIndex >= key);}
     static bool CompareLT (KeyType& currentIndex, KeyType& key) {return (currentIndex < key);}

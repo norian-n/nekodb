@@ -1,7 +1,8 @@
 #include "egFingers.h"
+#include "egIndexes.h"
 #include <filesystem>
 
-using namespace egIndexesNamespace;
+using namespace egIndexesSpace;
 
 template <typename KeyType> inline void EgFingers<KeyType>::InitFinger(egFinger<KeyType>& theFinger) {
     theFinger.minKey = 0;

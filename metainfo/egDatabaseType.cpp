@@ -213,6 +213,11 @@ void EgDatabaseType::AddNodeDataField(std::string& fieldName) {
     }
 }
 
+void EgDatabaseType::AddIndex(std::string indexName, uint8_t indexSizeBytes, uint8_t indexSubType) {
+    if (CreateNodeBlueprintFlag)
+        nodeBlueprint-> AddIndex(indexName, indexSizeBytes, indexSubType);
+}
+
 void EgDatabaseType::CommitNodeBlueprint() {
     if (CreateNodeBlueprintFlag) {
         nodeBlueprint-> BlueprintInitCommit();

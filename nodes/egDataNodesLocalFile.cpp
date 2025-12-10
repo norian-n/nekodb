@@ -1,7 +1,18 @@
 #include "egDataNodesLocalFile.h"
 #include <iostream>
 
-inline bool EgDataNodesLocalFileType::InitFile(std::string& layoutName) { // tests support
+void EgDataNodesLocalFileType::initIndexes() {
+    if (dataNodeBlueprint)
+        for (auto fieldsIter : dataNodeBlueprint-> indexedFields) {
+            EgIndexes<uint32_t>* newIndex = new EgIndexes<uint32_t>(fieldsIter.first);
+            localIndexes.insert(std::make_pair(fieldsIter.first, static_cast<EgIndexesAbstractType*> (newIndex)));
+        }
+    else
+        std::cout << "ERROR: initIndexes() dataNodeBlueprint not set  " << std::endl;    
+}
+// EgIndexes<uint32_t> testIndexes("testIndexes");
+
+bool EgDataNodesLocalFileType::InitFile(std::string& layoutName) { // tests support
     nodesFile.fileName = layoutName + ".gdn";
     bool isOk = nodesFile.openToWrite();
     if (isOk)
@@ -97,6 +108,7 @@ bool EgDataNodesLocalFileType::UpdateNodesFile(std::string& layoutName,
     }
 */
     // PrintHeader();
+    std::string fieldName;
     for (auto newNodesIter : addedNodes) {
         // PrintEgDataNodeTypeFields(*(newNodesIter.second));
         // std::cout << "StoreToLocalFile() container fieldsCount: " << std::dec << (int) ((newNodesIter.second)-> dataNodeLayout-> fieldsCount) << std::endl;
@@ -106,16 +118,32 @@ bool EgDataNodesLocalFileType::UpdateNodesFile(std::string& layoutName,
         }
         if (! WriteDataNode(newNodesIter.second))
             return false;
-            // add local indexes            
+        for (auto index : localIndexes) { // add local indexes
+            fieldName = index.first;
+            localIndexes[fieldName]-> AddNewIndex(newNodesIter.second-> operator[] (fieldName), newNodesIter.second-> dataFileOffset);
+        }
         nodesFileHeader.nodesCount++;
         // PrintHeader();
     }    
     for (auto updNodesIter : updatedNodes) {
         // PrintEgDataNodeTypeFields(*(updNodesIter.second));
+        // std::cout << "UpdateNodesFile() old offset: " << std::hex << updNodesIter.second-> dataFileOffset << std::endl;        
         if (! DeleteDataNode(updNodesIter.second))
             return false;
+        for (auto index : localIndexes) { // del old local indexes FIXME store and use old key
+            fieldName = index.first;            
+            if (updNodesIter.second-> indexedFieldsOldValues.contains (fieldName)) {
+                localIndexes[fieldName]-> DeleteIndex(*(updNodesIter.second-> indexedFieldsOldValues[fieldName]), updNodesIter.second-> dataFileOffset);
+            } else                
+                std::cout << "ERROR: UpdateNodesFile() old field value has not been saved for field, index corrupted " << fieldName << std::endl;
+        }            
         if (! WriteDataNode (updNodesIter.second))
             return false;
+        for (auto index : localIndexes) { // add local indexes
+            fieldName = index.first;
+            localIndexes[fieldName]-> AddNewIndex(updNodesIter.second-> operator[] (fieldName), updNodesIter.second-> dataFileOffset);
+        }             
+        // std::cout << "UpdateNodesFile() new offset: " << updNodesIter.second-> dataFileOffset << std::dec << std::endl;             
             // update local indexes
     }
     for (auto delNodesIter : deletedNodes) { // 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
@@ -123,6 +151,13 @@ bool EgDataNodesLocalFileType::UpdateNodesFile(std::string& layoutName,
         if (! DeleteDataNode(delNodesIter.second))
             return false;
             // delete local indexes
+        for (auto index : localIndexes) { // add local indexes
+            fieldName = index.first;
+            if (! delNodesIter.second-> indexedFieldsOldValues.contains (fieldName)) // node not updated
+                localIndexes[fieldName]-> DeleteIndex(delNodesIter.second-> operator[] (fieldName), delNodesIter.second-> dataFileOffset);
+            else
+                localIndexes[fieldName]-> DeleteIndex(*(delNodesIter.second-> indexedFieldsOldValues[fieldName]), delNodesIter.second-> dataFileOffset);            
+        }            
         nodesFileHeader.nodesCount--;
     }
     WriteHeader();
@@ -166,6 +201,7 @@ bool EgDataNodesLocalFileType::WriteDataNode(EgDataNodeType* theNode) { // write
 }
 
 bool EgDataNodesLocalFileType::ReadDataNode(EgDataNodeType *theNode, EgFileOffsetType &nextOffset) {
+    theNode-> indexedFieldsOldValues.clear();
     nodesFile.seekRead(theNode->dataFileOffset);
     nodesFile >> theNode->dataNodeID;
     nodesFile >> nextOffset;
@@ -204,11 +240,12 @@ bool EgDataNodesLocalFileType::DeleteDataNode(EgDataNodeType *theNode) {
     return nodesFile.fileStream.good();
 }
 
+/*
 bool EgDataNodesLocalFileType::AddLocalIndex(std::string& indexName, EgDataNodeType* theNode) {
     localIndexes[indexName]-> AddNewIndex(theNode-> operator[] (indexName), theNode-> dataFileOffset);
 
     return true;
-}
+} */
 
 // ======================== Debug ========================
 

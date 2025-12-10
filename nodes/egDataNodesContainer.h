@@ -33,6 +33,9 @@ public:
 
     int  StoreToLocalFile();
     int  LoadAllLocalFileNodes();
+
+    bool LoadLocalNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue);
+
     int  LoadLocalNodesByOffsets(std::set<EgFileOffsetType>& index_offsets);
         // ======================== Debug ========================
     void PrintDataNodesContainer();

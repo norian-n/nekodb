@@ -6,19 +6,10 @@
 #define FNS std::string(" [") + std::string(__FUNCTION__) + std::string("(), ") + std::string(__FILE__) + std::string("]")
 #define HEX std::hex
 
-    // indexes related types
-enum EgIndexFamilyTypeEnum {
-    egNoType,
-    egIntFT,
-    egUnsignedIntFT,
-    egFloatFT,
-    egHashFT
-};
-
 struct EgIndexSettingsType {
-    uint8_t                     indexSizeBits   {0};        // 8, 16, 32, 64, etc.
-    uint8_t                     hashFunctionID  {0};        // data to index transformation function
-    EgIndexFamilyTypeEnum       indexFamilyType {egNoType}; // egIntFT, egUnsignedIntFT, egFloatFT, etc.
+    uint8_t                     indexSizeBytes  {0};
+    uint8_t                     indexFamilyType {0};        // egIntFT, egUnsignedIntFT, egFloatFT, etc.
+    // uint32_t                     hashFunctionID  {0};        // var size data to index transformation function    
 };
 
 template <typename KeyType> struct EgIndexStruct
@@ -27,20 +18,19 @@ template <typename KeyType> struct EgIndexStruct
     uint64_t dataOffset;
 };
 
-//  ============================================================================
-//          FINGERS DATA TYPES
-//  ============================================================================
-
-// Finger in the file: KeyMin KeyMax nextChunkOffset isLeaf(root only)
-// Chunk in the file:  FingersArray parentFingerOffset chunkIsLeaf fingersCount 
-
 typedef uint16_t keysCountType; // keys in a chunk
 typedef uint16_t fingersLevelType;
 
-namespace egIndexesNamespace {
-    // uint64_t indexHeaderSize {sizeof(uint64_t)}; // * 2};   // header of indexes file
+namespace egIndexesSpace {
+    const uint8_t egIntFT{1};
+    const uint8_t egUnsignedIntFT{2};
+    const uint8_t egFloatFT{3};
+
     const keysCountType egChunkCapacity {4};                // keys in chunk
 } // egIndexesNamespace
+
+// Finger in the file: KeyMin KeyMax nextChunkOffset isLeaf(root only)
+// Chunk in the file:  FingersArray parentFingerOffset chunkIsLeaf fingersCount 
 
 template <typename KeyType> struct egFinger {
     KeyType minKey {0};             // max key value of next level/pointed chunk

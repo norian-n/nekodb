@@ -1,9 +1,9 @@
 #include "egIndexes.h"
 #include "egFingers.h"
 #include <filesystem>
-using namespace egIndexesNamespace;
+using namespace egIndexesSpace;
 
-template <typename KeyType> EgIndexes<KeyType>::EgIndexes(std::string a_indexName) :
+template <typename KeyType> EgIndexes<KeyType>::EgIndexes(const std::string a_indexName) :
         fingersTree(new EgFingers<KeyType>(a_indexName, this)),
         indexFileName(a_indexName + ".ind"),
         indexFileStream(a_indexName + ".ind"),
@@ -241,6 +241,9 @@ template <typename KeyType> bool EgIndexes<KeyType>::LoadIndexChunk(uint64_t chu
     //    EG_LOG_STUB << "ERROR: bad position of fingersTree-> currentFinger.nextChunkOffset = " << std::hex << fingersTree-> currentFinger.nextChunkOffset << FN;
     indexFileStream.fileStream.read((char *) localStream-> bufData, indexChunkSize);
     GetCountFromChunk(theChunkCount);
+    // EG_LOG_STUB << "theChunkCount : " << theChunkCount << " indexFileStream.good(): " << indexFileStream.good() << FN;
+    // EG_LOG_STUB << "bad(): " << indexFileStream.fileStream.bad() << " fail(): " << indexFileStream.fileStream.fail() << " eof(): " << indexFileStream.fileStream.eof() << FN;
+    // EG_LOG_STUB << "is_open(): " << indexFileStream.fileStream.is_open() << FN;
     return indexFileStream.good();
 }
 
@@ -338,7 +341,7 @@ template <typename KeyType> inline void EgIndexes<KeyType>::GetChainPointers(uin
 template <typename KeyType> inline bool EgIndexes<KeyType>::AppendIndexChunk(KeyType& key, uint64_t& dataOffset, uint64_t& fwdPtr, uint64_t& backPtr) {
     bool res {true};
     // EG_LOG_STUB << "key = " << std::hex << (int) key << ", dataOffset = " << dataOffset << FN;
-    memset(localStream-> bufData, 0, indexChunkSize);
+    memset(localStream-> bufData, 0, indexChunkSize); // clear
     WriteIndexValues(key, dataOffset, 0);
     SetCountOfChunk(1);
     localStream-> seek(fwdPtrPosition);
@@ -346,7 +349,7 @@ template <typename KeyType> inline bool EgIndexes<KeyType>::AppendIndexChunk(Key
     *localStream << backPtr;
     fingersTree-> newFinger.minKey     = key;
     fingersTree-> newFinger.maxKey     = key;
-    // fingersTree-> newFinger.nextChunkOffset = indexFileStream.getFileSize();
+    fingersTree-> newFinger.nextChunkOffset = indexFileStream.getFileSize();
     fingersTree-> newFinger.myChunkIsLeaf = 0xFF; // is leaf
     if(fwdPtr) {
         indexFileStream.seekWrite(fwdPtr + backPtrPosition); // backptr of next chunk
@@ -468,8 +471,10 @@ template <typename KeyType> inline bool EgIndexes<KeyType>::LoadDataPortionDown(
 template <typename KeyType> inline bool EgIndexes<KeyType>::FindFirstIndexPos(CompareFunctionType myCompareFunc) {
     KeyType currentIndex;
     theIndexPosition = 0;
+    // EG_LOG_STUB << "theChunkCount : " << theChunkCount << FN;
     while (theIndexPosition < theChunkCount) {
         ReadIndexOnly(currentIndex);
+        // EG_LOG_STUB << "currentIndex : " << (int) currentIndex << FN;
         if (myCompareFunc(currentIndex,theKey))
             return true;
         theIndexPosition++;
@@ -601,6 +606,25 @@ template <typename KeyType> bool EgIndexes<KeyType>::LoadDataEQFirst(std::set<ui
         res = FindFirstIndexPos(CompareEQ);
     if (res)
         res = LoadDataPortionUpEqual(index_offsets, maxQuantity);
+    return res;
+}
+
+template <typename KeyType> bool EgIndexes<KeyType>::LoadAllDataEQ(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) {
+    theKey = *(reinterpret_cast<KeyType*> (keyBA.arrayData));
+    // EG_LOG_STUB << "key : " << std::hex << (int) theKey << FN;
+    if (! fingersTree-> FindIndexChunkEQ(theKey))
+        return false;
+    if ( ! indexFileStream.openToRead()) {
+        EG_LOG_STUB << "ERROR: cant open indexes file: " << indexFileName << FN;
+        return false;       
+    }
+    bool res = LoadIndexChunk(fingersTree-> currentFinger.nextChunkOffset);
+    // EG_LOG_STUB << "nextChunkOffset : " << fingersTree-> currentFinger.nextChunkOffset << FN;
+    if (res)
+        res = FindFirstIndexPos(CompareEQ);
+    if (res)
+        res = LoadDataUpEqual(index_offsets);
+    indexFileStream.close();
     return res;
 }
 

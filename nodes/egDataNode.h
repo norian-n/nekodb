@@ -74,7 +74,7 @@ public:
             std::cout << "ERROR: AddNextDataFieldFromType() fields count overflow: " << dataNodeBlueprint-> blueprintName << std::endl;
     }
 
-    void makeIndexedFieldCopy(std::string& fieldName);
+    void makeIndexedFieldsCopy();
 
     void writeDataFieldsToFile(EgFileType &theFile);  // EgDataFieldsType& df,  local file operations
     void readDataFieldsFromFile(EgFileType& theFile);

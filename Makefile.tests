@@ -39,8 +39,8 @@ maketests:   $(APPS)
 
 ######################################
 LOCAL_FILE_SRC = service/egByteArray.cpp nodes/egDataNode.cpp nodes/egDataNodeBlueprint.cpp \
-tests/testDataNodesLocalFile.cpp nodes/egDataNodesLocalFile.cpp
-LOCAL_FILE_OBJ = testDataNodesLocalFile.o egDataNodesLocalFile.o egByteArray.o egDataNode.o egDataNodeBlueprint.o
+tests/testDataNodesLocalFile.cpp nodes/egDataNodesLocalFile.cpp indexes/egFingers.cpp indexes/egIndexes.cpp
+LOCAL_FILE_OBJ = testDataNodesLocalFile.o egDataNodesLocalFile.o egByteArray.o egDataNode.o egDataNodeBlueprint.o egFingers.o egIndexes.o
 LOCAL_FILE_BIN = tests/testDataNodesLocalFile.exe
 testlocalfile:
 	g++ $(CPPFLAGS) -c $(LOCAL_FILE_SRC) -D EG_NODE_OFFSETS_DEBUG

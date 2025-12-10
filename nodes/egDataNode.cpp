@@ -309,10 +309,13 @@ void EgDataNodeType::readDataFieldsFromFile(EgFileType& theFile) {
     }
 }
 
-void EgDataNodeType::makeIndexedFieldCopy(std::string& fieldName) {
-    if (! indexedFieldsOldValues.contains (fieldName)) { // copy once
-        EgByteArraySlicerType* fieldCopyPtr = new EgByteArraySlicerType(static_cast<EgByteArraySlicerType&> (this-> operator[](fieldName)));
-        indexedFieldsOldValues.insert(std::make_pair(fieldName, fieldCopyPtr));
+void EgDataNodeType::makeIndexedFieldsCopy() {
+    for (auto fieldsIter : dataNodeBlueprint-> indexedFields) {
+        std::string fieldName = fieldsIter.first;
+        if (! indexedFieldsOldValues.contains (fieldName)) { // copy once
+            EgByteArraySlicerType* fieldCopyPtr = new EgByteArraySlicerType(static_cast<EgByteArraySlicerType&> (this-> operator[](fieldName)));
+            indexedFieldsOldValues.insert(std::make_pair(fieldName, fieldCopyPtr));
+        }
     }
 }
 

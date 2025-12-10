@@ -61,7 +61,10 @@ public:
     int  CreateNodeBlueprint (const std::string& name) { return CreateNodeBlueprint(name.c_str()); } // wrapper
     int  CreateNodeBlueprint (const char* name);
     void AddNodeDataField(std::string& fieldName);
-    void AddNodeDataField(const char* typeName) { std::string name(typeName); return AddNodeDataField(name); }          // wrapper
+    void AddNodeDataField(const char* fieldName) { std::string name(fieldName); return AddNodeDataField(name); } // wrapper
+    void AddIndex(std::string indexName, uint8_t indexSizeBytes = 4, uint8_t indexSubType = egIndexesSpace::egIntFT);
+
+    // void AddIndex(const char*  indexName) { std::string name(indexName); return AddIndex(name); } // wrapper    
     void CommitNodeBlueprint();         // use AddDataField() prior to commit
     void CommitSystemNodeBlueprint();   // use AddDataField() prior to commit
 //  ============================================================================

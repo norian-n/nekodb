@@ -25,44 +25,44 @@ namespace egIndexConditionsNamespace {
 } // namespace
 
 typedef uint16_t EgIndexConditionsCountType;
-
+/*
 class EgIndexConditionAbstractType {
 public:
     virtual ~EgIndexConditionAbstractType() {}
 
     virtual void calcOffsets() { std::cout << "ERROR: calcOffsets() of abstract class called" << std::endl; }
-};
+};*/
 
-template <typename KeyType> class EgIndexConditionType: EgIndexConditionAbstractType { // logical node envelope
+class EgIndexConditionType { // logical node envelope
 public:
     EgIndexConditionsCountType leafsCount = 0; // bool isLeaf
-    std::set <uint64_t> my_set;
+    std::set <uint64_t> subSet;
+    EgIndexesAbstractType* myIndex {nullptr};
+    int16_t logicOper;       // logical operation type - EQ GT LE
+    // EgByteArrayAbstractType* keyBA;
 
-    std::string FieldName;
-    KeyType value;
-    int16_t oper;       // logical operation type - EQ GT LE
-
-    EgIndexConditionAbstractType* left   {nullptr};
-    EgIndexConditionAbstractType* right  {nullptr};
-    EgIndexConditionAbstractType* parent {nullptr};
+    EgIndexConditionType* left   {nullptr};
+    EgIndexConditionType* right  {nullptr};
+    EgIndexConditionType* parent {nullptr};
 
     EgIndexConditionType() {}
-    EgIndexConditionType(std::string a_FieldName, int an_oper, KeyType a_value);
-    EgIndexConditionType(std::string a_FieldName, std::string str_oper, KeyType a_value);
+    EgIndexConditionType(std::string a_FieldName, int an_oper);
+    EgIndexConditionType(std::string a_FieldName, std::string str_oper);
     ~EgIndexConditionType() {}
 
     EgIndexConditionType& operator && (const EgIndexConditionType rvalue);
     EgIndexConditionType& operator || (const EgIndexConditionType rvalue);
 
-    virtual void calcOffsets() override {}
+    void calcOffsets();
 };
 
-template <typename T> using IC = EgIndexConditionType<T>; // alias
+using IC = EgIndexConditionType;
+// template <typename T> using IC = EgIndexConditionType<T>; // alias
 
 class EgIndexConditionsTree // conditional nodes tree operations
 {
 public:
-    EgIndexConditionAbstractType* root {nullptr}; // EgIndexCondition*
+    EgIndexConditionType* root {nullptr}; // EgIndexCondition*
 
     void recursiveCalcOffsets()  {} // FIXME STUB
     void recursiveClearOffsets() {}

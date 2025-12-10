@@ -52,8 +52,9 @@ public:
 
     int  Store();
     int  LoadAllNodes();
-    // int  LoadNodesEQ(std::string& indexName, EgByteArrayAbstractType& value) { return 0; } // FIXME STUB
-    template <typename KeyType> int LoadIndexedNodes(EgIndexConditionType<KeyType>& indexCondition) { return 0; }
+    bool LoadNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue) {
+        return nodesContainer-> LoadLocalNodesEQ(indexName, fieldValue); }
+
     // Projects.LoadIndexedNodes(IC<int>("owner", EQ, 2) &&  IC<int>("status", EQ, 3));
 
     // int  LoadNodesByOffsets() { return nodesContainer-> LoadLocalNodesByOffsets(indexOffsets); }

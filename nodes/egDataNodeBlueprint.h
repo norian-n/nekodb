@@ -49,7 +49,7 @@ public:
     EgFieldsCountType              fieldsCount {0};
 
     std::map < std::string, EgFieldsCountType/*EgFieldSettingsType*/ > dataFieldsNames;    // map  data node field names to fields order
-    std::set < std::string > indexedFields;
+    std::map < std::string, EgIndexSettingsType > indexedFields;
 
     EgByteArrayAbstractType egNotFound;
     const char* egNotFoundStr {"<Data Not Found>"};
@@ -61,15 +61,16 @@ public:
     void clear() { dataFieldsNames.clear(); indexedFields.clear(); }
 
     int  BlueprintInitStart();
-    void AddDataFieldName(std::string fieldName, uint8_t indexSizeBytes = 0, uint8_t indexSubType = 0);
+    void AddDataFieldName(std::string fieldName);
+    void AddIndex(std::string indexName, uint8_t indexSizeBytes = 4, uint8_t indexSubType = egIndexesSpace::egIntFT); // default int32
     void BlueprintInitCommit();
 
     bool isIndexedField(std::string& name) { return indexedFields.contains(name); }
     
     inline void writeDataFieldsNames();
     inline void readDataFieldsNames();
-    // inline void writeIndexedFields();
-    // inline void readIndexesFields();
+    inline void writeIndexedFields();
+    inline void readIndexesFields();
     
     int  LocalStoreBlueprint();
     int  LocalLoadBlueprint();

@@ -4,6 +4,8 @@
 
 void EgDataNodesContainerType::init(EgDataNodeBlueprintType* a_dataNodeBlueprint) { // blueprint from upper layer
     dataNodeBlueprint = a_dataNodeBlueprint;
+    LocalNodesFile-> dataNodeBlueprint = dataNodeBlueprint;
+    LocalNodesFile-> initIndexes();
     LocalNodesFile-> GetLastID(dataNodeBlueprint-> blueprintName, lastNodeID); 
 }
 
@@ -48,12 +50,13 @@ int EgDataNodesContainerType::MarkUpdatedDataNode(EgDataNodeIDType nodeID) {
     auto iter = dataNodes.find(nodeID); // search all nodes
     if (iter == dataNodes.end())
         return -1;
-    auto delIter = deletedDataNodes.find(nodeID); // search all nodes
+    auto delIter = deletedDataNodes.find(nodeID); // search del nodes
     if (delIter != deletedDataNodes.end())
         return -2;
     auto addIter = addedDataNodes.find(nodeID); // search added nodes
     if (addIter != addedDataNodes.end())
         return -3;
+    (iter->second)->  makeIndexedFieldsCopy();
     updatedDataNodes.insert(std::make_pair(nodeID, iter->second));
     // std::cout << "MarkUpdatedDataNode() done" << std::endl;
     return 0;
@@ -149,6 +152,19 @@ int EgDataNodesContainerType::LoadLocalNodesByOffsets(std::set<EgFileOffsetType>
     return 0;
 }
 
+bool EgDataNodesContainerType::LoadLocalNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue) {
+    std::set <uint64_t> offsetSet;
+    clear();
+    auto indexIter = LocalNodesFile-> localIndexes.find(indexName);
+    if (indexIter == LocalNodesFile-> localIndexes.end()) {
+        std::cout  << "LoadLocalNodesEQ() index name not found: " << indexName << std::endl;
+        return false;
+    }
+    indexIter->second-> LoadAllDataEQ(offsetSet, fieldValue);
+    // std::cout  << "LoadLocalNodesEQ() offsetSet size : " << offsetSet.size() << std::endl;
+    LoadLocalNodesByOffsets(offsetSet);
+    return true;
+}
 
 EgDataNodesContainerType& EgDataNodesContainerType::operator << (EgDataNodeType* newNode) {
     AddDataNode(newNode); 

@@ -174,6 +174,10 @@ int EgDataNodeBlueprintType::LocalLoadBlueprint() {
     return 0;
 }
 
+bool EgDataNodeBlueprintType::isIndexedField(std::string& name) {
+    return indexedFields.contains(name);
+}
+
 // ======================== Debug ========================
 
 void PrintDataNodeBlueprint(EgDataNodeBlueprintType& blueprint) {

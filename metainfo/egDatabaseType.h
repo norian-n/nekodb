@@ -46,8 +46,8 @@ public:
     void AddDataNodesTypeInfo(EgBlueprintIDType& blueprintID, std::string& typeName);
     void AddLinksTypeInfo(EgBlueprintIDType& blueprintID, std::string& linksTypeName);
     void AddLayersTypeInfo(EgBlueprintIDType& blueprintID, std::string& linksTypeName);
-    int  LoadTypesInfo();
-    int  StoreTypesInfo();
+    int  LoadDataNodesTypesInfo();
+    int  StoreDataNodesTypesInfo();
     int  LoadLinksInfo();
     int  StoreLinksInfo();
     int  LoadLayersInfo();
@@ -87,7 +87,7 @@ public:
     int  CreateFreeLinkWithDataBlueprint(const char* linkTypeName) 
         { std::string name(linkTypeName); return CreateFreeLinkWithDataBlueprint(name); } // wrapper
 //  ============================================================================
-    int CreateLayersBlueprint(std::string& layersTypeName);
+    int CreateLayersBlueprint(const std::string& layersTypeName);
 
     // FIXME TODO delete nodes, links, layers blueprint
 };

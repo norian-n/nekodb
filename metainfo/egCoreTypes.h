@@ -7,6 +7,7 @@ typedef unsigned char ByteType;
 typedef uint32_t            EgDataNodeIDType;
 typedef EgDataNodeIDType    EgDataLinkIDType;
 typedef uint16_t            EgBlueprintIDType;     // data nodes and links blueprint/layout/type/class ID type
+typedef uint16_t            EgLayerNumType;
     // count/size/length types
 typedef uint16_t    EgFieldNameLengthType;
 typedef uint8_t     EgFieldsCountType;

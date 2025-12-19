@@ -65,7 +65,7 @@ public:
     void AddIndex(std::string indexName, uint8_t indexSizeBytes = 4, uint8_t indexSubType = egIndexesSpace::egIntFT); // default int32
     void BlueprintInitCommit();
 
-    bool isIndexedField(std::string& name) { return indexedFields.contains(name); }
+    bool isIndexedField(std::string& name);
     
     inline void writeDataFieldsNames();
     inline void readDataFieldsNames();

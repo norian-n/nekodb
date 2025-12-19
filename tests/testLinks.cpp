@@ -97,7 +97,8 @@ void initDatabase(EgDatabaseType& graphDB) {
 
 int main() {
     cout << "===== Test EgLinksType =====" << endl;
-    std::remove("testLinks.gdn");   // delete file
+    std::remove("testLinks_arrowLinks.dnl"); // delete layout file
+    std::remove("testLinks_arrowLinks.gdn"); // delete data nodes file       
 
     EgDatabaseType theDatabase;
     EgDataNodesType fromType;

@@ -14,8 +14,8 @@ bool testDatabase() {
     string str2("linksType1");
     testDatabase.AddLinksTypeInfo(str2);
 
-    testDatabase.StoreTypesInfo();
-    testDatabase.LoadTypesInfo();
+    testDatabase.StoreDataNodesTypesInfo();
+    testDatabase.LoadDataNodesTypesInfo();
 
     return ((testDatabase.nodesTypesStorage-> dataNodes.size() == 1) 
         &&  (testDatabase.linksTypesStorage-> dataNodes.size() == 1));

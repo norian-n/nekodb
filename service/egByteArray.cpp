@@ -1,8 +1,11 @@
 #include <iostream>
 #include "egByteArray.h"
 
-void EgByteArraySlicerType::reallocDataArray() {
+void EgByteArraySlicerType::reallocDataArray(uint64_t newSize) {
     // std::cout << "reassign dynamicDataAlloc: " << dynamicDataAlloc << std::endl;
+    if (dataSize == newSize) // FIXME TODO data wipe option
+        return;
+    dataSize = newSize;
     if (brickID)
         theHamSlicer-> freeSlice(brickID);
     if (dataSize) 
@@ -13,18 +16,11 @@ void EgByteArraySlicerType::reallocDataArray() {
     }
 }
 
-EgByteArraySlicerType& EgByteArraySlicerType::operator = (const EgByteArraySlicerType& rightBA) {
-    // bool resizeFlag = (dataSize < rightBA.dataSize) || (! brickID); // FIXME add capacity size
-    bool resizeFlag = (dataSize != rightBA.dataSize);
-    dataSize = rightBA.dataSize;
-    if (resizeFlag)
-        reallocDataArray();
-    memcpy((void*)arrayData, (void*) rightBA.arrayData, dataSize);
-    return *this;
-}
-
-void EgByteArraySysallocType::reallocDataArray() {
+void EgByteArraySysallocType::reallocDataArray(uint64_t newSize) {
     // std::cout << "reassign dynamicDataAlloc: " << dynamicDataAlloc << std::endl;
+    if (dataSize == newSize) // FIXME TODO data wipe option
+        return;
+    dataSize = newSize;
     delete arrayData;
     if (dataSize)
         arrayData = new ByteType[dataSize];
@@ -32,13 +28,10 @@ void EgByteArraySysallocType::reallocDataArray() {
         arrayData = nullptr;
 }
 
-EgByteArraySysallocType& EgByteArraySysallocType::operator = (const EgByteArraySysallocType& rightBA) {
-    // bool resizeFlag = (dataSize < rightBA.dataSize) || (! brickID); // FIXME add capacity size
-    bool resizeFlag = (dataSize != rightBA.dataSize);
+EgByteArrayAbstractType& EgByteArrayAbstractType::operator=(const EgByteArrayAbstractType &rightBA) {
     dataSize = rightBA.dataSize;
-    if (resizeFlag)
-        reallocDataArray();
-    memcpy((void*)arrayData, (void*) rightBA.arrayData, dataSize);
+    reallocDataArray(dataSize);
+    memcpy((void *)arrayData, (void *)rightBA.arrayData, dataSize);
     return *this;
 }
 
@@ -46,12 +39,10 @@ void ByteArrayFromCharStr(const char* str, EgByteArrayAbstractType& byteArray) {
     // bool resizeFlag = byteArray.dataSize < newSize; // FIXME add capacity size
     int64_t newSize = strlen(str) + 1;
     if (newSize > 1) {
-        byteArray.dataSize = newSize;
-        byteArray.reallocDataArray();
+        byteArray.reallocDataArray(newSize);
         memcpy((void *)byteArray.arrayData, (void *)str, newSize);
     } else {
-        byteArray.dataSize = 0;
-        byteArray.reallocDataArray();
+        byteArray.reallocDataArray(0);
     }
 }
 
@@ -63,35 +54,30 @@ EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, char* 
         return byteArray;
 }
 
+EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, std::string& str) {
+        str.assign((char*) byteArray.arrayData, byteArray.dataSize-1);
+        return byteArray;
+}
+
 EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const char* str) {
-        // *(reinterpret_cast<int*> (byteArray.arrayData)) = intNum;
-        // std::cout << "byteArray to int: " << std::dec << intNum << std::endl;
-        // PrintByteArray(byteArray);
         int64_t newSize = strlen(str)+1;
         if (newSize > 1) {
-            byteArray.dataSize = newSize;
-            byteArray.reallocDataArray();
+            byteArray.reallocDataArray(newSize);
             memcpy((void *)byteArray.arrayData, (void *)str, newSize);
         } else {
-            byteArray.dataSize = 0;
-            byteArray.reallocDataArray();
+            byteArray.reallocDataArray(0);
         }
         return byteArray;
 }
 
-EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, int& intNum) {
-        intNum = *(reinterpret_cast<int*> (byteArray.arrayData));
-        // std::cout << "byteArray to int: " << std::dec << intNum << std::endl;
-        // PrintByteArray(byteArray);
-        return byteArray;
-}
-
-EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, int intNum) {
-        byteArray.dataSize = sizeof(int);
-        byteArray.reallocDataArray();    
-        *(reinterpret_cast<int*> (byteArray.arrayData)) = intNum;
-        // std::cout << "byteArray to int: " << std::dec << intNum << std::endl;
-        // PrintByteArray(byteArray);
+EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, std::string& str) {
+        int64_t newSize = str.size()+1;
+        if (newSize > 1) {
+            byteArray.reallocDataArray(newSize);
+            memcpy((void *)byteArray.arrayData, (void *)str.c_str(), newSize);
+        } else {
+            byteArray.reallocDataArray(0);
+        }
         return byteArray;
 }
 

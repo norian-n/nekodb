@@ -5,7 +5,7 @@ void EgLinksType::clear() {
     linksDataStorage.clear();
 }
 
-int EgLinksType::ConnectLinks(std::string& linkNameStr, EgDatabaseType& myDB) {
+int EgLinksType::ConnectLinks(const std::string& linkNameStr, EgDatabaseType& myDB) {
     metaInfoDatabase = &myDB;
     if (linksDataStorage.ConnectSystemNodeType(linkNameStr + "_arrowLinks") != 0) {
         std::cout << "ConnectLinks() not found storage: " << linkNameStr << std::endl;

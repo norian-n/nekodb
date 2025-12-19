@@ -29,7 +29,7 @@ void egDataNodeFromList(EgDataNodeType& newNode, QList<QVariant>& addValues);
 
 EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QString& qtStr);
 
-EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, int& intNum);
-EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, int intNum);
+// EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, int& intNum);
+// EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, int intNum);
 
 EgDataNodeType& operator << (EgDataNodeType& dataNode, QString& qtStr);

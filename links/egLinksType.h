@@ -19,7 +19,7 @@ public:
     
     void clear();
 
-    int  ConnectLinks(std::string& linkNameStr, EgDatabaseType& myDB); // links have another register place in metainfo
+    int  ConnectLinks(const std::string& linkNameStr, EgDatabaseType& myDB); // links have another register place in metainfo
     int  ConnectLinks(const char* linkName, EgDatabaseType& myDB)
         { std::string name(linkName); return ConnectLinks(name, myDB); } // wrapper
 

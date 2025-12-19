@@ -18,6 +18,7 @@ void EgDataNodesContainerType::clear() {
     deletedDataNodes.clear();
     addedDataNodes.clear();
     updatedDataNodes.clear();
+    nodesCount = 0;
 }
 
 int EgDataNodesContainerType::GetLastID() {
@@ -42,6 +43,7 @@ EgDataNodeType *EgDataNodesContainerType::GetNodePtrByID(EgDataNodeIDType nodeID
 int EgDataNodesContainerType::AddDataNode(EgDataNodeType *newNode) {
     newNode-> dataNodeID = 1 + lastNodeID++; // dataNodeBlueprint-> getNextID();
     dataNodes.insert(std::make_pair(newNode-> dataNodeID, newNode));
+    nodesCount++;
     addedDataNodes.insert(std::make_pair(newNode-> dataNodeID, newNode));
     return 0;
 }
@@ -72,6 +74,7 @@ void EgDataNodesContainerType::DeleteDataNode(const EgDataNodeIDType delID) {
     {
         nodeFound = true;
         dataNodes.erase(iter);
+        nodesCount--;
     }
     auto addIter = addedDataNodes.find(delID); // search added nodes
     if (addIter != addedDataNodes.end())
@@ -128,6 +131,7 @@ int EgDataNodesContainerType::LoadAllLocalFileNodes() {
         }
         dataNodes.insert(std::make_pair(newNode->dataNodeID, newNode));
     }
+    nodesCount = dataNodes.size();
     LocalNodesFile-> nodesFile.close();
     return 0;
 }
@@ -148,6 +152,7 @@ int EgDataNodesContainerType::LoadLocalNodesByOffsets(std::set<EgFileOffsetType>
         LocalNodesFile-> ReadDataNode(newNode, tmpOffset);
         dataNodes.insert(std::make_pair(newNode->dataNodeID, newNode));
     }
+    nodesCount = dataNodes.size();
     LocalNodesFile-> nodesFile.close();
     return 0;
 }

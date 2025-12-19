@@ -1,5 +1,7 @@
-all: maketests testlocalfile clean
+all: maketests clean
 .PHONY: all clean
+
+# testlocalfile
 
 # CFLAGS = -O3 -Wall -Wall -Wextra -pedantic -fPIC
 
@@ -13,7 +15,8 @@ INCLUDES =
 EGDBLIB = -L. -legdb
 
 # SRC_FILES = tests/testDataFields.cpp service/egByteArray.cpp nodes/egDataNode.cpp
-SRC_FILES_TESTS = $(shell find tests ! -name "testDataNodesLocalFile.cpp" -name '*.cpp')
+SRC_FILES_TESTS = $(shell find tests -name '*.cpp')
+# ! -name "testDataNodesLocalFile.cpp"
 
 #   $(name:string1=string2) For each word in 'name' replace 'string1' with 'string2'
 OBJS = $(SRC_FILES_TESTS:.cpp=.o)
@@ -38,13 +41,13 @@ maketests:   $(APPS)
 	$(CC) $< $(EGDBLIB) -o $@
 
 ######################################
-LOCAL_FILE_SRC = service/egByteArray.cpp nodes/egDataNode.cpp nodes/egDataNodeBlueprint.cpp \
-tests/testDataNodesLocalFile.cpp nodes/egDataNodesLocalFile.cpp indexes/egFingers.cpp indexes/egIndexes.cpp
-LOCAL_FILE_OBJ = testDataNodesLocalFile.o egDataNodesLocalFile.o egByteArray.o egDataNode.o egDataNodeBlueprint.o egFingers.o egIndexes.o
-LOCAL_FILE_BIN = tests/testDataNodesLocalFile.exe
-testlocalfile:
-	g++ $(CPPFLAGS) -c $(LOCAL_FILE_SRC) -D EG_NODE_OFFSETS_DEBUG
-	g++ -o $(LOCAL_FILE_BIN) $(LOCAL_FILE_OBJ)
+# LOCAL_FILE_SRC = service/egByteArray.cpp nodes/egDataNode.cpp nodes/egDataNodeBlueprint.cpp \
+# tests/testDataNodesLocalFile.cpp nodes/egDataNodesLocalFile.cpp indexes/egFingers.cpp indexes/egIndexes.cpp
+# LOCAL_FILE_OBJ = testDataNodesLocalFile.o egDataNodesLocalFile.o egByteArray.o egDataNode.o egDataNodeBlueprint.o egFingers.o egIndexes.o
+# LOCAL_FILE_BIN = tests/testDataNodesLocalFile.exe
+# testlocalfile:
+# 	g++ $(CPPFLAGS) -c $(LOCAL_FILE_SRC) -D EG_NODE_OFFSETS_DEBUG
+#	g++ -o $(LOCAL_FILE_BIN) $(LOCAL_FILE_OBJ)
 
 clean:
 	@echo ===============  clean  ===============

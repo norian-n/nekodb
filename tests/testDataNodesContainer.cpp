@@ -55,14 +55,14 @@ bool testDataNodeBlueprint() {
 }
 
 bool testDataNodesContainer() {
-    cout << "===== Test NodesContainerType (store 3 generated nodes to container testNodes.gdn, delete #2) =====" << endl;
+    cout << "===== Test NodesContainerType  =====" << endl;
     nodesContainer.init(&testBlueprint);
 
     if(nodesContainer.LoadLocalBlueprint()) {
         cout << "Error: can't open data nodes blueprint testNodes.dnl" << endl;
         return false;
     }
-        // 3 generated nodes
+        // generated nodes
     addSampleDataNode(nodesContainer);
     addSampleDataNode(nodesContainer);
     addSampleDataNode(nodesContainer);

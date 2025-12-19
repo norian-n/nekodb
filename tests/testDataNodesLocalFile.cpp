@@ -49,7 +49,7 @@ bool initDataNodeBlueprint() {
 
 int main()
 {
-    int nodesCount  {0};
+    // int nodesCount  {0};
 
     cout << "===== Test egDataNodeLocalFile " /* (\"" << field1 << "\" " << " \""
          << field2 << "\" " << " \""
@@ -61,16 +61,9 @@ int main()
     EgDataNodesLocalFileType testLocalFile;
     initDataNodeBlueprint();
     testLocalFile.dataNodeBlueprint = &testBlueprint;
-    // std::string fileName {"testLocalFile"};
-    // testLocalFile.InitFile(fileName);
-    // testLocalFile.initIndexes();
 
     EgDataNodeType testDataNode(&testBlueprint);
-    EgDataNodeType testNextNode(&testBlueprint);
-    // EgDataNodeBlueprintType testBlueprint("testLocalFile");
-    // testDataNode.dataNodeBlueprint = &testBlueprint;
-
-    // testDataNode.dataFieldsContainer.fieldsCount = TEST_FIELDS_COUNT;
+    // EgDataNodeType testNextNode(&testBlueprint);
     addSampleDataFields(testDataNode);
     // PrintEgDataNodeTypeFields(testDataNode);
         // write
@@ -88,13 +81,26 @@ int main()
     testLocalFile.WriteHeader();
     testLocalFile.nodesFile.close();
 
+    EgDataNodeIDType lastNodesID {0};
+    testLocalFile.GetLastID(fname, lastNodesID);
+    // std::cout << "nodesID: " << std::dec << nodesID << std::endl;
+
+    if (lastNodesID == 44444444)
+        cout << "PASS" << endl;
+    else
+        cout << "FAIL" << endl;
+
+    /* testLocalFile.OpenFileToRead(fname);
+    testLocalFile.PrintNodesChain();
+    testLocalFile.nodesFile.close(); */    
+
     /* testLocalFile.OpenFileToRead("testLocalFile");
     testLocalFile.nodesFile.seekRead(100500);
     cout << "File fail(): " << testLocalFile.nodesFile.fileStream.fail() 
          << " file eof(): " << testLocalFile.nodesFile.fileStream.eof()<< endl;
     testLocalFile.nodesFile.close();
     return 0; */
-
+/*
         // read nodes
     testDataNode.clear();
     // std::string fname {"testLocalFile"};
@@ -110,11 +116,7 @@ int main()
     }
     // testLocalFile.PrintNodesChain();
     testLocalFile.nodesFile.close();
-
-    if (nodesCount == 3)
-        cout << "PASS" << endl;
-    else
-        cout << "FAIL" << endl;
+*/
 
 /*
         // delete node

@@ -34,7 +34,7 @@ bool testDataNodeBlueprint() {
     testBlueprint.LocalStoreBlueprint();
     int res = testBlueprint.LocalLoadBlueprint();
     
-    PrintDataNodeBlueprint(testBlueprint);
+    // PrintDataNodeBlueprint(testBlueprint);
 
     return (res == 0);
 }

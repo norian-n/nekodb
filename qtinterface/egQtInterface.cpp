@@ -6,8 +6,7 @@ inline void ByteArrayToQtByteArray(EgByteArrayAbstractType& byteArray, QByteArra
 }
 
 inline void QtByteArrayToByteArray(QByteArray& qtBA, EgByteArrayAbstractType& byteArray) {
-    byteArray.dataSize  = (uint64_t) (qtBA.size()+1);
-    byteArray.reallocDataArray();
+    byteArray.reallocDataArray(qtBA.size()+1);
     memcpy((void*)byteArray.arrayData, (void*) qtBA.data(), qtBA.size());
     byteArray.arrayData[byteArray.dataSize-1] = 0;
     // PrintByteArray(byteArray);

@@ -50,18 +50,18 @@ public:
     // EgDataNodeType* getNextInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr); // node, not link
     // EgDataNodeType* getNextOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr);     
 
-    EgByteArrayAbstractType& operator[](std::string& fieldStrName);  // field data by name
-    EgByteArrayAbstractType& operator[](const char* fieldCharName);
-
     void InsertDataFieldFromCharStr(const char* str);
     void InsertDataFieldFromByteArray(EgByteArrayAbstractType& ba);
     void InsertRawByteArrayPtr(EgByteArraySlicerType* baPtr);
 
+    EgByteArrayAbstractType& operator[](const std::string& fieldStrName);  // field data by name
+
     EgDataNodeType& operator << (const char* str) { InsertDataFieldFromCharStr(str); return *this; }
     EgDataNodeType& operator << (std::string& s)  { InsertDataFieldFromCharStr(s.c_str()); return *this; }
-    EgDataNodeType& operator << (EgByteArraySlicerType& ba) { InsertDataFieldFromByteArray(ba); return *this; }
+    EgDataNodeType& operator << (const std::string& s)  { InsertDataFieldFromCharStr(s.c_str()); return *this; }
+    EgDataNodeType& operator << (EgByteArrayAbstractType& ba) { InsertDataFieldFromByteArray(ba); return *this; }
 
-    template <typename T> EgDataNodeType& operator << (T&& rvalue) { AddNextDataFieldFromType<T>(rvalue); return *this; }
+    /*template <typename T> EgDataNodeType& operator << (T&& rvalue) { AddNextDataFieldFromType<T>(rvalue); return *this; }
 
     template <typename T> void AddNextDataFieldFromType(T&& value) {
         if (insertIndex < dataNodeBlueprint->fieldsCount) {
@@ -72,6 +72,18 @@ public:
             // PrintPtrsArray<EgByteArrayAbstractType*> (*dataFieldsPtrs);
         } else
             std::cout << "ERROR: AddNextDataFieldFromType() fields count overflow: " << dataNodeBlueprint-> blueprintName << std::endl;
+    } */
+    template <typename T> EgDataNodeType& operator << (const T& value) { // AddNextDataFieldFromType<T>(rvalue); return *this; }
+    // template <typename T> void AddNextDataFieldFromType(const T& value) {
+        if (insertIndex < dataNodeBlueprint->fieldsCount) {
+            EgByteArraySlicerType *byteArray = new EgByteArraySlicerType(dataNodeBlueprint->theHamSlicer, sizeof(value)); // use ham slicer allocator
+            memcpy((void *)byteArray->arrayData, (void *)&value, sizeof(value));
+            // dataFieldsContainer.dataFields.push_back(byteArray);
+            dataFieldsPtrs->ptrsArray[insertIndex++] = byteArray; // static_cast<EgByteArrayAbstractType> (byteArray);
+            // PrintPtrsArray<EgByteArrayAbstractType*> (*dataFieldsPtrs);
+        } else
+            std::cout << "ERROR: AddNextDataFieldFromType() fields count overflow: " << dataNodeBlueprint-> blueprintName << std::endl;
+        return *this;
     }
 
     void makeIndexedFieldsCopy();

@@ -92,7 +92,7 @@ void EgDataNodesContainerType::DeleteDataNode(const EgDataNodeIDType delID) {
 }
 
 int EgDataNodesContainerType::StoreToLocalFile() {
-    if ( !addedDataNodes.size() &&  !updatedDataNodes.size() && !deletedDataNodes.size()) {
+    if ( !addedDataNodes.size() &&  !updatedDataNodes.size() && !deletedDataNodes.size() ) {
         std::cout << "DEBUG: StoreToLocalFile() all nodes maps empty: " << dataNodeBlueprint-> blueprintName << std::endl;
         return 0;
     }

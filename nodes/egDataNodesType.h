@@ -18,7 +18,10 @@ class EgDatabaseType;   // peer database
 
 class EgDataNodesType { // "type" means c++ type, data metatype called "blueprint"
 public:
-    bool                        isConnected         {  false  };    // ? TODO nodes data status ( connected, no file, no server)
+    bool                        isConnected         {  false  };    // checked blueprint file and central egDb metadata
+    bool                        isDataLoaded        {  false  };
+    bool                        isDataUpdated       {  false  };
+
     std::string                 dataNodesName;
     EgDatabaseType*             metaInfoDatabase    { nullptr };    // nodes and links layout == blueprint == class == type info
     EgDataNodeBlueprintType*    dataNodeBlueprint   { nullptr };    // layout == blueprint == class == type of these data nodes
@@ -35,9 +38,7 @@ public:
     int  ConnectSystemNodeType(std::string a_dataNodesName); // for local testing or inside database
     int  OpenLocalBlueprint();    
 
-    int  Connect(std::string& nodesNameStr, EgDatabaseType& myDB);
-    int  Connect(const char*  nodesName, EgDatabaseType& myDB) 
-        { std::string name = std::string(nodesName); return Connect(name, myDB); } // wrapper
+    int  Connect(const std::string& nodesNameStr, EgDatabaseType& myDB);
 
     int  AddDataNode(EgDataNodeType& newNode);
     int  AddDataNode(EgDataNodeType* newNode);
@@ -52,11 +53,9 @@ public:
 
     int  Store();
     int  LoadAllNodes();
-    bool LoadNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue) {
-        return nodesContainer-> LoadLocalNodesEQ(indexName, fieldValue); }
+    bool LoadNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue);
 
     // Projects.LoadIndexedNodes(IC<int>("owner", EQ, 2) &&  IC<int>("status", EQ, 3));
-
     // int  LoadNodesByOffsets() { return nodesContainer-> LoadLocalNodesByOffsets(indexOffsets); }
     
     EgDataNodeType& operator[](EgDataNodeIDType nodeID);

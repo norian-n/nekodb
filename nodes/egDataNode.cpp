@@ -208,24 +208,14 @@ EgDataNodeType* EgDataNodeType::getOutLinkedNode(EgBlueprintIDType linkBlueprint
     return nullptr;
 }
 
-EgByteArrayAbstractType& EgDataNodeType::operator[](std::string& fieldStrName) { // field value by name as stg::string
-    auto iter = dataNodeBlueprint->dataFieldsNames.find(fieldStrName);
-    if (iter != dataNodeBlueprint->dataFieldsNames.end()) {
+EgByteArrayAbstractType& EgDataNodeType::operator[](const std::string& fieldStrName) { // field value by name as stg::string
+    auto iter = dataNodeBlueprint-> dataFieldsNames.find(fieldStrName);
+    if (iter != dataNodeBlueprint-> dataFieldsNames.end()) {
         // std::cout << "EgDataNodeType[]: " << dataNodeBlueprint->blueprintName << " field found: " << fieldStrName << std::endl;
         return *(dataFieldsPtrs->ptrsArray[iter->second]);
     }
-    std::cout << "ERROR: EgDataNodeType[]: " << dataNodeBlueprint->blueprintName << " field NOT found: " << fieldStrName << std::endl;
+    std::cout << "ERROR: EgDataNodeType[]: " << dataNodeBlueprint-> blueprintName << " field NOT found: " << fieldStrName << std::endl;
     return dataNodeBlueprint-> egNotFound;
-}
-
-EgByteArrayAbstractType& EgDataNodeType::operator[](const char *fieldCharName) { // field value by name as char* literal
-    auto iter = dataNodeBlueprint->dataFieldsNames.find(std::string(fieldCharName));
-    if (iter != dataNodeBlueprint->dataFieldsNames.end()) {
-        // std::cout << "EgDataNodeType[]: " << dataNodeBlueprint->blueprintName << " field found: " << fieldCharName << std::endl;
-        return *(dataFieldsPtrs->ptrsArray[iter->second]);
-    }
-    std::cout << "ERROR: EgDataNodeType[]: " << dataNodeBlueprint->blueprintName << " field NOT found: " << fieldCharName << std::endl;
-    return dataNodeBlueprint->egNotFound;
 }
 
 void EgDataNodeType::InsertDataFieldFromCharStr(const char* str) {
@@ -242,7 +232,7 @@ void EgDataNodeType::InsertDataFieldFromCharStr(const char* str) {
 }
 
 void EgDataNodeType::InsertRawByteArrayPtr(EgByteArraySlicerType* baPtr) {
-    dataFieldsPtrs->ptrsArray[insertIndex++] = baPtr;
+    dataFieldsPtrs-> ptrsArray[insertIndex++] = baPtr;
 }
 
 void EgDataNodeType::InsertDataFieldFromByteArray(EgByteArrayAbstractType& ba) {

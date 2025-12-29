@@ -1,5 +1,6 @@
 #pragma once
 #include "egDatabaseType.h"
+#include <unordered_set>
 
 class EgLayersType {
 public:
@@ -20,7 +21,7 @@ public:
     void AddNodesType(const std::string& nodesName, EgLayerNumType layerNum);
     void AddLinksType(const std::string& linksName, EgLayerNumType layerNum);
 
-    void getLayerNodesAndLinks(std::set<std::string>& nodesNames, std::set<std::string>& linksNames, EgLayerNumType layerNum);
+    void getLayerNodesAndLinks(std::unordered_set<std::string>& nodesNames, std::unordered_set<std::string>& linksNames, EgLayerNumType layerNum);
 
     int LoadLayers();
     int StoreLayers();

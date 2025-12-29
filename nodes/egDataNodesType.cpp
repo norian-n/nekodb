@@ -10,7 +10,7 @@ EgDataNodesType::EgDataNodesType():
     nodesContainer (new EgDataNodesContainerType), 
     dataMap(nodesContainer-> dataNodes) {}// real container init at Connect()
 
-int EgDataNodesType::Connect(std::string& nodesNameStr, EgDatabaseType &myDB) {
+int EgDataNodesType::Connect(const std::string& nodesNameStr, EgDatabaseType &myDB) {
     if (isConnected) {
         std::cout << "WARNING: Connect(): trying to connect data nodes type again: " << nodesNameStr << std::endl;
         return 0;
@@ -78,6 +78,8 @@ int EgDataNodesType::ConnectSystemNodeType(std::string a_dataNodesName) { // sai
 
 void EgDataNodesType::clear() {
     nodesContainer-> clear();
+    isDataLoaded  = false;
+    isDataUpdated = false;
 }
 
 int EgDataNodesType::OpenLocalBlueprint() {
@@ -85,11 +87,14 @@ int EgDataNodesType::OpenLocalBlueprint() {
 }
 
 int EgDataNodesType::AddDataNode(EgDataNodeType& newNode) {
-    if (! isConnected) {
+    return AddDataNode(&newNode);
+    /*if (! isConnected) {
         std::cout << "ERROR: EgDataNodesType is not connected to database: " << dataNodesName << std::endl;
         return -1;
     }
-    return nodesContainer-> AddDataNode(&newNode);
+    int res = nodesContainer-> AddDataNode(&newNode);
+    isDataUpdated = isDataUpdated || (bool) res;
+    return res;*/
 }
 
 int EgDataNodesType::AddDataNode(EgDataNodeType* newNode) {
@@ -97,7 +102,9 @@ int EgDataNodesType::AddDataNode(EgDataNodeType* newNode) {
         std::cout << "ERROR: EgDataNodesType is not connected to database: " << dataNodesName << std::endl;
         return -1;
     }
-    return nodesContainer-> AddDataNode(newNode);
+    int res = nodesContainer-> AddDataNode(newNode);
+    isDataUpdated = isDataUpdated || ! (bool) res;
+    return res;
 }
 
 int EgDataNodesType::MarkUpdatedDataNode(EgDataNodeIDType nodeID) {
@@ -105,7 +112,9 @@ int EgDataNodesType::MarkUpdatedDataNode(EgDataNodeIDType nodeID) {
         std::cout << "ERROR: EgDataNodesType is not connected to database: " << dataNodesName << std::endl;
         return -1;
     }
-    return nodesContainer-> MarkUpdatedDataNode(nodeID);
+    int res = nodesContainer-> MarkUpdatedDataNode(nodeID);
+    isDataUpdated = isDataUpdated || ! (bool) res;
+    return res;
 }
 
 void EgDataNodesType::DeleteDataNode(EgDataNodeIDType delID) {
@@ -113,10 +122,17 @@ void EgDataNodesType::DeleteDataNode(EgDataNodeIDType delID) {
         std::cout << "ERROR: EgDataNodesType is not connected to database: " << dataNodesName << std::endl;
         return;
     }
-    return nodesContainer-> DeleteDataNode(delID);
+    nodesContainer-> DeleteDataNode(delID);
+    isDataUpdated = true;
 }
 
 int EgDataNodesType::Store() {
+    bool emptyMaps = !nodesContainer-> addedDataNodes.size() &&  !nodesContainer-> updatedDataNodes.size() 
+        && !nodesContainer-> deletedDataNodes.size();
+    if ( emptyMaps && isDataUpdated )
+        std::cout << "DEBUG: Store() emptyMaps && isDataUpdated logical conflict at nodes type " << dataNodesName << std::endl;
+    if (! isDataUpdated)
+        return 0;
     if (! isConnected) {
         std::cout << "ERROR: EgDataNodesType is not connected to database: " << dataNodesName << std::endl;
         return -1;
@@ -129,6 +145,7 @@ int EgDataNodesType::Store() {
             if (updNodesIter.second-> serialDataPtr)
                 (*serialStoreFunction)(*updNodesIter.second);
     }
+    isDataUpdated = false; // FIXME check err proc logic
     return nodesContainer-> StoreToLocalFile();
 }
 
@@ -144,7 +161,13 @@ int EgDataNodesType::LoadAllNodes() {
             (*serialLoadFunction)(*nodesIter.second);
             // std::cout << "iter nodeID: " << nodesIter.second-> dataNodeID << std::endl;
         }
+    isDataLoaded = ! (bool) res;
     return res;
+}
+
+bool EgDataNodesType::LoadNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue) {
+    isDataLoaded = nodesContainer-> LoadLocalNodesEQ(indexName, fieldValue);
+    return isDataLoaded;
 }
 
 EgDataNodeType &EgDataNodesType::operator[](EgDataNodeIDType nodeID) {

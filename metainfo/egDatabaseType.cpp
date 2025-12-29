@@ -74,10 +74,10 @@ EgDataNodesType *EgDatabaseType::GetNodeTypePtrByID(EgBlueprintIDType nodeTypeID
     return nullptr;
 }
 
-void EgDatabaseType::AddDataNodesTypeInfo(EgBlueprintIDType& blueprintID, std::string &typeName) {
+void EgDatabaseType::AddDataNodesTypeInfo(EgBlueprintIDType& blueprintID, const std::string& typeName) {
     if (!nodeTypeIDByName(typeName, blueprintID))// metainfoDataExists
         return;
-    // EgDataNodeType *newNode = new EgDataNodeType(nodesTypesStorageBlueprint);
+    // EG_LOG_STUB << "typeName : " << typeName << FN;
     EgDataNodeType* newNode = new EgDataNodeType(nodesTypesMetainfo.dataNodeBlueprint);
     blueprintID = nodesTypesMetainfo.nodesContainer-> GetLastID() + 1;
     *newNode << blueprintID;
@@ -85,7 +85,7 @@ void EgDatabaseType::AddDataNodesTypeInfo(EgBlueprintIDType& blueprintID, std::s
     nodesTypesMetainfo << newNode;
 }
 
-void EgDatabaseType::AddLinksTypeInfo(EgBlueprintIDType& blueprintID, std::string &linksTypeName) {
+void EgDatabaseType::AddLinksTypeInfo(EgBlueprintIDType& blueprintID, const std::string& linksTypeName) {
     if (!linkTypeIDByName(linksTypeName, blueprintID))// metainfoDataExists
         return;
     // EgDataNodeType *newNode = new EgDataNodeType(linksTypesStorageBlueprint);
@@ -96,7 +96,7 @@ void EgDatabaseType::AddLinksTypeInfo(EgBlueprintIDType& blueprintID, std::strin
     linksTypesMetainfo << newNode;
 }
 
-void EgDatabaseType::AddLayersTypeInfo(EgBlueprintIDType& blueprintID, std::string &layersTypeName) {
+void EgDatabaseType::AddLayersTypeInfo(EgBlueprintIDType& blueprintID, const std::string& layersTypeName) {
     if (!layersTypeIDByName(layersTypeName, blueprintID))// metainfoDataExists
         return;
     // EgDataNodeType *newNode = new EgDataNodeType(linksTypesStorageBlueprint);
@@ -143,14 +143,14 @@ int EgDatabaseType::StoreLayersInfo() {
     return layersMetainfo.Store();
 }
 
-bool EgDatabaseType::nodeTypeIDByName(std::string& typeName, EgBlueprintIDType& nodeTypeID) {
+bool EgDatabaseType::nodeTypeIDByName(const std::string& typeName, EgBlueprintIDType& nodeTypeID) {
+    // EG_LOG_STUB << "check typeName : " << typeName << FN;
     if (LoadDataNodesTypesInfo() == 0) { // files exist
         for (auto nodesIter : nodesTypesMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
             std::string currentName ((char *)(*(nodesIter.second))["nodesTypeName"].arrayData);
-            // std::cout << "nodeTypeIDByName() currentName: " << currentName << " typeName: " << typeName << std::endl;
+            // EG_LOG_STUB << "currentName : " << currentName << FN;
             if (currentName == typeName) {
                 nodeTypeID = nodesIter.first;
-                // std::cout << "nodeTypeIDByName() node type found: " << typeName << " " << std::dec << nodeTypeID << std::endl;
                 return false; // typename exists
             }
         }
@@ -158,11 +158,11 @@ bool EgDatabaseType::nodeTypeIDByName(std::string& typeName, EgBlueprintIDType& 
     return true;
 }
 
-bool EgDatabaseType::linkTypeIDByName(std::string& linkName, EgBlueprintIDType& linkTypeID) {
+bool EgDatabaseType::linkTypeIDByName(const std::string& linkName, EgBlueprintIDType& linkTypeID) {
     if (LoadLinksInfo() == 0) { // files exist
         for (auto nodesIter : linksTypesMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
             std::string currentName ((char *)(*(nodesIter.second))["linksTypeName"].arrayData);
-            std::cout << "linkTypeIDByName() currentName: " << currentName << " linkName: " << linkName << std::endl;
+            // std::cout << "linkTypeIDByName() currentName: " << currentName << " linkName: " << linkName << std::endl;
             if (currentName == linkName) {
                 linkTypeID = nodesIter.first;
                 // std::cout << "linkTypeIDByName() node type found: " << linkName << " " << std::dec << linkTypeID << std::endl;
@@ -173,7 +173,7 @@ bool EgDatabaseType::linkTypeIDByName(std::string& linkName, EgBlueprintIDType& 
     return true;
 }
 
-bool EgDatabaseType::layersTypeIDByName(std::string& layersName, EgBlueprintIDType& layersTypeID) {
+bool EgDatabaseType::layersTypeIDByName(const std::string& layersName, EgBlueprintIDType& layersTypeID) {
     if (LoadLayersInfo() == 0) { // files exist
         for (auto nodesIter : layersMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
             std::string currentName ((char *)(*(nodesIter.second))["layersTypeName"].arrayData);
@@ -188,21 +188,20 @@ bool EgDatabaseType::layersTypeIDByName(std::string& layersName, EgBlueprintIDTy
     return true;
 }
 
-int EgDatabaseType::CreateNodeBlueprint(const char* name) { //,  EgNodeTypeSettings& typeSettings)
-    std::string strName(name);
-    if (std::filesystem::exists(strName + ".dnl")) { 
-        std::cout << "ERROR: Data nodes type/blueprint already exists, cant CreateNodeType(): " << name << std::endl;
+int EgDatabaseType::CreateNodeBlueprint(const std::string& blueprintName) { //,  EgNodeTypeSettings& typeSettings)
+    if (std::filesystem::exists(blueprintName + ".dnl")) { 
+        std::cout << "ERROR: Data nodes type/blueprint already exists, cant CreateNodeType(): " << blueprintName << std::endl;
         CreateNodeBlueprintFlag = false; // abort next ops
         return -1;
     }
-    nodeBlueprint = new EgDataNodeBlueprintType(strName);  // if someone failed to commit blueprint and leak mem, no big deal
+    nodeBlueprint = new EgDataNodeBlueprintType(blueprintName);  // if someone failed to commit blueprint and leak mem, no big deal
     nodeBlueprint-> BlueprintInitStart();
     CreateNodeBlueprintFlag = true; // ok to add fields
     // std::cout << "newBlueprint before: " << nodeBlueprint->blueprintName << " " << (int) nodeBlueprint-> blueprintID << std::endl;
     return 0;
 }
 
-void EgDatabaseType::AddNodeDataField(std::string& fieldName) {
+void EgDatabaseType::AddNodeDataField(const std::string& fieldName) {
     if (CreateNodeBlueprintFlag)
         nodeBlueprint-> AddDataFieldName(fieldName);
     if (CreateLinkBlueprintFlag) {
@@ -213,7 +212,7 @@ void EgDatabaseType::AddNodeDataField(std::string& fieldName) {
     }
 }
 
-void EgDatabaseType::AddIndex(std::string indexName, uint8_t indexSizeBytes, uint8_t indexSubType) {
+void EgDatabaseType::AddIndex(const std::string& indexName, uint8_t indexSizeBytes, uint8_t indexSubType) {
     if (CreateNodeBlueprintFlag)
         nodeBlueprint-> AddIndex(indexName, indexSizeBytes, indexSubType);
 }
@@ -241,7 +240,7 @@ void EgDatabaseType::CommitSystemNodeBlueprint() { // dont add to nodes metainfo
     CreateNodeBlueprintFlag = false;
 }
 
-int EgDatabaseType::CreateLinkBlueprint(std::string& linkTypeName, std::string& nodesFrom, std::string& nodesTo) {
+int EgDatabaseType::CreateLinkBlueprint(const std::string& linkTypeName, const std::string& nodesFrom, const std::string& nodesTo) {
     std::string fullLinkName = linkTypeName + std::string("_arrowLinks"); // FIXME global const
     if (std::filesystem::exists(fullLinkName + ".dnl")) { 
         std::cout << "ERROR: Link type/blueprint file already exists, cant CreateLinkBlueprint(): " << linkTypeName << std::endl;
@@ -283,7 +282,7 @@ int EgDatabaseType::CreateLayersBlueprint(const std::string& layersTypeName) {
     return 0;
 }
 
-int EgDatabaseType::CreateLinkWithDataBlueprint(std::string& linkTypeName, std::string& nodesFrom, std::string& nodesTo) {
+int EgDatabaseType::CreateLinkWithDataBlueprint(const std::string& linkTypeName, const std::string& nodesFrom, const std::string& nodesTo) {
     std::string fullLinkName = linkTypeName + std::string("_arrowLinks"); // FIXME global const
     if (std::filesystem::exists(fullLinkName + ".dnl")) { 
         std::cout << "ERROR: Link type/blueprint file already exists, cant CreateLinkBlueprint(): " << linkTypeName << std::endl;
@@ -299,7 +298,7 @@ int EgDatabaseType::CreateLinkWithDataBlueprint(std::string& linkTypeName, std::
     return 0;
 }
 
-void EgDatabaseType::AddLinkDataField(std::string& fieldName) {
+void EgDatabaseType::AddLinkDataField(const std::string& fieldName) {
     if (CreateLinkBlueprintFlag)
         linkBlueprint-> AddDataFieldName(fieldName);
     if (CreateNodeBlueprintFlag) {

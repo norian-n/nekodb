@@ -35,7 +35,7 @@ void EgLayersType::AddLinksType(const std::string& nodesName, EgLayerNumType lay
     layersStorage << newNode;
 }
 
-void EgLayersType::getLayerNodesAndLinks(std::set<std::string>& nodesNames, std::set<std::string>& linksNames, EgLayerNumType layerNum) {
+void EgLayersType::getLayerNodesAndLinks(std::unordered_set<std::string>& nodesNames, std::unordered_set<std::string>& linksNames, EgLayerNumType layerNum) {
     nodesNames.clear();
     linksNames.clear();
     EgLayerNumType theLayer;
@@ -48,9 +48,9 @@ void EgLayersType::getLayerNodesAndLinks(std::set<std::string>& nodesNames, std:
                 (*nodesIter.second)["isLink"] >> isLink;
                 (*nodesIter.second)["name"]   >> theName;
                 if (isLink)
-                    linksNames.insert(theName);                  
+                    linksNames.insert(theName);
                 else
-                    nodesNames.insert(theName);              
+                    nodesNames.insert(theName);
             }
         }
     }

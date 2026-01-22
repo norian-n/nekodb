@@ -35,7 +35,7 @@ int num1 = 0xab;
 int num2 = 0xcd;
 
 inline void addSampleDataNode(EgDataNodesType& dataNodes, int x, int y) {
-    EgDataNodeType* newNode = new EgDataNodeType(dataNodes.dataNodeBlueprint);
+    EgDataNode* newNode = new EgDataNode(dataNodes.dataNodeBlueprint);
     *newNode << field1;
     // *newNode << field2;
     // *newNode << field3;

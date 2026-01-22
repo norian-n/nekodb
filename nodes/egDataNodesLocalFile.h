@@ -44,14 +44,14 @@ public:
     bool OpenFileToUpdate(std::string& layoutName);
     bool StartFileUpdate(std::string& layoutName);
     bool UpdateNodesFile(std::string& layoutName, 
-        EgDataNodesMapType& addedNodes, EgDataNodesMapType& deletedNodes, EgDataNodesMapType& updatedNodes);
+        EgDataNodesOrdMapType& addedNodes, EgDataNodesMapType& deletedNodes, EgDataNodesMapType& updatedNodes);
 
     bool getFirstNodeOffset(EgFileOffsetType& theOffset);
     bool getLastNodeOffset(EgFileOffsetType& theOffset);
 
-    bool WriteDataNode(EgDataNodeType* theNode);
-    bool ReadDataNode(EgDataNodeType* theNode, EgFileOffsetType& nextOffset);
-    bool DeleteDataNode(EgDataNodeType* theNode);
+    bool WriteDataNode(EgDataNode* theNode);
+    bool ReadDataNode(EgDataNode* theNode, EgFileOffsetType& nextOffset);
+    bool DeleteDataNode(EgDataNode* theNode);
 
     // bool AddLocalIndex(std::string& indexName, EgDataNodeType* theNode);
 
@@ -60,4 +60,4 @@ public:
 
 // ======================== Debug ========================
 
-void ReadDataNodeAndOffsets(EgFileType &theNodesFile, EgDataNodeType *theNode);
+void ReadDataNodeAndOffsets(EgFileType &theNodesFile, EgDataNode *theNode);

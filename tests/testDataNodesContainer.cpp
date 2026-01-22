@@ -14,7 +14,7 @@ EgDataNodesContainerType nodesContainer;
 
 
 inline void addSampleDataNode(EgDataNodesContainerType& container) {
-    EgDataNodeType* newNode = new EgDataNodeType(container.dataNodeBlueprint);
+    EgDataNode* newNode = new EgDataNode(container.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
     *newNode << field3;
@@ -31,11 +31,11 @@ bool testDataNodeBlueprint() {
     testBlueprint.AddDataFieldName("testField 2");
     testBlueprint.AddDataFieldName("my_field 3");
 
-    testBlueprint.blueprintSettings.useEntryNodes         = true;
+   /* testBlueprint.blueprintSettings.useEntryNodes         = true;
     testBlueprint.blueprintSettings.useGUIsettings        = true;
     testBlueprint.blueprintSettings.useLinks              = true;
     testBlueprint.blueprintSettings.useNamedAttributes    = true;
-    testBlueprint.blueprintSettings.useVisualSpace        = true;
+    testBlueprint.blueprintSettings.useVisualSpace        = true; */
 
     testBlueprint.BlueprintInitCommit();
 

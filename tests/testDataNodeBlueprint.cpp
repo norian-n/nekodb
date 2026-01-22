@@ -19,11 +19,11 @@ bool testDataNodeBlueprint() {
     testBlueprint.AddDataFieldName("testField 2");
     testBlueprint.AddDataFieldName("field 3");
 
-    testBlueprint.blueprintSettings.useEntryNodes         = true;
+/*    testBlueprint.blueprintSettings.useEntryNodes         = true;
     testBlueprint.blueprintSettings.useGUIsettings        = true;
     testBlueprint.blueprintSettings.useLinks              = true;
     testBlueprint.blueprintSettings.useNamedAttributes    = true;
-    testBlueprint.blueprintSettings.useVisualSpace        = true;
+    testBlueprint.blueprintSettings.useVisualSpace        = true; */
 
     testBlueprint.AddIndex("field 3", 4, egIndexesSpace::egIntFT);
     testBlueprint.AddIndex("bad index name", 4, egIndexesSpace::egFloatFT);

@@ -1,5 +1,4 @@
 #pragma once
-// #include "../core/egCoreTypes.h" // included in hamSlicer
 #include "egHamSlicer.h"
 
 template <typename T> class EgPtrArrayType { // : public EgByteArrayAbstractType { // egBA with ham slicer mem allocator
@@ -22,9 +21,8 @@ public:
 
     virtual ~EgPtrArrayType() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); }
 
-    inline void init() { if(ptrsCount) theHamSlicer-> getSlice(ptrsCount*sizeof(T), brickID, (ByteType*&) ptrsArray); 
+    inline void init() { if(ptrsCount) theHamSlicer-> getSlice(ptrsCount*sizeof(T), brickID, (ByteType*&) ptrsArray); }
         // std::cout << "EgPtrArrayType() brickID: " << std::dec << brickID << " ptr: "<< std::hex << (int64_t) ptrsArray << std::endl;
-    }
 
     void clear() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); ptrsCount = 0; brickID = 0; ptrsArray = nullptr; }
 
@@ -43,7 +41,7 @@ public:
     }
 };
 
-template <typename T> void PrintPtrsArray(EgPtrArrayType<T>& bArray) {
+/* template <typename T> void PrintPtrsArray(EgPtrArrayType<T>& bArray) {
     std::cout << "PrintPtrArray ptrs count: " << std::dec << bArray.ptrsCount << " ";
     if (bArray.ptrsCount) {
         for (int i = 0; i < bArray.ptrsCount; i++)
@@ -51,4 +49,4 @@ template <typename T> void PrintPtrsArray(EgPtrArrayType<T>& bArray) {
             std::cout << std::dec << i << ": "<< std::hex << (int64_t) bArray.ptrsArray[i] << ", ";
         std::cout << std::endl;
     }
-}
+} */

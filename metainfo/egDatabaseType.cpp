@@ -34,51 +34,34 @@ void EgDatabaseType::initDatabase() {
 
 void EgDatabaseType::initNodesMetainfo() {
     CreateNodeBlueprint(nodesTypesStorageName);
-
     AddNodeDataField("nodesBlueprintID");
     AddNodeDataField("nodesTypeName");
-
     CommitSystemNodeBlueprint();
 }
 
 void EgDatabaseType::initLinksMetainfo() {
     CreateNodeBlueprint(linksTypesStorageName);
-
     AddNodeDataField("linksBlueprintID");
     AddNodeDataField("linksTypeName");
-
     CommitSystemNodeBlueprint();
 }
 
 void EgDatabaseType::initLayersMetainfo() {
     CreateNodeBlueprint(layersStorageName);
-
     AddNodeDataField("layersBlueprintID");
     AddNodeDataField("layersTypeName");    
-
     CommitSystemNodeBlueprint();
 }
 
-int EgDatabaseType::InsertDataNodesTypeToMap(EgBlueprintIDType dntID, EgDataNodesType *dntPtr) {
-    auto iter = dataNodesTypes.find(dntID); // search if already connected
-    if (iter != dataNodesTypes.end())
-        return -1;
-    dataNodesTypes.insert(std::pair<EgBlueprintIDType, EgDataNodesType *>(dntID, dntPtr));
-    return 0;
-}
-
-EgDataNodesType *EgDatabaseType::GetNodeTypePtrByID(EgBlueprintIDType nodeTypeID) {
-    auto iter = dataNodesTypes.find(nodeTypeID); // search all nodes
-    if (iter != dataNodesTypes.end())
-        return iter->second;
-    return nullptr;
+EgDataNodesType* EgDatabaseType::GetNodesTypePtrByID(EgBlueprintIDType nodeTypeID) { // FIXME implement serialDataPtr on all types load
+    return static_cast < EgDataNodesType* > (nodesTypesMetainfo.nodesContainer->GetNodePtrByID (nodeTypeID)-> serialDataPtr);
 }
 
 void EgDatabaseType::AddDataNodesTypeInfo(EgBlueprintIDType& blueprintID, const std::string& typeName) {
     if (!nodeTypeIDByName(typeName, blueprintID))// metainfoDataExists
         return;
     // EG_LOG_STUB << "typeName : " << typeName << FN;
-    EgDataNodeType* newNode = new EgDataNodeType(nodesTypesMetainfo.dataNodeBlueprint);
+    EgDataNode* newNode = new EgDataNode(nodesTypesMetainfo.dataNodeBlueprint);
     blueprintID = nodesTypesMetainfo.nodesContainer-> GetLastID() + 1;
     *newNode << blueprintID;
     *newNode << typeName;
@@ -89,7 +72,7 @@ void EgDatabaseType::AddLinksTypeInfo(EgBlueprintIDType& blueprintID, const std:
     if (!linkTypeIDByName(linksTypeName, blueprintID))// metainfoDataExists
         return;
     // EgDataNodeType *newNode = new EgDataNodeType(linksTypesStorageBlueprint);
-    EgDataNodeType* newNode = new EgDataNodeType(linksTypesMetainfo.dataNodeBlueprint);
+    EgDataNode* newNode = new EgDataNode(linksTypesMetainfo.dataNodeBlueprint);
     blueprintID = linksTypesMetainfo.nodesContainer-> GetLastID() + 1;
     *newNode << blueprintID;
     *newNode << linksTypeName;
@@ -100,7 +83,7 @@ void EgDatabaseType::AddLayersTypeInfo(EgBlueprintIDType& blueprintID, const std
     if (!layersTypeIDByName(layersTypeName, blueprintID))// metainfoDataExists
         return;
     // EgDataNodeType *newNode = new EgDataNodeType(linksTypesStorageBlueprint);
-    EgDataNodeType* newNode = new EgDataNodeType(layersMetainfo.dataNodeBlueprint);
+    EgDataNode* newNode = new EgDataNode(layersMetainfo.dataNodeBlueprint);
     blueprintID = layersMetainfo.nodesContainer-> GetLastID() + 1;
     *newNode << blueprintID;
     *newNode << layersTypeName;
@@ -147,7 +130,7 @@ bool EgDatabaseType::nodeTypeIDByName(const std::string& typeName, EgBlueprintID
     // EG_LOG_STUB << "check typeName : " << typeName << FN;
     if (LoadDataNodesTypesInfo() == 0) { // files exist
         for (auto nodesIter : nodesTypesMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
-            std::string currentName ((char *)(*(nodesIter.second))["nodesTypeName"].arrayData);
+            std::string currentName ((char *)(*(nodesIter.second))["nodesTypeName"].dataChunk);
             // EG_LOG_STUB << "currentName : " << currentName << FN;
             if (currentName == typeName) {
                 nodeTypeID = nodesIter.first;
@@ -158,10 +141,25 @@ bool EgDatabaseType::nodeTypeIDByName(const std::string& typeName, EgBlueprintID
     return true;
 }
 
+EgDataNode* EgDatabaseType::dataNodePtrByNodesType(EgDataNodesType* nodesType) {
+    // EG_LOG_STUB << "check typeName : " << typeName << FN;
+    if (LoadDataNodesTypesInfo() == 0) { // files exist
+        for (auto nodesIter : nodesTypesMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
+            std::string currentName ((char *)(*(nodesIter.second))["nodesTypeName"].dataChunk);
+            // EG_LOG_STUB << "currentName : " << currentName << FN;
+            if (currentName == nodesType-> dataNodesName) {
+                return nodesIter.second; // typename exists
+            }
+        }
+    }
+    return nullptr;
+}
+
+
 bool EgDatabaseType::linkTypeIDByName(const std::string& linkName, EgBlueprintIDType& linkTypeID) {
     if (LoadLinksInfo() == 0) { // files exist
         for (auto nodesIter : linksTypesMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
-            std::string currentName ((char *)(*(nodesIter.second))["linksTypeName"].arrayData);
+            std::string currentName ((char *)(*(nodesIter.second))["linksTypeName"].dataChunk);
             // std::cout << "linkTypeIDByName() currentName: " << currentName << " linkName: " << linkName << std::endl;
             if (currentName == linkName) {
                 linkTypeID = nodesIter.first;
@@ -176,7 +174,7 @@ bool EgDatabaseType::linkTypeIDByName(const std::string& linkName, EgBlueprintID
 bool EgDatabaseType::layersTypeIDByName(const std::string& layersName, EgBlueprintIDType& layersTypeID) {
     if (LoadLayersInfo() == 0) { // files exist
         for (auto nodesIter : layersMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
-            std::string currentName ((char *)(*(nodesIter.second))["layersTypeName"].arrayData);
+            std::string currentName ((char *)(*(nodesIter.second))["layersTypeName"].dataChunk);
             std::cout << "layersTypeIDByName() currentName: " << currentName << " layersName: " << layersName << std::endl;
             if (currentName == layersName) {
                 layersTypeID = nodesIter.first;

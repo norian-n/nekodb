@@ -16,7 +16,7 @@ cd tests_exec
 # exec all *.exe to log file
 for i in *.exe
 do 
-  LD_LIBRARY_PATH=~/egdb/egDb2 ./$i 2>&1 | tee -a all_tests.log 
+  LD_LIBRARY_PATH=~/egdb/src ./$i 2>&1 | tee -a all_tests.log 
 done
 echo
 # mv tests_exec/all_tests.log ./

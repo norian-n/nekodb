@@ -1,6 +1,4 @@
 #pragma once
-#include <cstdint>
-#include <set>
 #include "egDataNodesLocalFile.h"
 
 class EgDataNodesContainerType {
@@ -11,7 +9,7 @@ public:
     EgDataNodesLocalFileType*   LocalNodesFile      { nullptr };    // data files *.gdn load/store support
         // data nodes content and changes tracking
     EgDataNodesMapType dataNodes;        // active nodes container
-    EgDataNodesMapType addedDataNodes;
+    EgDataNodesOrdMapType addedDataNodes;
     EgDataNodesMapType updatedDataNodes;
     EgDataNodesMapType deletedDataNodes; // TODO : clear all addons on node delete
 
@@ -23,13 +21,13 @@ public:
     void clear();
     int  GetLastID();
     int  LoadLocalBlueprint();
-    EgDataNodeType* GetNodePtrByID(EgDataNodeIDType nodeID);
+    EgDataNode* GetNodePtrByID(EgDataNodeIDType nodeID);
 
-    int  AddDataNode(EgDataNodeType* newNode);
+    int  AddDataNode(EgDataNode* newNode);
     int  MarkUpdatedDataNode(EgDataNodeIDType nodeID);
     void DeleteDataNode(const EgDataNodeIDType delID);
 
-    EgDataNodesContainerType& operator << (EgDataNodeType* newNode);
+    EgDataNodesContainerType& operator << (EgDataNode* newNode);
 
     int  StoreToLocalFile();
     int  LoadAllLocalFileNodes();

@@ -42,4 +42,4 @@ public:
 
 // ======================== Debug ========================
 
-void PrintResolvedLinksFlex(const EgDataNodeType& node);
+void PrintResolvedLinksFlex(const EgDataNode& node);

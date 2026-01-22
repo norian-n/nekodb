@@ -7,7 +7,7 @@ template <typename KeyType> EgIndexes<KeyType>::EgIndexes(const std::string a_in
         fingersTree(new EgFingers<KeyType>(a_indexName, this)),
         indexFileName(a_indexName + ".ind"),
         indexFileStream(a_indexName + ".ind"),
-        localStream(new egDataStream(indexChunkSize))
+        localStream(new EgDataStream(indexChunkSize))
 { }
 
 //  ============================================================================
@@ -15,7 +15,7 @@ template <typename KeyType> EgIndexes<KeyType>::EgIndexes(const std::string a_in
 //  ============================================================================
 
 template <typename KeyType> bool EgIndexes<KeyType>::AddNewIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) {
-    KeyType key = *(reinterpret_cast<KeyType*> (keyBA.arrayData));
+    KeyType key = *(reinterpret_cast<KeyType*> (keyBA.dataChunk));
     bool res {true};
     if(! CheckIfIndexFileExists()) { // add new index and finger FIXME TODO files
         res = res && indexFileStream.openToWrite();
@@ -131,7 +131,7 @@ template <typename KeyType> inline void EgIndexes<KeyType>::DeleteIndexesChunk(u
 }
 
 template <typename KeyType> bool EgIndexes<KeyType>::DeleteIndex(EgByteArrayAbstractType& keyBA, uint64_t dataOffset) {
-    KeyType key = *(reinterpret_cast<KeyType*> (keyBA.arrayData));
+    KeyType key = *(reinterpret_cast<KeyType*> (keyBA.dataChunk));
     theKey = key;
     theDataOffset = dataOffset;
     bool res = fingersTree-> FindIndexChunkEQ(key); // get currentFinger
@@ -171,7 +171,7 @@ template <typename KeyType> bool EgIndexes<KeyType>::DeleteIndex(EgByteArrayAbst
 }
 
 template <typename KeyType> bool EgIndexes<KeyType>::UpdateDataOffset(EgByteArrayAbstractType& keyBA, uint64_t oldDataOffset, uint64_t newDataOffset) {
-    KeyType key = *(reinterpret_cast<KeyType*> (keyBA.arrayData));
+    KeyType key = *(reinterpret_cast<KeyType*> (keyBA.dataChunk));
     bool res {true};
     theKey = key;
     theDataOffset = oldDataOffset;
@@ -610,7 +610,7 @@ template <typename KeyType> bool EgIndexes<KeyType>::LoadDataEQFirst(std::set<ui
 }
 
 template <typename KeyType> bool EgIndexes<KeyType>::LoadAllDataEQ(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) {
-    theKey = *(reinterpret_cast<KeyType*> (keyBA.arrayData));
+    theKey = *(reinterpret_cast<KeyType*> (keyBA.dataChunk));
     // EG_LOG_STUB << "key : " << std::hex << (int) theKey << FN;
     if (! fingersTree-> FindIndexChunkEQ(theKey))
         return false;
@@ -625,6 +625,70 @@ template <typename KeyType> bool EgIndexes<KeyType>::LoadAllDataEQ(std::set<uint
     if (res)
         res = LoadDataUpEqual(index_offsets);
     indexFileStream.close();
+    return res;
+}
+
+template <typename KeyType> bool EgIndexes<KeyType>::LoadAllDataGE(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) {
+    theKey = *(reinterpret_cast<KeyType*> (keyBA.dataChunk));
+    if (! fingersTree-> FindIndexChunkGE(theKey))
+        return false;
+    if ( ! indexFileStream.openToRead()) {
+        EG_LOG_STUB << "ERROR: cant open indexes file: " << indexFileName << FN;
+        return false;       
+    }
+    bool res = LoadIndexChunk(fingersTree-> currentFinger.nextChunkOffset); // to localStream-> bufData
+    if (res)
+        res = FindFirstIndexPos(CompareGE);
+    if (res)
+        res = LoadDataUp(index_offsets);
+    return res;
+}
+
+template <typename KeyType> bool EgIndexes<KeyType>::LoadAllDataGT(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) {
+    theKey = *(reinterpret_cast<KeyType*> (keyBA.dataChunk));
+    if (! fingersTree-> FindIndexChunkGT(theKey))
+        return false;
+    if ( ! indexFileStream.openToRead()) {
+        EG_LOG_STUB << "ERROR: cant open indexes file: " << indexFileName << FN;
+        return false;       
+    }
+    bool res = LoadIndexChunk(fingersTree-> currentFinger.nextChunkOffset); // to localStream-> bufData
+    if (res)
+        res = FindFirstIndexPos(CompareGT);
+    if (res)
+        res = LoadDataUp(index_offsets);
+    return res;
+}
+
+template <typename KeyType> bool EgIndexes<KeyType>::LoadAllDataLE(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) {
+    theKey = *(reinterpret_cast<KeyType*> (keyBA.dataChunk));
+    if (! fingersTree-> FindIndexChunkLE(theKey))
+        return false;
+    if ( ! indexFileStream.openToRead()) {
+        EG_LOG_STUB << "ERROR: cant open indexes file: " << indexFileName << FN;
+        return false;       
+    }
+    bool res = LoadIndexChunk(fingersTree-> currentFinger.nextChunkOffset); // to localStream-> bufData
+    if (res)
+        res = FindFirstIndexPos(CompareLE);
+    if (res)
+        res = LoadDataDown(index_offsets);
+    return res;
+}
+
+template <typename KeyType> bool EgIndexes<KeyType>::LoadAllDataLT(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) {
+    theKey = *(reinterpret_cast<KeyType*> (keyBA.dataChunk));
+    if (! fingersTree-> FindIndexChunkLT(theKey))
+        return false;
+    if ( ! indexFileStream.openToRead()) {
+        EG_LOG_STUB << "ERROR: cant open indexes file: " << indexFileName << FN;
+        return false;       
+    }
+    bool res = LoadIndexChunk(fingersTree-> currentFinger.nextChunkOffset); // to localStream-> bufData
+    if (res)
+        res = FindFirstIndexPos(CompareLT);
+    if (res)
+        res = LoadDataDown(index_offsets);
     return res;
 }
 

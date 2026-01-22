@@ -2,7 +2,7 @@
 #include "egDataNode.h"
 #include "egDataNodeBlueprint.h"
 
-//  ============================================================================
+// ========= Byte Array Length Convertors  ===============
 const int DATA_CONVERT_MAX_BYTES_COUNT      {10};   // 64 bits to up to 10 bytes 
 StaticLengthType    egMask7f                {0x7f}; // get 7 bits to next byte
 ByteType            egMask80                {0x80}; // not last byte flag
@@ -50,7 +50,7 @@ uint8_t egConvertFlexToStatic(ByteType* flexibleVal, StaticLengthType& staticVal
 }
 //  ============================================================================
 
-EgDataNodeType::EgDataNodeType(EgDataNodeBlueprintType* a_dataNodeBlueprint, bool initMe):
+EgDataNode::EgDataNode(EgDataNodeBlueprintType* a_dataNodeBlueprint, bool initMe):
     dataNodeBlueprint(a_dataNodeBlueprint) {
     if (dataNodeBlueprint) {
         // std::cout << "EgDataNodeType() dataNodeBlueprint-> fieldsCount: " << dataNodeBlueprint->blueprintName << " " << std::dec << (int) dataNodeBlueprint-> fieldsCount << std::endl;
@@ -62,7 +62,7 @@ EgDataNodeType::EgDataNodeType(EgDataNodeBlueprintType* a_dataNodeBlueprint, boo
         std::cout << "ERROR: EgDataNodeType(): nullptr blueprint in initMe constructor" << std::endl;
 }
 
-EgDataNodeType::EgDataNodeType(EgDataNodeBlueprintType* a_dataNodeBlueprint, void* a_serialDataPtr):
+EgDataNode::EgDataNode(EgDataNodeBlueprintType* a_dataNodeBlueprint, void* a_serialDataPtr):
     dataNodeBlueprint(a_dataNodeBlueprint),
     serialDataPtr(a_serialDataPtr) {
     if (dataNodeBlueprint) {
@@ -74,21 +74,21 @@ EgDataNodeType::EgDataNodeType(EgDataNodeBlueprintType* a_dataNodeBlueprint, voi
         std::cout << "ERROR: EgDataNodeType(): nullptr blueprint in a_serialDataPtr constructor" << std::endl;
 }
 
-void EgDataNodeType::init() {
+void EgDataNode::init() {
     for (int i = 0; i < dataNodeBlueprint->fieldsCount; i++) {
         EgByteArraySlicerType* byteArray = new EgByteArraySlicerType(dataNodeBlueprint-> theHamSlicer, 0); // FIXME STUB check size
         dataFieldsPtrs-> ptrsArray[i] = byteArray;
     }
 }
 
-void EgDataNodeType::clear() {
+void EgDataNode::clear() {
     dataFieldsPtrs-> clear();
     inLinks.clear();
     outLinks.clear();
     indexedFieldsOldValues.clear();
 }
 
-EgLinkDataPtrsNodePtrsMapType* EgDataNodeType::getInLinksMap(EgBlueprintIDType linkBlueprintID) {
+EgLinkDataPtrsNodePtrsMapType* EgDataNode::getInLinksMap(EgBlueprintIDType linkBlueprintID) {
     auto inLinksMapIter = inLinks.find(linkBlueprintID);
     if (inLinksMapIter != inLinks.end()) {
         // std::cout << "getInLinksMap() the map found for ID: " << linkBlueprintID << std::endl;        
@@ -98,7 +98,7 @@ EgLinkDataPtrsNodePtrsMapType* EgDataNodeType::getInLinksMap(EgBlueprintIDType l
     return nullptr;
 }
 
-EgLinkDataPtrsNodePtrsMapType* EgDataNodeType::getOutLinksMap(EgBlueprintIDType linkBlueprintID) {
+EgLinkDataPtrsNodePtrsMapType* EgDataNode::getOutLinksMap(EgBlueprintIDType linkBlueprintID) {
     auto outLinksMapIter = outLinks.find(linkBlueprintID);
     if (outLinksMapIter != outLinks.end()) {
         // std::cout << "getOutLinksMap() the map found for ID: " << linkBlueprintID << std::endl;        
@@ -108,7 +108,7 @@ EgLinkDataPtrsNodePtrsMapType* EgDataNodeType::getOutLinksMap(EgBlueprintIDType 
     return nullptr;
 }
 
-void* EgDataNodeType::getNextInLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr) {
+void* EgDataNode::getNextInLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNode* prevLinkDataPtr) {
     EgLinkDataPtrsNodePtrsMapType* inLinksMap = getInLinksMap(linkBlueprintID);
     if (inLinksMap) {
         if (prevLinkDataPtr) { // null to get first, else get next
@@ -132,7 +132,7 @@ void* EgDataNodeType::getNextInLinkSerialPtr(EgBlueprintIDType linkBlueprintID, 
     return nullptr;
 }
 
-void* EgDataNodeType::getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr) {
+void* EgDataNode::getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNode* prevLinkDataPtr) {
     EgLinkDataPtrsNodePtrsMapType* outLinksMap = getOutLinksMap(linkBlueprintID);
     if (outLinksMap) {
         if (prevLinkDataPtr) { // null to get first, else get next
@@ -156,7 +156,7 @@ void* EgDataNodeType::getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID,
     return nullptr;
 }
 
-void EgDataNodeType::deleteInLink (EgBlueprintIDType linkBlueprintID, EgDataNodeType* delLinkNodePtr) {
+void EgDataNode::deleteInLink (EgBlueprintIDType linkBlueprintID, EgDataNode* delLinkNodePtr) {
     EgLinkDataPtrsNodePtrsMapType* inLinksMap = getInLinksMap(linkBlueprintID);
     if (inLinksMap) {
         auto inLinksMapIter = inLinksMap->find(delLinkNodePtr);
@@ -170,7 +170,7 @@ void EgDataNodeType::deleteInLink (EgBlueprintIDType linkBlueprintID, EgDataNode
     }
 }
 
-void EgDataNodeType::deleteOutLink (EgBlueprintIDType linkBlueprintID, EgDataNodeType* delLinkDataPtr) {
+void EgDataNode::deleteOutLink (EgBlueprintIDType linkBlueprintID, EgDataNode* delLinkDataPtr) {
     EgLinkDataPtrsNodePtrsMapType* outLinksMap = getOutLinksMap(linkBlueprintID);
     if (outLinksMap) {
         auto outLinksMapIter = outLinksMap->find(delLinkDataPtr);
@@ -184,7 +184,7 @@ void EgDataNodeType::deleteOutLink (EgBlueprintIDType linkBlueprintID, EgDataNod
     }
 }
 
-EgDataNodeType* EgDataNodeType::getInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* linkNodePtr) {
+EgDataNode* EgDataNode::getInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNode* linkNodePtr) {
     EgLinkDataPtrsNodePtrsMapType* inLinksMap = getInLinksMap(linkBlueprintID);
     if (inLinksMap) {
         auto inLinksMapIter = inLinksMap->find(linkNodePtr);
@@ -196,7 +196,7 @@ EgDataNodeType* EgDataNodeType::getInLinkedNode(EgBlueprintIDType linkBlueprintI
     return nullptr;
 }
 
-EgDataNodeType* EgDataNodeType::getOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* linkNodePtr) {
+EgDataNode* EgDataNode::getOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNode* linkNodePtr) {
     EgLinkDataPtrsNodePtrsMapType* outLinksMap = getOutLinksMap(linkBlueprintID);
     if (outLinksMap) {
         auto outLinksMapIter = outLinksMap->find(linkNodePtr);
@@ -208,7 +208,7 @@ EgDataNodeType* EgDataNodeType::getOutLinkedNode(EgBlueprintIDType linkBlueprint
     return nullptr;
 }
 
-EgByteArrayAbstractType& EgDataNodeType::operator[](const std::string& fieldStrName) { // field value by name as stg::string
+EgByteArrayAbstractType& EgDataNode::operator[](const std::string& fieldStrName) { // field value by name as stg::string
     auto iter = dataNodeBlueprint-> dataFieldsNames.find(fieldStrName);
     if (iter != dataNodeBlueprint-> dataFieldsNames.end()) {
         // std::cout << "EgDataNodeType[]: " << dataNodeBlueprint->blueprintName << " field found: " << fieldStrName << std::endl;
@@ -218,11 +218,11 @@ EgByteArrayAbstractType& EgDataNodeType::operator[](const std::string& fieldStrN
     return dataNodeBlueprint-> egNotFound;
 }
 
-void EgDataNodeType::InsertDataFieldFromCharStr(const char* str) {
+void EgDataNode::InsertDataFieldFromCharStr(const char* str) {
     if (insertIndex < dataNodeBlueprint->fieldsCount) {
         // std::cout << "AddNextDataFieldFromCharStr() in: " << str << std::endl;
         EgByteArraySlicerType* byteArray = new EgByteArraySlicerType(dataNodeBlueprint->theHamSlicer, strlen(str) + 1); // use ham slicer allocator
-        memcpy((void *)byteArray->arrayData, (void *)str, byteArray->dataSize);
+        memcpy((void *)byteArray->dataChunk, (void *)str, byteArray->dataSize);
         // PrintByteArray(*byteArray);
         // std::cout << "insertIndex: " << std::dec << insertIndex << " dataFieldsPtrsArray: " << std::hex << (int64_t) dataFieldsPtrs-> ptrsArray << std::endl;
         dataFieldsPtrs->ptrsArray[insertIndex++] = byteArray;
@@ -231,14 +231,14 @@ void EgDataNodeType::InsertDataFieldFromCharStr(const char* str) {
         std::cout << "ERROR: AddNextDataFieldFromType() fields count overflow: " << dataNodeBlueprint-> blueprintName << std::endl;
 }
 
-void EgDataNodeType::InsertRawByteArrayPtr(EgByteArraySlicerType* baPtr) {
+void EgDataNode::InsertRawByteArrayPtr(EgByteArraySlicerType* baPtr) {
     dataFieldsPtrs-> ptrsArray[insertIndex++] = baPtr;
 }
 
-void EgDataNodeType::InsertDataFieldFromByteArray(EgByteArrayAbstractType& ba) {
+void EgDataNode::InsertDataFieldFromByteArray(EgByteArrayAbstractType& ba) {
     if (insertIndex < dataNodeBlueprint->fieldsCount) {
         EgByteArraySlicerType* byteArray = new EgByteArraySlicerType(dataNodeBlueprint->theHamSlicer, ba.dataSize); // use ham slicer allocator
-        memcpy((void *)byteArray->arrayData, (void *)ba.arrayData, byteArray->dataSize);
+        memcpy((void *)byteArray->dataChunk, (void *)ba.dataChunk, byteArray->dataSize);
         // dataFieldsContainer.dataFields.push_back(byteArray);
         dataFieldsPtrs->ptrsArray[insertIndex++] = byteArray;
         // PrintPtrsArray<EgByteArrayAbstractType*> (*dataFieldsPtrs);
@@ -246,7 +246,7 @@ void EgDataNodeType::InsertDataFieldFromByteArray(EgByteArrayAbstractType& ba) {
         std::cout << "ERROR: AddNextDataFieldFromType() fields count overflow: " << dataNodeBlueprint-> blueprintName << std::endl;
 }
 
-void EgDataNodeType::writeDataFieldsToFile(EgFileType &theFile) {
+void EgDataNode::writeDataFieldsToFile(EgFileType &theFile) {
     ByteType lengthRawData[DATA_CONVERT_MAX_BYTES_COUNT]; // flex size buffer, see egDataConvert.h
     for (int i =0; i < dataNodeBlueprint->fieldsCount; i++) {
         EgByteArrayAbstractType* field = dataFieldsPtrs-> ptrsArray[i];
@@ -259,7 +259,7 @@ void EgDataNodeType::writeDataFieldsToFile(EgFileType &theFile) {
                 uint8_t lenSize = egConvertStaticToFlex(field->dataSize, lengthRawData);
                 // std::cout << "writeDataFieldsToFile() lenSize: " << (int) lenSize << " lengthRawData[0]: " << (int) lengthRawData[0] << std::endl;
                 theFile.fileStream.write((const char *)lengthRawData, lenSize);              // write size
-                theFile.fileStream.write((const char *)(field->arrayData), field->dataSize); // write data
+                theFile.fileStream.write((const char *)(field->dataChunk), field->dataSize); // write data
             } else {
                 // std::cout << "writeDataFieldsToFile(): zero field size" << std::endl;
                 theFile.fileStream << (ByteType) 0;
@@ -270,7 +270,7 @@ void EgDataNodeType::writeDataFieldsToFile(EgFileType &theFile) {
     theFile.fileStream.flush();
 }
 
-void EgDataNodeType::readDataFieldsFromFile(EgFileType& theFile) {
+void EgDataNode::readDataFieldsFromFile(EgFileType& theFile) {
     ByteType lengthRawData[DATA_CONVERT_MAX_BYTES_COUNT]; // flex size buffer, see egDataConvert.h
     EgByteArraySlicerType* newField;
     // df.dataFields.clear();
@@ -287,7 +287,7 @@ void EgDataNodeType::readDataFieldsFromFile(EgFileType& theFile) {
         newField = new EgByteArraySlicerType(dataNodeBlueprint-> theHamSlicer, dataFieldSizeTmp); // +1
         if (dataFieldSizeTmp) { // not empty field
             theFile.seekRead(savePos + lenSize);
-            theFile.fileStream.read((char *)(newField->arrayData), dataFieldSizeTmp); // read data
+            theFile.fileStream.read((char *)(newField->dataChunk), dataFieldSizeTmp); // read data
         } else {
             theFile.seekRead(savePos + 1);
             // std::cout << "readDataFieldsFromFile(): zero field size" << std::endl;
@@ -299,7 +299,7 @@ void EgDataNodeType::readDataFieldsFromFile(EgFileType& theFile) {
     }
 }
 
-void EgDataNodeType::makeIndexedFieldsCopy() {
+void EgDataNode::makeIndexedFieldsCopy() {
     for (auto fieldsIter : dataNodeBlueprint-> indexedFields) {
         std::string fieldName = fieldsIter.first;
         if (! indexedFieldsOldValues.contains (fieldName)) { // copy once
@@ -311,17 +311,7 @@ void EgDataNodeType::makeIndexedFieldsCopy() {
 
 // ======================== Debug ========================
 
-void PrintEgDataNodeOffsets(const EgDataNodeType& dataNode){
-    std::cout << "PrintEgDataNodeOffsets() NodeID: " << std::dec << dataNode.dataNodeID
-              << ", nodeOffset: 0x" << std::hex << dataNode.dataFileOffset
-#ifdef EG_NODE_OFFSETS_DEBUG
-              << ", next: 0x" << dataNode.nextNodeOffset
-              << ", prev: 0x" << dataNode.prevNodeOffset 
-#endif
-              << std::endl;
-}
-
-void PrintEgDataNodeFields(const EgDataNodeType& dataNode){
+void PrintEgDataNodeFields(const EgDataNode& dataNode){
     std::cout << "PrintEgDataNodeFields() NodeID: " << std::dec << dataNode.dataNodeID << " Fields: " << std::endl;
     for (auto fieldsIter : dataNode.dataNodeBlueprint-> dataFieldsNames) {
         std::cout << fieldsIter.first << " : ";
@@ -330,3 +320,13 @@ void PrintEgDataNodeFields(const EgDataNodeType& dataNode){
         // std::cout << std::endl;
     }
 }
+/*
+void PrintEgDataNodeOffsets(const EgDataNodeType& dataNode){
+    std::cout << "PrintEgDataNodeOffsets() NodeID: " << std::dec << dataNode.dataNodeID
+              << ", nodeOffset: 0x" << std::hex << dataNode.dataFileOffset
+#ifdef EG_NODE_OFFSETS_DEBUG
+              << ", next: 0x" << dataNode.nextNodeOffset
+              << ", prev: 0x" << dataNode.prevNodeOffset 
+#endif
+              << std::endl;
+} */

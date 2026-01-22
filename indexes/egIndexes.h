@@ -16,6 +16,10 @@ class EgIndexesAbstractType { public:
     virtual bool UpdateDataOffset(EgByteArrayAbstractType& keyBA, uint64_t oldDataOffset, uint64_t newDataOffset) = 0;
 
     virtual bool LoadAllDataEQ(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) = 0;
+    virtual bool LoadAllDataGE(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) = 0;
+    virtual bool LoadAllDataGT(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) = 0;
+    virtual bool LoadAllDataLE(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) = 0;
+    virtual bool LoadAllDataLT(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA) = 0;
 
     virtual ~EgIndexesAbstractType() {}
 };
@@ -28,6 +32,7 @@ template <typename KeyType> class EgIndexes : public EgIndexesAbstractType { pub
     const egMaxStreamSizeType chunkCountPosition    = backPtrPosition  + sizeof(uint64_t);
     const egMaxStreamSizeType fingersChunkOffsetPosition  = chunkCountPosition + sizeof(keysCountType);
     const egMaxStreamSizeType indexChunkSize        =  fingersChunkOffsetPosition + sizeof(uint64_t);
+
     bool fingersChainFlag {true};
     KeyType  theKey;                // index key to process
     uint64_t theDataOffset;         // offsets in data nodes file
@@ -43,8 +48,9 @@ template <typename KeyType> class EgIndexes : public EgIndexesAbstractType { pub
     keysCountType  transactionPosInChunk; // chunk position savepoint for Load*DataNext functions
     uint64_t reallyLoaded  {0};     // first/next opers support
     uint64_t transactionID {0};     // FIXME TODO first/next opers support
+
     EgFingers<KeyType>*     fingersTree {nullptr};  // fingers tree object ptr
-    egDataStream*           localStream {nullptr};  // chunk buffer operations
+    EgDataStream*           localStream {nullptr};  // chunk buffer operations
     EgIndexStruct<KeyType>  indexData;              // index data wrapper for flexibility
     EgFileType              indexFileStream;        // file operations
     std::string             indexFileName;
@@ -60,6 +66,10 @@ template <typename KeyType> class EgIndexes : public EgIndexesAbstractType { pub
     bool LoadDataNextUp (std::set<uint64_t>& index_offsets, uint64_t& maxQuantity);
 
     bool LoadAllDataEQ(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA);
+    bool LoadAllDataGE(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA);
+    bool LoadAllDataGT(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA);
+    bool LoadAllDataLE(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA);
+    bool LoadAllDataLT(std::set<uint64_t>& index_offsets, EgByteArrayAbstractType& keyBA);
     
     bool LoadDataEQFirst(std::set<uint64_t>& index_offsets, KeyType& key,  uint64_t& maxQuantity); // FIXME TODO
     bool LoadDataEQNext (std::set<uint64_t>& index_offsets, KeyType& key,  uint64_t& maxQuantity);

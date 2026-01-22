@@ -1,20 +1,11 @@
 #pragma once
-#include <iostream>
-
 #include "egDataNodesContainer.h"
-#include "../indexes/egIndexConditions.h"
 
-//  ============================================================================
-//          EXTERNAL TYPES
-//  ============================================================================
-
-typedef void (*serialLoadFunctionType)  (EgDataNodeType& dataNode);
-typedef void (*serialStoreFunctionType) (EgDataNodeType& dataNode);
+typedef void (*serialLoadFunctionType)  (EgDataNode& dataNode);
+typedef void (*serialStoreFunctionType) (EgDataNode& dataNode);
 
 class EgLinksType;      // arrow links
 class EgDatabaseType;   // peer database 
-
-//  ============================================================================
 
 class EgDataNodesType { // "type" means c++ type, data metatype called "blueprint"
 public:
@@ -35,21 +26,22 @@ public:
     ~EgDataNodesType() { clear(); delete dataNodeBlueprint; delete nodesContainer; }
 
     void clear();
-    int  ConnectSystemNodeType(std::string a_dataNodesName); // for local testing or inside database
+    int  ConnectSystemNodeType(std::string a_dataNodesName); // for local testing or internal database storages
     int  OpenLocalBlueprint();    
 
     int  Connect(const std::string& nodesNameStr, EgDatabaseType& myDB);
 
-    int  AddDataNode(EgDataNodeType& newNode);
-    int  AddDataNode(EgDataNodeType* newNode);
-    EgDataNodesType& operator << (EgDataNodeType* newNode) { AddDataNode(newNode); return *this; }
-    EgDataNodesType& operator << (EgDataNodeType& newNode) { AddDataNode(newNode); return *this; }
+    int  AddDataNode(EgDataNode* newNode);
+    int  AddDataNode(EgDataNode& newNode) { return AddDataNode(&newNode); }
+
+    EgDataNodesType& operator << (EgDataNode* newNode) { AddDataNode(newNode); return *this; }
+    EgDataNodesType& operator << (EgDataNode& newNode) { AddDataNode(newNode); return *this; }
     EgDataNodeIDType getAddedNodeID() { return nodesContainer->lastNodeID; }
 
     int  MarkUpdatedDataNode(EgDataNodeIDType nodeID);
-    int  MarkUpdatedDataNode(EgDataNodeType& updNode) { return MarkUpdatedDataNode(updNode.dataNodeID); } // wrapper
+    int  MarkUpdatedDataNode(EgDataNode& updNode) { return MarkUpdatedDataNode(updNode.dataNodeID); }
     void DeleteDataNode(EgDataNodeIDType delID);
-    void DeleteDataNode(EgDataNodeType& delNode) { return DeleteDataNode(delNode.dataNodeID); } // wrapper
+    void DeleteDataNode(EgDataNode& delNode) { return DeleteDataNode(delNode.dataNodeID); }
 
     int  Store();
     int  LoadAllNodes();
@@ -58,9 +50,5 @@ public:
     // Projects.LoadIndexedNodes(IC<int>("owner", EQ, 2) &&  IC<int>("status", EQ, 3));
     // int  LoadNodesByOffsets() { return nodesContainer-> LoadLocalNodesByOffsets(indexOffsets); }
     
-    EgDataNodeType& operator[](EgDataNodeIDType nodeID);
+    EgDataNode& operator[](EgDataNodeIDType nodeID);
 };
-
-// ===================== Operators =======================
-
-// EgDataNodesType& operator << (EgDataNodesType& nodesServType, EgDataNodeType* newNode);

@@ -36,4 +36,5 @@ backup.sh
 *.json
 
 junkyard/*
+tests_exec/*
 

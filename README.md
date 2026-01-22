@@ -1,4 +1,4 @@
-Exocortex Hybrid-Graph Database Engine version 2
+Exocortex Hybrid-Graph Database Engine
 
 Make library:
 

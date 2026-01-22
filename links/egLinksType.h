@@ -19,29 +19,27 @@ public:
     
     void clear();
 
-    int  ConnectLinks(const std::string& linkNameStr, EgDatabaseType& myDB); // links have another register place in metainfo
-    int  ConnectLinks(const char* linkName, EgDatabaseType& myDB)
-        { std::string name(linkName); return ConnectLinks(name, myDB); } // wrapper
+    int  ConnectLinks(const std::string& linkNameStr, EgDatabaseType& myDB); // check links in database metainfo
 
     void AddRawLink(EgDataNodeIDType fromID, EgDataNodeIDType toID);
     int  AddNodeContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType toID);
 
-    EgLinksType& operator << (EgDataNodeType* newNode) { linksDataStorage.AddDataNode(newNode); return *this; }
-    EgLinksType& operator << (EgDataNodeType& newNode) { linksDataStorage.AddDataNode(newNode); return *this; }
+    EgLinksType& operator << (EgDataNode* newNode) { linksDataStorage.AddDataNode(newNode); return *this; }
+    EgLinksType& operator << (EgDataNode& newNode) { linksDataStorage.AddDataNode(newNode); return *this; }
 
     EgDataNodeIDType getAddedNodeID() {return linksDataStorage.getAddedNodeID();}
 
     int LoadLinks();
     int StoreLinks();
 
-    int AddLinkPtrsToNodes(EgDataNodeType& link, EgDataNodeType& from, EgDataNodeType& to);
+    int AddLinkPtrsToNodes(EgDataNode& link, EgDataNode& from, EgDataNode& to);
     int ResolveNodesIDsToPtrs(EgDataNodesType& from, EgDataNodesType& to);
 
     int  MarkUpdatedLink(EgDataNodeIDType linkNodeID) {return linksDataStorage.MarkUpdatedDataNode(linkNodeID);}
     
-    void DeleteBidirectLink(EgDataLinkIDType linkID);
+    void DeleteArrowLink(EgDataLinkIDType linkID);
     void DeleteInLink(EgDataLinkIDType linkID);    
     void DeleteOutLink(EgDataLinkIDType linkID);
 };
 
-void PrintResolvedLinks(const EgDataNodeType& node);
+void PrintResolvedLinks(const EgDataNode& node);

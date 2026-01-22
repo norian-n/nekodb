@@ -30,7 +30,7 @@ int EgDataNodesContainerType::LoadLocalBlueprint() {
     return dataNodeBlueprint->LocalLoadBlueprint();
 }
 
-EgDataNodeType *EgDataNodesContainerType::GetNodePtrByID(EgDataNodeIDType nodeID) {
+EgDataNode *EgDataNodesContainerType::GetNodePtrByID(EgDataNodeIDType nodeID) {
     auto iter = dataNodes.find(nodeID); // search all nodes
     if (iter != dataNodes.end()) {
         // std::cout << "GetNodePtrByID() node found for ID: " << std::dec <<  nodeID << std::endl;
@@ -40,7 +40,7 @@ EgDataNodeType *EgDataNodesContainerType::GetNodePtrByID(EgDataNodeIDType nodeID
     return nullptr;
 }
 
-int EgDataNodesContainerType::AddDataNode(EgDataNodeType *newNode) {
+int EgDataNodesContainerType::AddDataNode(EgDataNode *newNode) {
     newNode-> dataNodeID = 1 + lastNodeID++; // dataNodeBlueprint-> getNextID();
     dataNodes.insert(std::make_pair(newNode-> dataNodeID, newNode));
     nodesCount++;
@@ -113,7 +113,7 @@ int EgDataNodesContainerType::StoreToLocalFile() {
 int EgDataNodesContainerType::LoadAllLocalFileNodes() {
     clear();
     EgFileOffsetType nextOffset{0};
-    EgDataNodeType *newNode;
+    EgDataNode *newNode;
     if (!LocalNodesFile->OpenFileToRead(dataNodeBlueprint-> blueprintName)) {
         // std::cout << "ERROR: loadAllLocalNodes() can't open file " << dataNodesTypeName << ".gdn" << std::endl;
         return -1;
@@ -121,7 +121,7 @@ int EgDataNodesContainerType::LoadAllLocalFileNodes() {
     LocalNodesFile-> getFirstNodeOffset(nextOffset); // FIXME check read
     while (nextOffset) {
         // std::cout  << "getFirstNodeOffset() nextOffset = " << std::hex << nextOffset << std::endl;
-        newNode = new EgDataNodeType(dataNodeBlueprint);
+        newNode = new EgDataNode(dataNodeBlueprint);
         newNode-> dataFileOffset = nextOffset;
         LocalNodesFile-> ReadDataNode(newNode, nextOffset);
         if (newNode-> dataFileOffset == nextOffset) {
@@ -139,7 +139,7 @@ int EgDataNodesContainerType::LoadAllLocalFileNodes() {
 int EgDataNodesContainerType::LoadLocalNodesByOffsets(std::set<EgFileOffsetType>& index_offsets) {
     clear();
     EgFileOffsetType tmpOffset{0};
-    EgDataNodeType *newNode;
+    EgDataNode *newNode;
     if (!LocalNodesFile->OpenFileToRead(dataNodeBlueprint-> blueprintName)) {
         // std::cout << "ERROR: loadAllLocalNodes() can't open file " << dataNodesTypeName << ".gdn" << std::endl;
         return -1;
@@ -147,7 +147,7 @@ int EgDataNodesContainerType::LoadLocalNodesByOffsets(std::set<EgFileOffsetType>
 
     for (auto nextOffset : index_offsets) {
         // std::cout  << "getFirstNodeOffset() nextOffset = " << std::hex << nextOffset << std::endl;
-        newNode = new EgDataNodeType(dataNodeBlueprint);
+        newNode = new EgDataNode(dataNodeBlueprint);
         newNode-> dataFileOffset = nextOffset;
         LocalNodesFile-> ReadDataNode(newNode, tmpOffset);
         dataNodes.insert(std::make_pair(newNode->dataNodeID, newNode));
@@ -171,7 +171,7 @@ bool EgDataNodesContainerType::LoadLocalNodesEQ(const std::string& indexName, Eg
     return true;
 }
 
-EgDataNodesContainerType& EgDataNodesContainerType::operator << (EgDataNodeType* newNode) {
+EgDataNodesContainerType& EgDataNodesContainerType::operator << (EgDataNode* newNode) {
     AddDataNode(newNode); 
     return *this; 
 }

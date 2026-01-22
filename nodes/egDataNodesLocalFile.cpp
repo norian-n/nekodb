@@ -1,5 +1,4 @@
 #include "egDataNodesLocalFile.h"
-#include <iostream>
 
 void EgDataNodesLocalFileType::initIndexes() {
     if (dataNodeBlueprint)
@@ -99,7 +98,7 @@ bool EgDataNodesLocalFileType::StartFileUpdate(std::string& layoutName) {
 }
 
 bool EgDataNodesLocalFileType::UpdateNodesFile(std::string& layoutName, 
-    EgDataNodesMapType& addedNodes, EgDataNodesMapType& deletedNodes, EgDataNodesMapType& updatedNodes) {
+    EgDataNodesOrdMapType& addedNodes, EgDataNodesMapType& deletedNodes, EgDataNodesMapType& updatedNodes) {
 /*
     bool inSubTransact = StartFileUpdate(layoutName);
     if (!inSubTransact) {
@@ -110,10 +109,11 @@ bool EgDataNodesLocalFileType::UpdateNodesFile(std::string& layoutName,
     // PrintHeader();
     std::string fieldName;
     for (auto newNodesIter : addedNodes) {
-        // PrintEgDataNodeTypeFields(*(newNodesIter.second));
-        // std::cout << "StoreToLocalFile() container fieldsCount: " << std::dec << (int) ((newNodesIter.second)-> dataNodeLayout-> fieldsCount) << std::endl;
+        // PrintEgDataNodeFields(*(newNodesIter.second));
+        // std::cout << "StoreToLocalFile() container fieldsCount: " << std::dec << (int) ((newNodesIter.second)-> dataNodeBlueprint-> fieldsCount) << std::endl;
         if (newNodesIter.first < nodesFileHeader.lastID) {
-            std::cout << "ERROR: UpdateNodesFile() new node ID < last ID at " << layoutName << ".gdn" << std::endl;
+            std::cout << "ERROR: UpdateNodesFile() new node ID " << newNodesIter.first << " < last ID " << nodesFileHeader.lastID 
+                      << " at " << layoutName << ".gdn" << std::endl;
             return false;
         }
         if (! WriteDataNode(newNodesIter.second))
@@ -127,7 +127,8 @@ bool EgDataNodesLocalFileType::UpdateNodesFile(std::string& layoutName,
     }    
     for (auto updNodesIter : updatedNodes) {
         // PrintEgDataNodeTypeFields(*(updNodesIter.second));
-        // std::cout << "UpdateNodesFile() old offset: " << std::hex << updNodesIter.second-> dataFileOffset << std::endl;        
+        // std::cout  << std::endl; 
+        // EG_LOG_STUB << "old offset: " << std::hex << updNodesIter.second-> dataFileOffset << FN;       
         if (! DeleteDataNode(updNodesIter.second))
             return false;
         for (auto index : localIndexes) { // del old local indexes FIXME store and use old key
@@ -150,8 +151,7 @@ bool EgDataNodesLocalFileType::UpdateNodesFile(std::string& layoutName,
         // PrintEgDataNodeTypeFields(*(delNodesIter.second));
         if (! DeleteDataNode(delNodesIter.second))
             return false;
-            // delete local indexes
-        for (auto index : localIndexes) { // add local indexes
+        for (auto index : localIndexes) { // delete local indexes
             fieldName = index.first;
             if (! delNodesIter.second-> indexedFieldsOldValues.contains (fieldName)) // node not updated
                 localIndexes[fieldName]-> DeleteIndex(delNodesIter.second-> operator[] (fieldName), delNodesIter.second-> dataFileOffset);
@@ -178,29 +178,30 @@ bool EgDataNodesLocalFileType::getLastNodeOffset(EgFileOffsetType& theOffset) {
     return nodesFile.fileStream.good();
 }
 
-bool EgDataNodesLocalFileType::WriteDataNode(EgDataNodeType* theNode) { // write to end, update header
+bool EgDataNodesLocalFileType::WriteDataNode(EgDataNode* theNode) { // write to end, update header
     // std::cout << "WriteDataNode() dataFieldsContainer ptr " << std::hex << (uint64_t) theNode-> dataFieldsContainer << std::endl;
     EgFileOffsetType nodeOffset {nodesDataOffset}; // init to empty data pos
-    if (nodesFileHeader.lastID > 0) // data not empty 
+    // EG_LOG_STUB << "nodesFileHeader.lastID: " << std::dec << nodesFileHeader.lastID << FN;
+    if (nodesFileHeader.lastID > 0) // data not empty, upd offset
         nodeOffset = nodesFile.getFileSize();
     theNode-> dataFileOffset = nodeOffset;
-    // std::cout  << "dataNodeID:" << std::dec << theNode-> dataNodeID;
-    // std::cout << " nodeOffset: " <<  std::hex << nodeOffset << std::endl;
-    if (nodesFileHeader.lastNode) {
+    // EG_LOG_STUB << "theNode-> dataFileOffset: " <<  std::hex << theNode-> dataFileOffset << FN;
+    if (nodesFileHeader.lastNode) { // update "next" pointer/offset of old last node
         nodesFile.seekWrite(nodesFileHeader.lastNode + sizeof(EgDataNodeIDType));
-        nodesFile << nodeOffset; // update "next" pointer of prev node
+        nodesFile << nodeOffset;
     }
-    nodesFile.seekWrite(nodeOffset);
+    nodesFile.seekWrite(nodeOffset);            // write down the node
     nodesFile << theNode-> dataNodeID;
-    nodesFile.writeType<EgFileOffsetType>(0);   // pointer to next node = nullptr
-    nodesFile << nodesFileHeader.lastNode;      // pointer to prev node
+    nodesFile.writeType<EgFileOffsetType>(0);   // pointer/offset to next node = nullptr
+    nodesFile << nodesFileHeader.lastNode;      // pointer/offset to prev node as old last offset
     theNode-> writeDataFieldsToFile(nodesFile);
-    nodesFileHeader.lastNode = nodeOffset;      // upd last node ptr in the header
+
+    nodesFileHeader.lastNode = nodeOffset;      // upd last node offset in the header
     nodesFileHeader.lastID = std::max(theNode-> dataNodeID, nodesFileHeader.lastID);
     return nodesFile.fileStream.good();
 }
 
-bool EgDataNodesLocalFileType::ReadDataNode(EgDataNodeType *theNode, EgFileOffsetType &nextOffset) {
+bool EgDataNodesLocalFileType::ReadDataNode(EgDataNode *theNode, EgFileOffsetType &nextOffset) {
     theNode-> indexedFieldsOldValues.clear();
     nodesFile.seekRead(theNode->dataFileOffset);
     nodesFile >> theNode->dataNodeID;
@@ -213,7 +214,11 @@ bool EgDataNodesLocalFileType::ReadDataNode(EgDataNodeType *theNode, EgFileOffse
     return nodesFile.fileStream.good();
 }
 
-bool EgDataNodesLocalFileType::DeleteDataNode(EgDataNodeType *theNode) {
+bool EgDataNodesLocalFileType::DeleteDataNode(EgDataNode *theNode) {
+    if (nodesFileHeader.firstNode == nodesFileHeader.lastNode) { // one node only
+        InitNewHeader();
+        return true;
+    }
     EgFileOffsetType nextNodeOffset{0};
     EgFileOffsetType prevNodeOffset{0};
     nodesFile.seekRead(theNode->dataFileOffset + sizeof(EgDataNodeIDType));
@@ -278,7 +283,7 @@ void EgDataNodesLocalFileType::PrintNodesChain() {
     }
 }
 
-void ReadDataNodeAndOffsets(EgFileType &theNodesFile, EgDataNodeType *theNode) {
+void ReadDataNodeAndOffsets(EgFileType &theNodesFile, EgDataNode *theNode) {
     theNodesFile.seekRead(theNode->dataFileOffset);
     theNodesFile >> theNode->dataNodeID;
 #ifdef EG_NODE_OFFSETS_DEBUG
@@ -287,4 +292,3 @@ void ReadDataNodeAndOffsets(EgFileType &theNodesFile, EgDataNodeType *theNode) {
 #endif
     theNode-> readDataFieldsFromFile(theNodesFile);
 }
-

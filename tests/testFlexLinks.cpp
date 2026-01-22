@@ -10,7 +10,7 @@ int field2 = 100;
 int field3 = 200;
  
 inline void addSampleDataNode(EgDataNodesType& dataNodes) {
-    EgDataNodeType* newNode = new EgDataNodeType(dataNodes.dataNodeBlueprint);
+    EgDataNode* newNode = new EgDataNode(dataNodes.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
     *newNode << field3;

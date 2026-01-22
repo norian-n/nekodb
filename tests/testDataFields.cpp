@@ -57,22 +57,22 @@ bool testHamSlicer() {
           && hamSlicerTest.hamBricksByFree.size() == 2 );
 }
 
-void addSampleDataFields(EgDataNodeType& testNode) {
+void addSampleDataFields(EgDataNode& testNode) {
     // testDataFields.fieldsCount = TEST_FIELDS_COUNT;
 
     EgByteArrayAbstractType* byteArray = new EgByteArrayAbstractType();
-    byteArray-> arrayData = (ByteType*) field1;                     // no alloc, ptr to global mem
+    byteArray-> dataChunk = (ByteType*) field1;                     // no alloc, ptr to global mem
     byteArray-> dataSize  = strlen(field1)+1;
     // testDataFields.dataFields.push_back(byteArray);
     testNode.InsertDataFieldFromByteArray(*byteArray);
 
     byteArray = new EgByteArraySysallocType(strlen(field2)+1);              // sys heap alloc
-    memcpy((void*)byteArray-> arrayData, (void*) field2, byteArray-> dataSize);
+    memcpy((void*)byteArray-> dataChunk, (void*) field2, byteArray-> dataSize);
     // testDataFields.dataFields.push_back(byteArray);
     testNode.InsertDataFieldFromByteArray(*byteArray);
 
     byteArray = new EgByteArraySlicerType(&hamSlicer, strlen(field3)+1);  // use ham slicer allocator
-    memcpy((void*)byteArray-> arrayData, (void*) field3, byteArray-> dataSize);
+    memcpy((void*)byteArray-> dataChunk, (void*) field3, byteArray-> dataSize);
     // testDataFields.dataFields.push_back(byteArray);
     testNode.InsertDataFieldFromByteArray(*byteArray);
 }
@@ -104,11 +104,11 @@ int main() {
     testBlueprint.AddDataFieldName("nodesBlueprintID");
     testBlueprint.AddDataFieldName("nodesTypeName");
     testBlueprint.AddDataFieldName("nodesTypeData");
-    testBlueprint.blueprintSettings.isServiceType = true;
+    // testBlueprint.blueprintSettings.isServiceType = true;
     testBlueprint.blueprintMode = egBlueprintActive; // virtual, do NOT commit to db
 
-    EgDataNodeType testNodeWrite(&testBlueprint);
-    EgDataNodeType testNodeRead(&testBlueprint);
+    EgDataNode testNodeWrite(&testBlueprint);
+    EgDataNode testNodeRead(&testBlueprint);
 
     addSampleDataFields(testNodeWrite);
     // cout << "===== testNodeWrite =====" << endl;

@@ -1,7 +1,4 @@
 #pragma once
-#include <iostream>
-#include <cstdint>
-#include <map>
 #include "../metainfo/egCoreTypes.h"
 
 typedef uint32_t EgHamBrickIDType;
@@ -15,14 +12,14 @@ struct EgHamBrickType {
 
 class EgHamSlicerType {
 public:
-    EgHamBrickIDType    nextID {1};             // ham bricks counter
+    EgHamBrickIDType    nextID      {1};        // ham bricks counter
     EgHamBrickType*     newBrickPtr {nullptr};
     EgHamBrickType      newHamBrick;
     uint64_t            hamBrickSize {egDefaultHamBrickSize};
     // uint64_t  dataSize      {0};
 
-    std::map <EgHamBrickIDType, EgHamBrickType>  hamBricks;       // all ham bricks
-    std::multimap <uint64_t, EgHamBrickType*>    hamBricksByFree; // free slices of bricks lookup
+    std::unordered_map <EgHamBrickIDType, EgHamBrickType>  hamBricks;   // all ham bricks
+    std::multimap <uint64_t, EgHamBrickType*>    hamBricksByFree;       // free slices of bricks lookup
 
     EgHamSlicerType () { initBrick(0); }
     ~EgHamSlicerType() { hamBricksByFree.clear(); hamBricks.clear(); }

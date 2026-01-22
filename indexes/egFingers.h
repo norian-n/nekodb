@@ -31,7 +31,7 @@ template <typename KeyType> class EgFingers { public: // fingers tree (N-M type)
     EgIndexes<KeyType>*               indexChunks {nullptr}; // ptr to related indexes object, set by upper IndexesFiles interface class
     std::vector < egFinger<KeyType> > fingersChain;          // store fingers path for update
     EgFileType        fingersFileStream;     // file operations
-    egDataStream*     localStream {nullptr}; // chunk buffer operations
+    EgDataStream*     localStream {nullptr}; // chunk buffer operations
     EgFingers(std::string a_fingersName, EgIndexes<KeyType>* indexChunksPtr);
     ~EgFingers() { delete localStream; }
     inline void InitFinger(egFinger<KeyType>& theFinger);

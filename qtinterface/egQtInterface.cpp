@@ -2,13 +2,13 @@
 
 inline void ByteArrayToQtByteArray(EgByteArrayAbstractType& byteArray, QByteArray& qtBA) {
     qtBA.clear();
-    qtBA.append((const char *) byteArray.arrayData, (size_t) (byteArray.dataSize-1));
+    qtBA.append((const char *) byteArray.dataChunk, (size_t) (byteArray.dataSize-1));
 }
 
 inline void QtByteArrayToByteArray(QByteArray& qtBA, EgByteArrayAbstractType& byteArray) {
-    byteArray.reallocDataArray(qtBA.size()+1);
-    memcpy((void*)byteArray.arrayData, (void*) qtBA.data(), qtBA.size());
-    byteArray.arrayData[byteArray.dataSize-1] = 0;
+    byteArray.reallocDataChunk(qtBA.size()+1);
+    memcpy((void*)byteArray.dataChunk, (void*) qtBA.data(), qtBA.size());
+    byteArray.dataChunk[byteArray.dataSize-1] = 0;
     // PrintByteArray(byteArray);
 }
 
@@ -22,7 +22,7 @@ EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QByteA
     return byteArray;
 }
 
-void egDataNodeFromList(EgDataNodeType& newNode, QList<QVariant>& addValues) {
+void egDataNodeFromList(EgDataNode& newNode, QList<QVariant>& addValues) {
     for (int i = 0; i < addValues.size(); ++i) {
         // std::cout << "egDataNodeFromList() value qt type: " << std::dec << addValues.at(i).type() << std::endl;
         if (addValues.at(i).type() != 10) { // int type (type 2) FIXME add other QVariant types
@@ -49,7 +49,7 @@ EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QStrin
         return byteArray;
 }
 
-EgDataNodeType& operator << (EgDataNodeType& dataNode, QString& qtStr) {
+EgDataNode& operator << (EgDataNode& dataNode, QString& qtStr) {
         std::string value =  qtStr.toStdString();
         dataNode << value;
         return dataNode;

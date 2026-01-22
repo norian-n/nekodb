@@ -8,8 +8,6 @@ const std::string nodesTypesStorageName("egNodesTypesMetainfo");
 const std::string linksTypesStorageName("egLinksTypesMetainfo");
 const std::string layersStorageName    ("egLayersTypesMetainfo");
 
-//  ============================================================================
-
 class EgDatabaseType {
 public:
     EgDataNodesType nodesTypesMetainfo;
@@ -25,8 +23,6 @@ public:
     bool CreateNodeBlueprintFlag {false};
     bool CreateLinkBlueprintFlag {false};
 
-    std::unordered_map <EgBlueprintIDType, EgDataNodesType*>  dataNodesTypes; // FIXME check if needed, use storage containers
-
     EgDatabaseType() { initDatabase(); }
     
     ~EgDatabaseType() { 
@@ -41,20 +37,20 @@ public:
     void initLinksMetainfo();
     void initLayersMetainfo();
 
-    int InsertDataNodesTypeToMap(EgBlueprintIDType dntID, EgDataNodesType* dntPtr);
-    EgDataNodesType* GetNodeTypePtrByID(EgBlueprintIDType nodeTypeID);
-        // nodes metadata
+    EgDataNodesType* GetNodesTypePtrByID(EgBlueprintIDType nodeTypeID);
+// ======================== nodes metadata ========================
     void AddDataNodesTypeInfo(EgBlueprintIDType& blueprintID, const std::string& typeName);
     int  LoadDataNodesTypesInfo();
     int  StoreDataNodesTypesInfo();
     bool nodeTypeIDByName(const std::string& typeName, EgBlueprintIDType& nodeTypeID);
+    EgDataNode* dataNodePtrByNodesType(EgDataNodesType* nodesType);    
 
     int  CreateNodeBlueprint(const std::string& blueprintName);
     void AddNodeDataField   (const std::string& fieldName);
     void AddIndex(const std::string& indexName, uint8_t indexSizeBytes = 4, uint8_t indexSubType = egIndexesSpace::egIntFT);
     void CommitNodeBlueprint();         // use AddNodeDataField() prior to commit
     void CommitSystemNodeBlueprint();   // dont add info to blueprints metadata storage (e.g. to create system storages)
-        // links metadata
+// ======================== links metadata ========================
     void AddLinksTypeInfo(EgBlueprintIDType& blueprintID, const std::string& linksTypeName);
     int  LoadLinksInfo();
     int  StoreLinksInfo();
@@ -67,12 +63,12 @@ public:
 
     int  CreateFreeLinkBlueprint(const std::string& linkTypeName) { /* FIXME TODO */ return 0; } // between any node types, 4 IDs per link
     int  CreateFreeLinkWithDataBlueprint(const std::string& linkTypeName) { /* FIXME TODO */ return 0; }
-        // layers metadata
+// ======================== layers metadata ========================
     void AddLayersTypeInfo(EgBlueprintIDType& blueprintID, const std::string& linksTypeName);
     int  LoadLayersInfo();
     int  StoreLayersInfo();
     bool layersTypeIDByName(const std::string& layersName, EgBlueprintIDType& layersTypeID);
 
     int CreateLayersBlueprint(const std::string& layersTypeName);
-    // FIXME TODO : delete nodes, links, layers blueprints
+    // FIXME TODO : delete nodes, links, layers metadata
 };

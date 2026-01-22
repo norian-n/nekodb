@@ -5,16 +5,15 @@
 #include "../metainfo/egCoreTypes.h"
 #include "egDataStream.h"
 
-typedef uint64_t        EgFileOffsetType;
-
-const   uint32_t    streamBufSize {1024};
+typedef uint64_t    EgFileOffsetType;
+const   uint32_t    streamBufSize       {1024*16}; // FIXME check real buf size required
 
 class EgFileType {
 public:
     std::string  fileName;
     std::fstream fileStream;
 
-    egDataStream dataStream;
+    EgDataStream dataStream;
 
     EgFileType():dataStream(streamBufSize) {}
     EgFileType(const std::string& a_name): fileName(a_name), dataStream(streamBufSize) {}
@@ -53,7 +52,6 @@ public:
 
     // inline void readBuf (ByteType* bufData, uint64_t count) { fileStream.read ((char*) bufData, count); }
     // inline void writeBuf(ByteType* bufData, uint64_t count) { fileStream.write((char*) bufData, count); }
-
     // inline void readBufPos (ByteType* bufData, EgFileOffsetType position, uint64_t count) { seekRead(position);  fileStream.read ((char*) bufData, count); }
     // inline void writeBufPos(ByteType* bufData, EgFileOffsetType position, uint64_t count) { seekWrite(position); fileStream.write((char*) bufData, count); }
 };
@@ -65,13 +63,3 @@ template <> inline EgFileType& operator >> (EgFileType &egFile, bool& b)        
 template <typename T> inline EgFileType& operator << (EgFileType &egFile, T& i) { egFile.writeType<T>(i); return egFile; }
 // template <> inline EgFileType& operator << (EgFileType &egFile, std::string& s) { egFile.writeStr(s); return egFile; }
 template <> inline EgFileType& operator << (EgFileType &egFile, bool& b)        { egFile.writeBool(b); return egFile; }
-
-/*
-template <typename T> EgFileType& operator >> (EgFileType &egFile, T& i);
-template <> EgFileType& operator >> (EgFileType &egFile, std::string& s);
-template <> EgFileType& operator >> (EgFileType &egFile, bool& b);
-
-template <typename T> EgFileType& operator << (EgFileType &egFile, T& i);
-// template <> EgFileType& operator << (EgFileType &egFile, std::string& s);
-template <> EgFileType& operator << (EgFileType &egFile, bool& b);
-*/

@@ -18,7 +18,7 @@ template <typename KeyType> EgFingers<KeyType>::EgFingers(std::string a_fingersN
         indexChunks(indexChunksPtr),
         fingersFileName(a_fingersName + ".fng"),
         fingersFileStream(a_fingersName + ".fng"),
-        localStream(new egDataStream(fingersChunkSize)) {
+        localStream(new EgDataStream(fingersChunkSize)) {
     InitFinger(rootFinger);
 }
 

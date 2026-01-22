@@ -1,21 +1,4 @@
-#include <iostream>
 #include "egDataNodeBlueprint.h"
-/*
-EgDataNodeIDType EgDataNodeBlueprintType::getNextID() {
-    nextIDchanged = true;
-    return nextNodeID++;
-}
-*/
-/*
-int EgDataNodeBlueprintType::AddDataFieldsNames(std::vector<std::string> &fieldsNames, EgNodeBlueprintSettingsType &settings) {
-    if (BlueprintInitStart()) // commit not initiated
-        return -1;
-    for (auto fieldName : fieldsNames)
-        AddDataFieldName(fieldName);
-    blueprintSettings = settings;
-    BlueprintInitCommit();
-    return 0;
-} */
 
 int EgDataNodeBlueprintType::BlueprintInitStart() {
     blueprintFile.fileName = blueprintName + ".dnl";
@@ -130,13 +113,13 @@ int EgDataNodeBlueprintType::LocalStoreBlueprint() {
     // blueprintFile << nodesCount;
     // blueprintFile << nextNodeID;
 
-    blueprintFile << blueprintSettings.isServiceType;
+/*    blueprintFile << blueprintSettings.isServiceType;
     blueprintFile << blueprintSettings.useLinks;
     blueprintFile << blueprintSettings.useSubGraph;
     blueprintFile << blueprintSettings.useEntryNodes;
     blueprintFile << blueprintSettings.useVisualSpace;
     blueprintFile << blueprintSettings.useNamedAttributes;
-    blueprintFile << blueprintSettings.useGUIsettings;
+    blueprintFile << blueprintSettings.useGUIsettings; */
 
     writeDataFieldsNames();
     writeIndexedFields();
@@ -158,13 +141,13 @@ int EgDataNodeBlueprintType::LocalLoadBlueprint() {
     // blueprintFile >> nodesCount;
     // blueprintFile >> nextNodeID;
 
-    blueprintFile >> blueprintSettings.isServiceType;
+/*    blueprintFile >> blueprintSettings.isServiceType;
     blueprintFile >> blueprintSettings.useLinks;
     blueprintFile >> blueprintSettings.useSubGraph;
     blueprintFile >> blueprintSettings.useEntryNodes;
     blueprintFile >> blueprintSettings.useVisualSpace;
     blueprintFile >> blueprintSettings.useNamedAttributes;
-    blueprintFile >> blueprintSettings.useGUIsettings;
+    blueprintFile >> blueprintSettings.useGUIsettings; */
 
     // std::cout << "Names file pos: " << std::hex << (int) blueprintFile.fileStream.tellg() << std::endl;
     readDataFieldsNames();

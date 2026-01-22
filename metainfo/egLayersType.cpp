@@ -18,7 +18,7 @@ int EgLayersType::ConnectLayers(const std::string& a_layersTypeName, EgDatabaseT
 }
 
 void EgLayersType::AddNodesType(const std::string& nodesName, EgLayerNumType layerNum) {
-    EgDataNodeType *newNode = new EgDataNodeType(layersStorageBlueprint);
+    EgDataNode *newNode = new EgDataNode(layersStorageBlueprint);
     (*newNode)["name"]     << nodesName.c_str();
     (*newNode)["isLink"]   << (uint8_t) 0;
     (*newNode)["layerNum"] << layerNum;
@@ -27,7 +27,7 @@ void EgLayersType::AddNodesType(const std::string& nodesName, EgLayerNumType lay
 }
 
 void EgLayersType::AddLinksType(const std::string& nodesName, EgLayerNumType layerNum) {
-    EgDataNodeType *newNode = new EgDataNodeType(layersStorageBlueprint);
+    EgDataNode *newNode = new EgDataNode(layersStorageBlueprint);
     (*newNode)["name"]     << nodesName.c_str();
     (*newNode)["isLink"]   << (uint8_t) 0xFF;
     (*newNode)["layerNum"] << layerNum;

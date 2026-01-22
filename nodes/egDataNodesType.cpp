@@ -4,7 +4,7 @@
 #include "../metainfo/egDatabaseType.h"
 
 EgDataNodeBlueprintType bpNotFound("nodeNotFound");
-EgDataNodeType nodeNotFound(&bpNotFound);  // dummy data node for GUI if no data found
+EgDataNode nodeNotFound(&bpNotFound);  // dummy data node for GUI if no data found
 
 EgDataNodesType::EgDataNodesType(): 
     nodesContainer (new EgDataNodesContainerType), 
@@ -24,41 +24,21 @@ int EgDataNodesType::Connect(const std::string& nodesNameStr, EgDatabaseType &my
         std::cout << "ERROR: Connect() can't open data nodes blueprint file " << dataNodesName << ".dnl" << std::endl;
         return -1;
     }
-    if (metaInfoDatabase->nodeTypeIDByName(dataNodesName, dataNodeBlueprint->blueprintID)) { // reverse return logic - true if not found
+    /* if (metaInfoDatabase-> nodeTypeIDByName(dataNodesName, dataNodeBlueprint->blueprintID)) { // reverse return logic - true if not found
+        std::cout << "ERROR: Connect() dataNodes type not found in metainfo: " << dataNodesName << std::endl;
+        return -2;
+    }*/
+    EgDataNode* metaInfoNode = metaInfoDatabase-> dataNodePtrByNodesType(this);
+    if (! metaInfoNode) { // reverse return logic - true if not found
         std::cout << "ERROR: Connect() dataNodes type not found in metainfo: " << dataNodesName << std::endl;
         return -2;
     }
-    metaInfoDatabase-> InsertDataNodesTypeToMap(dataNodeBlueprint-> blueprintID, this);    
-    nodesContainer->init(dataNodeBlueprint);
+    metaInfoNode-> serialDataPtr = static_cast < void* > (this);
+    // metaInfoDatabase-> InsertDataNodesTypeToMap(dataNodeBlueprint-> blueprintID, this);    
+    nodesContainer-> init(dataNodeBlueprint);
     isConnected = true;
     return 0;
 }
-/*
-int EgDataNodesType::ConnectLink(std::string& linkNameStr, EgDatabaseType &myDB) {
-    if (isConnected) {
-        std::cout << "WARNING: Connect() trying to connect data nodes again, use Reconnect(): " << dataNodesName << std::endl;
-        return 0;
-    }
-    metaInfoDatabase = &myDB;
-    isConnected = false;
-    dataNodesName = linkNameStr + "_arrowLinks";
-    if (! dataNodeBlueprint)
-        dataNodeBlueprint = new EgDataNodeBlueprintType(dataNodesName);
-    if (! nodesContainer)
-        nodesContainer = new EgDataNodesContainerType(dataNodesName, dataNodeBlueprint);
-    if (OpenLocalBlueprint()) {
-        std::cout << "ERROR: Connect() can't open data links blueprint " << dataNodesName << ".dnl" << std::endl;
-        return -1;
-    }
-    if (metaInfoDatabase->linkTypeIDByName(dataNodesName, dataNodeBlueprint->blueprintID)) { // reverse return logic - true if not found
-        std::cout << "ERROR: Connect() dataLinks ID not found in metainfo: " << dataNodesName << std::endl;
-        return -2;
-    }
-    metaInfoDatabase-> InsertDataNodesTypeToMap(dataNodeBlueprint-> blueprintID, this);
-    nodesContainer-> GetLastID();
-    isConnected = true;
-    return 0;
-} */
 
 int EgDataNodesType::ConnectSystemNodeType(std::string a_dataNodesName) { // sailent connect, no metainfo register
     if (isConnected) return 0;
@@ -86,18 +66,7 @@ int EgDataNodesType::OpenLocalBlueprint() {
     return dataNodeBlueprint-> LocalLoadBlueprint();
 }
 
-int EgDataNodesType::AddDataNode(EgDataNodeType& newNode) {
-    return AddDataNode(&newNode);
-    /*if (! isConnected) {
-        std::cout << "ERROR: EgDataNodesType is not connected to database: " << dataNodesName << std::endl;
-        return -1;
-    }
-    int res = nodesContainer-> AddDataNode(&newNode);
-    isDataUpdated = isDataUpdated || (bool) res;
-    return res;*/
-}
-
-int EgDataNodesType::AddDataNode(EgDataNodeType* newNode) {
+int EgDataNodesType::AddDataNode(EgDataNode* newNode) {
     if (! isConnected) {
         std::cout << "ERROR: EgDataNodesType is not connected to database: " << dataNodesName << std::endl;
         return -1;
@@ -108,6 +77,7 @@ int EgDataNodesType::AddDataNode(EgDataNodeType* newNode) {
 }
 
 int EgDataNodesType::MarkUpdatedDataNode(EgDataNodeIDType nodeID) {
+    // EG_LOG_STUB << dataNodesName << " nodeID : " << std::dec << nodeID << FN;
     if (! isConnected) {
         std::cout << "ERROR: EgDataNodesType is not connected to database: " << dataNodesName << std::endl;
         return -1;
@@ -170,8 +140,8 @@ bool EgDataNodesType::LoadNodesEQ(const std::string& indexName, EgByteArrayAbstr
     return isDataLoaded;
 }
 
-EgDataNodeType &EgDataNodesType::operator[](EgDataNodeIDType nodeID) {
-    EgDataNodeType *nodePtr = nodesContainer-> GetNodePtrByID(nodeID);
+EgDataNode &EgDataNodesType::operator[](EgDataNodeIDType nodeID) {
+    EgDataNode* nodePtr = nodesContainer-> GetNodePtrByID(nodeID);
     if (nodePtr)
         return *nodePtr;
     return nodeNotFound;

@@ -15,7 +15,7 @@ const char* field1 = "testField1\0";
 const char* field2 = "test some string 2\0";
 const char* field3 = "test3\0";
 
-inline void addSampleDataFields(EgDataNodeType& testDataNode) {
+inline void addSampleDataFields(EgDataNode& testDataNode) {
     // cout << "===== addSampleDataFields() in " << " =====" << endl;
     testDataNode << field1;
     testDataNode << field2;
@@ -32,11 +32,11 @@ bool initDataNodeBlueprint() {
     testBlueprint.AddDataFieldName("testField 2");
     testBlueprint.AddDataFieldName("my_field 3");
 
-    testBlueprint.blueprintSettings.useEntryNodes         = true;
+/*    testBlueprint.blueprintSettings.useEntryNodes         = true;
     testBlueprint.blueprintSettings.useGUIsettings        = true;
     testBlueprint.blueprintSettings.useLinks              = true;
     testBlueprint.blueprintSettings.useNamedAttributes    = true;
-    testBlueprint.blueprintSettings.useVisualSpace        = true;
+    testBlueprint.blueprintSettings.useVisualSpace        = true; */
 
     testBlueprint.BlueprintInitCommit();
 
@@ -62,7 +62,7 @@ int main()
     initDataNodeBlueprint();
     testLocalFile.dataNodeBlueprint = &testBlueprint;
 
-    EgDataNodeType testDataNode(&testBlueprint);
+    EgDataNode testDataNode(&testBlueprint);
     // EgDataNodeType testNextNode(&testBlueprint);
     addSampleDataFields(testDataNode);
     // PrintEgDataNodeTypeFields(testDataNode);

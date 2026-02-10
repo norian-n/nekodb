@@ -1,35 +1,24 @@
 #pragma once
 #include "egHamSlicer.h"
 
-template <typename T> class EgPtrArrayType { // : public EgByteArrayAbstractType { // egBA with ham slicer mem allocator
+template <typename T> class EgPtrArrayType {
 public:
-    uint64_t  ptrsCount      {0};
-    // uint64_t  arrayCapacity {0};
+    uint64_t  ptrsCount           {0};
+    // uint64_t  arrayCapacity    {0}; // FIXME TODO add capacity logic
     T* ptrsArray     {nullptr};
     EgHamSlicerType* theHamSlicer {nullptr};
     EgHamBrickIDType brickID      {0};
 
     EgPtrArrayType () = delete;
-    EgPtrArrayType (EgHamSlicerType* a_HamSlicer, uint64_t init_size):
-        ptrsCount(init_size),
-        theHamSlicer(a_HamSlicer)
-    { init(); }
     EgPtrArrayType (EgHamSlicerType& a_HamSlicer, uint64_t init_size):
         ptrsCount(init_size),
         theHamSlicer(&a_HamSlicer)
     { init(); }
-
-    virtual ~EgPtrArrayType() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); }
+    ~EgPtrArrayType() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); }
 
     inline void init() { if(ptrsCount) theHamSlicer-> getSlice(ptrsCount*sizeof(T), brickID, (ByteType*&) ptrsArray); }
-        // std::cout << "EgPtrArrayType() brickID: " << std::dec << brickID << " ptr: "<< std::hex << (int64_t) ptrsArray << std::endl;
-
     void clear() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); ptrsCount = 0; brickID = 0; ptrsArray = nullptr; }
-
-    // EgPtrArrayType& operator = (const EgPtrArrayType& rightBA);
-
     void reallocPtrsArray() {
-        // std::cout << "reassign dynamicDataAlloc: " << dynamicDataAlloc << std::endl;
         if (brickID)
             theHamSlicer->freeSlice(brickID);
         if (ptrsCount)
@@ -40,6 +29,14 @@ public:
         }
     }
 };
+
+/*    EgPtrArrayType (EgHamSlicerType* a_HamSlicer, uint64_t init_size):
+        ptrsCount(init_size),
+        theHamSlicer(a_HamSlicer)
+    { init(); } */
+
+// EgPtrArrayType& operator = (const EgPtrArrayType& rightBA);
+// std::cout << "EgPtrArrayType() brickID: " << std::dec << brickID << " ptr: "<< std::hex << (int64_t) ptrsArray << std::endl;
 
 /* template <typename T> void PrintPtrsArray(EgPtrArrayType<T>& bArray) {
     std::cout << "PrintPtrArray ptrs count: " << std::dec << bArray.ptrsCount << " ";

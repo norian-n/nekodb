@@ -48,7 +48,7 @@ public:
         EgStrSizeType strSize {0}; readType<EgStrSizeType>(strSize); fileStream.read ((char*) dataStream.bufData, strSize);
         theValue.insert(0, (const char*) dataStream.bufData, strSize); }
     
-    // inline void writeStr ( std::string& theValue) { writeType<EgStrSizeType>( (EgStrSizeType) theValue.size()); fileStream << theValue; }
+    // inline void writeStr ( const std::string& theValue) { writeType<EgStrSizeType>( (EgStrSizeType) theValue.size()); fileStream << theValue; }
 
     // inline void readBuf (ByteType* bufData, uint64_t count) { fileStream.read ((char*) bufData, count); }
     // inline void writeBuf(ByteType* bufData, uint64_t count) { fileStream.write((char*) bufData, count); }
@@ -61,5 +61,5 @@ template <> inline EgFileType& operator >> (EgFileType &egFile, std::string& s) 
 template <> inline EgFileType& operator >> (EgFileType &egFile, bool& b)        { egFile.readBool(b); return egFile; }
 
 template <typename T> inline EgFileType& operator << (EgFileType &egFile, T& i) { egFile.writeType<T>(i); return egFile; }
-// template <> inline EgFileType& operator << (EgFileType &egFile, std::string& s) { egFile.writeStr(s); return egFile; }
+// template <> inline EgFileType& operator << (EgFileType &egFile, const std::string& s) { egFile.writeStr(s); return egFile; }
 template <> inline EgFileType& operator << (EgFileType &egFile, bool& b)        { egFile.writeBool(b); return egFile; }

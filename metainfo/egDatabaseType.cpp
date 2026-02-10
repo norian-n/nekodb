@@ -268,9 +268,10 @@ int EgDatabaseType::CreateLayersBlueprint(const std::string& layersTypeName) {
     }   
     layersBlueprint = new EgDataNodeBlueprintType(fullLayersName); // if someone failed to commit blueprint and leak mem, no big deal
     layersBlueprint-> BlueprintInitStart();
-    layersBlueprint-> AddDataFieldName("layerNum");
-    layersBlueprint-> AddDataFieldName("isLink");
-    layersBlueprint-> AddDataFieldName("name");
+    layersBlueprint-> AddDataFieldName("nodesNames");
+    layersBlueprint-> AddDataFieldName("linksNames");
+    layersBlueprint-> AddDataFieldName("layerWidth");
+    layersBlueprint-> AddDataFieldName("layerHeight");
     layersBlueprint-> BlueprintInitCommit();
     AddLayersTypeInfo(layersBlueprint-> blueprintID, layersBlueprint-> blueprintName);
     // std::cout << "newBlueprint after: " << linkBlueprint->blueprintName << " " << (int)linkBlueprint->blueprintID << std::endl;

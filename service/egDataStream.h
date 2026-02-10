@@ -9,12 +9,12 @@ public:
     egMaxStreamSizeType bufIndex {0};
     uint8_t*   bufData           {nullptr};
 
+    EgDataStream(egMaxStreamSizeType buf_size) :
+        bufSize(buf_size), bufData(new uint8_t[buf_size]) {} // MEM_NEW --> destructor
+    ~EgDataStream() { delete bufData; }
+
     void seek(egMaxStreamSizeType idx) { bufIndex = idx; } 
     inline bool indexOk(egMaxStreamSizeType dataTypeSize) const { return bufIndex + dataTypeSize <= bufSize ;}
-
-    EgDataStream(egMaxStreamSizeType buf_size) :
-        bufSize(buf_size), bufData(new uint8_t[buf_size]) {}
-    ~EgDataStream() { delete bufData; }
 
     template <typename T> EgDataStream& operator>>(T&& i) {
         if (indexOk(sizeof(T))) {

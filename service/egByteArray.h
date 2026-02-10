@@ -4,7 +4,7 @@
 class EgByteArrayAbstractType {
 public:
     uint64_t  dataSize          {0};
-    // uint64_t  dataChunkCapacity {0};
+    // uint64_t  dataChunkCapacity {0}; // FIXME TODO add capacity logic
     ByteType* dataChunk         {nullptr};
 
     EgByteArrayAbstractType () {}

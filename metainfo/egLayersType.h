@@ -1,14 +1,15 @@
 #pragma once
 #include "egDatabaseType.h"
-#include <unordered_set>
+
+class EgOneLayerType;
 
 class EgLayersType {
 public:
     std::string                 layersTypeName;
-    EgDatabaseType*             metaInfoDatabase        { nullptr };
-    EgDataNodeBlueprintType*    layersStorageBlueprint   { nullptr };
+    EgDatabaseType*             metaInfoDatabase { nullptr };
     EgDataNodesType             layersStorage;
-    // EgDataNodesContainerType* linkDataStorage;
+
+    std::unordered_map < EgDataNodeIDType, EgOneLayerType* > layersMap;
 
     EgLayersType() {}
 
@@ -17,14 +18,17 @@ public:
     void clear();
 
     int  ConnectLayers(const std::string& a_layersTypeName, EgDatabaseType& a_Database);
+    void AddLayerInfo(const std::string& nodesName, const std::string& linksName);
+    // void AddNodesType(const std::string& nodesName, EgDataNodeIDType layerNum);
+    // void AddLinksType(const std::string& linksName, EgDataNodeIDType layerNum);
 
-    void AddNodesType(const std::string& nodesName, EgLayerNumType layerNum);
-    void AddLinksType(const std::string& linksName, EgLayerNumType layerNum);
-
-    void getLayerNodesAndLinks(std::unordered_set<std::string>& nodesNames, std::unordered_set<std::string>& linksNames, EgLayerNumType layerNum);
+    void getLayerNodesAndLinks(std::unordered_set<std::string>& nodesNames, std::unordered_set<std::string>& linksNames, EgDataNodeIDType layerID);
 
     int LoadLayers();
     int StoreLayers();
+    
+    // graphLayers[layerID]
+    EgOneLayerType* operator[](EgDataNodeIDType layerID);
 
     // void PrintLayersInfo();
 };

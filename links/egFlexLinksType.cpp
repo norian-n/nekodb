@@ -5,7 +5,7 @@ void EgFreeLinksType::clear() {
     linksStorage->clear();
 }
 
-void EgFreeLinksType::initFlexLinkBlueprint(EgDataNodeBlueprintType *linkBlueprint) {
+void EgFreeLinksType::initFlexLinkBlueprint(EgDataNodeBlueprint *linkBlueprint) {
     linkBlueprint->BlueprintInitStart();
     linkBlueprint->AddDataFieldName("fromBlueprintID");
     linkBlueprint->AddDataFieldName("fromID");
@@ -51,7 +51,7 @@ int EgFreeLinksType::ResolveNodesIDsToPtrs() {
     {
         // std::cout  << (int) *(nodesIter.second->operator[]("fromID").dataChunk) << " -> "
         //          << (int) *(nodesIter.second->operator[]("toID").dataChunk);
-        EgDataNodesType *fromDataNodes =
+        EgDataNodesSet *fromDataNodes =
             (metaInfoDatabase->GetNodesTypePtrByID((EgBlueprintIDType) * (nodesIter.second->operator[]("fromBlueprintID").dataChunk)));
         if (!fromDataNodes)
         {
@@ -61,7 +61,7 @@ int EgFreeLinksType::ResolveNodesIDsToPtrs() {
         }
         // std::cout  << "ResolveNodesIDsToPtrs() : FROM nodes type found " <<  linkTypeName << std::endl;
         EgDataNode *fromNodePtr = fromDataNodes->nodesContainer->GetNodePtrByID((EgDataNodeIDType) * (nodesIter.second->operator[]("fromID").dataChunk));
-        EgDataNodesType *toDataNodes =
+        EgDataNodesSet *toDataNodes =
             (metaInfoDatabase->GetNodesTypePtrByID((EgBlueprintIDType) * (nodesIter.second->operator[]("toBlueprintID").dataChunk)));
         if (!toDataNodes)
         {

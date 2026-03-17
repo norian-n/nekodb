@@ -2,14 +2,15 @@
 
 #include "egDataNodesContainer.h"
 
-void EgDataNodesContainerType::init(EgDataNodeBlueprintType* a_dataNodeBlueprint) { // blueprint from upper layer
+void EgDataNodesContainer::init(EgDataNodeBlueprint* a_dataNodeBlueprint, const std::string& nodesSetName) { // blueprint from upper layer
     dataNodeBlueprint = a_dataNodeBlueprint;
+    LocalNodesFile-> localFileName = nodesSetName;
     LocalNodesFile-> dataNodeBlueprint = dataNodeBlueprint;
     LocalNodesFile-> initIndexes();
-    LocalNodesFile-> GetLastID(dataNodeBlueprint-> blueprintName, lastNodeID); 
+    LocalNodesFile-> GetLastIDFromFile(lastNodeID);
 }
 
-void EgDataNodesContainerType::clear() {
+void EgDataNodesContainer::clear() {
     for (auto nodesIter : dataNodes) // 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
         delete nodesIter.second;
     dataNodes.clear();
@@ -20,17 +21,17 @@ void EgDataNodesContainerType::clear() {
     updatedDataNodes.clear();
     nodesCount = 0;
 }
-
+/*
 int EgDataNodesContainerType::GetLastID() {
-    LocalNodesFile-> GetLastID(dataNodeBlueprint-> blueprintName, lastNodeID);          
+    LocalNodesFile-> GetLastIDFromFile(lastNodeID);          
     return 0; // std::cout << "lastNodeID: " << std::dec << lastNodeID << std::endl;  
-}
+}*/
 
-int EgDataNodesContainerType::LoadLocalBlueprint() {
+int EgDataNodesContainer::LoadLocalBlueprint() {
     return dataNodeBlueprint->LocalLoadBlueprint();
 }
 
-EgDataNode *EgDataNodesContainerType::GetNodePtrByID(EgDataNodeIDType nodeID) {
+EgDataNode *EgDataNodesContainer::GetNodePtrByID(EgDataNodeIDType nodeID) {
     auto iter = dataNodes.find(nodeID); // search all nodes
     if (iter != dataNodes.end()) {
         // std::cout << "GetNodePtrByID() node found for ID: " << std::dec <<  nodeID << std::endl;
@@ -40,15 +41,15 @@ EgDataNode *EgDataNodesContainerType::GetNodePtrByID(EgDataNodeIDType nodeID) {
     return nullptr;
 }
 
-int EgDataNodesContainerType::AddDataNode(EgDataNode *newNode) {
-    newNode-> dataNodeID = 1 + lastNodeID++; // dataNodeBlueprint-> getNextID();
-    dataNodes.insert(std::make_pair(newNode-> dataNodeID, newNode));
+EgDataNodeIDType EgDataNodesContainer::AddDataNode(EgDataNode *newNode) {
+    newNode-> dataNodeID = 1 + lastNodeID++;
     nodesCount++;
+    dataNodes.insert(std::make_pair(newNode-> dataNodeID, newNode));
     addedDataNodes.insert(std::make_pair(newNode-> dataNodeID, newNode));
-    return 0;
+    return newNode-> dataNodeID;
 }
 
-int EgDataNodesContainerType::MarkUpdatedDataNode(EgDataNodeIDType nodeID) {
+int EgDataNodesContainer::MarkUpdatedDataNode(EgDataNodeIDType nodeID) {
     auto iter = dataNodes.find(nodeID); // search all nodes
     if (iter == dataNodes.end())
         return -1;
@@ -64,7 +65,7 @@ int EgDataNodesContainerType::MarkUpdatedDataNode(EgDataNodeIDType nodeID) {
     return 0;
 }
 
-void EgDataNodesContainerType::DeleteDataNode(const EgDataNodeIDType delID) {
+void EgDataNodesContainer::DeleteDataNode(const EgDataNodeIDType delID) {
     bool nodeFound{false};
     auto delIter = deletedDataNodes.find(delID); // search deleted nodes
     if (delIter != deletedDataNodes.end())
@@ -91,15 +92,15 @@ void EgDataNodesContainerType::DeleteDataNode(const EgDataNodeIDType delID) {
     }
 }
 
-int EgDataNodesContainerType::StoreToLocalFile() {
+int EgDataNodesContainer::StoreToLocalFile() {
     if ( !addedDataNodes.size() &&  !updatedDataNodes.size() && !deletedDataNodes.size() ) {
-        std::cout << "DEBUG: StoreToLocalFile() all nodes maps empty: " << dataNodeBlueprint-> blueprintName << std::endl;
+        std::cout << "DEBUG: StoreToLocalFile() all nodes maps empty: " <<  LocalNodesFile-> localFileName << std::endl;
         return 0;
     }
-    bool isOk = LocalNodesFile-> StartFileUpdate(dataNodeBlueprint-> blueprintName);
+    bool isOk = LocalNodesFile-> StartFileUpdate();
     // std::cout << "StoreToLocalFile() start update" << std::endl;
     if (isOk) {
-        isOk = LocalNodesFile-> UpdateNodesFile(dataNodeBlueprint-> blueprintName, addedDataNodes, deletedDataNodes, updatedDataNodes);
+        isOk = LocalNodesFile-> UpdateNodesFile(addedDataNodes, deletedDataNodes, updatedDataNodes);
         LocalNodesFile-> nodesFile.close(); // close anyway
         updatedDataNodes.clear(); // ?
         deletedDataNodes.clear();
@@ -110,11 +111,11 @@ int EgDataNodesContainerType::StoreToLocalFile() {
     return 0;
 }
 
-int EgDataNodesContainerType::LoadAllLocalFileNodes() {
+int EgDataNodesContainer::LoadAllLocalFileNodes() {
     clear();
     EgFileOffsetType nextOffset{0};
     EgDataNode *newNode;
-    if (!LocalNodesFile->OpenFileToRead(dataNodeBlueprint-> blueprintName)) {
+    if (!LocalNodesFile->OpenFileToRead()) {
         // std::cout << "ERROR: loadAllLocalNodes() can't open file " << dataNodesTypeName << ".gdn" << std::endl;
         return -1;
     }
@@ -126,7 +127,7 @@ int EgDataNodesContainerType::LoadAllLocalFileNodes() {
         LocalNodesFile-> ReadDataNode(newNode, nextOffset);
         if (newNode-> dataFileOffset == nextOffset) {
             std::cout << "ERROR: loadAllLocalNodes() nextOffset loop:  " << std::hex << nextOffset << std::dec << " " 
-                      << dataNodeBlueprint-> blueprintName << ".gdn" << std::endl;
+                      << LocalNodesFile-> localFileName << ".gdn" << std::endl;
             return -2;
         }
         dataNodes.insert(std::make_pair(newNode->dataNodeID, newNode));
@@ -136,11 +137,11 @@ int EgDataNodesContainerType::LoadAllLocalFileNodes() {
     return 0;
 }
 
-int EgDataNodesContainerType::LoadLocalNodesByOffsets(std::set<EgFileOffsetType>& index_offsets) {
+int EgDataNodesContainer::LoadLocalNodesByOffsets(std::set<EgFileOffsetType>& index_offsets) {
     clear();
     EgFileOffsetType tmpOffset{0};
     EgDataNode *newNode;
-    if (!LocalNodesFile->OpenFileToRead(dataNodeBlueprint-> blueprintName)) {
+    if (!LocalNodesFile->OpenFileToRead()) {
         // std::cout << "ERROR: loadAllLocalNodes() can't open file " << dataNodesTypeName << ".gdn" << std::endl;
         return -1;
     }
@@ -157,7 +158,7 @@ int EgDataNodesContainerType::LoadLocalNodesByOffsets(std::set<EgFileOffsetType>
     return 0;
 }
 
-bool EgDataNodesContainerType::LoadLocalNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue) {
+bool EgDataNodesContainer::LoadLocalNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue) {
     std::set <uint64_t> offsetSet;
     clear();
     auto indexIter = LocalNodesFile-> localIndexes.find(indexName);
@@ -171,15 +172,15 @@ bool EgDataNodesContainerType::LoadLocalNodesEQ(const std::string& indexName, Eg
     return true;
 }
 
-EgDataNodesContainerType& EgDataNodesContainerType::operator << (EgDataNode* newNode) {
+EgDataNodesContainer& EgDataNodesContainer::operator << (EgDataNode* newNode) {
     AddDataNode(newNode); 
     return *this; 
 }
 
 // ======================== Debug ========================
 
-void EgDataNodesContainerType::PrintDataNodesContainer() {
-    std::cout << "EgDataNodesContainer nodes: " << dataNodeBlueprint-> blueprintName << std::endl;
+void EgDataNodesContainer::PrintDataNodesContainer() {
+    std::cout << "EgDataNodesContainer nodes: " << LocalNodesFile-> localFileName << std::endl;
     for (auto nodesIter : dataNodes) // 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
         PrintEgDataNodeFields(*(nodesIter.second));
     if (addedDataNodes.size()) {
@@ -199,9 +200,9 @@ void EgDataNodesContainerType::PrintDataNodesContainer() {
     }
 }
 
-void EgDataNodesContainerType::PrintNodesChain() {
-    if (!LocalNodesFile->OpenFileToRead(dataNodeBlueprint-> blueprintName)) {
-        std::cout << "ERROR: loadAllLocalNodes() can't open file " << dataNodeBlueprint-> blueprintName << ".gdn" << std::endl;
+void EgDataNodesContainer::PrintNodesChain() {
+    if (!LocalNodesFile->OpenFileToRead()) {
+        std::cout << "ERROR: loadAllLocalNodes() can't open file " << LocalNodesFile-> localFileName << ".gdn" << std::endl;
         return;
     }
     LocalNodesFile-> PrintNodesChain();

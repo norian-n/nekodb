@@ -1,15 +1,15 @@
-#include "../links/egLinksType.h"
-#include "../nodes/egDataNodesType.h"
+#include "../links/egLinks.h"
+#include "../nodes/egDataNodesSet.h"
 #include <iostream>
 #include <cstring>
 
 using namespace std;
 
-string field1 = "111111\0";
+string field1 {"111111"};
 int field2 = 100;
 int field3 = 200;
  
-inline void addSampleDataNode(EgDataNodesType& dataNodes) {
+inline void addSampleDataNode(EgDataNodesSet& dataNodes) {
     EgDataNode* newNode = new EgDataNode(dataNodes.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
@@ -17,7 +17,7 @@ inline void addSampleDataNode(EgDataNodesType& dataNodes) {
     dataNodes << newNode;
 }
 
-bool testLinksResolving(EgLinksType& testLinks, EgDataNodesType& fromType, EgDataNodesType& toType) {
+bool testLinksResolving(EgLinksSet& testLinks, EgDataNodesSet& fromType, EgDataNodesSet& toType) {
     addSampleDataNode(fromType);  // nodeID == 1
     addSampleDataNode(fromType);
     addSampleDataNode(fromType);
@@ -49,7 +49,7 @@ bool testLinksResolving(EgLinksType& testLinks, EgDataNodesType& fromType, EgDat
     return ((linksIterFrom->second.size() == 3) && (linksIterTo->second.size() == 1));
 }
 
-bool testLinksStorage(EgLinksType& testLinks) {
+bool testLinksStorage(EgLinksSet& testLinks) {
 
     testLinks.AddRawLink(1, 2); // nodeID == 1, outLinks[0], 3 items
     testLinks.AddRawLink(1, 3);
@@ -72,38 +72,40 @@ bool testLinksStorage(EgLinksType& testLinks) {
     return (count == 4);
 }
 
-void initDatabase(EgDatabaseType& graphDB) {
+void initDatabase(EgDatabase& graphDB) {
     // EgNodeTypeSettings typeSettings;
     // typeSettings.useLocation = true;
     // typeSettings.useLinks = true;
 
-    graphDB.CreateNodeBlueprint("testLinksFrom"); // , typeSettings);
+    graphDB.CreateNodesSet("testLinksFrom"); // , typeSettings);
     graphDB.AddNodeDataField("name");
     graphDB.AddNodeDataField("x");
     graphDB.AddNodeDataField("y");    
-    graphDB.CommitNodeBlueprint();
+    graphDB.CommitNodesSet();
 
-    graphDB.CreateNodeBlueprint("testLinksTo"); // , typeSettings);
+    graphDB.CreateNodesSet("testLinksTo"); // , typeSettings);
     graphDB.AddNodeDataField("name");
     graphDB.AddNodeDataField("x");
     graphDB.AddNodeDataField("y");    
-    graphDB.CommitNodeBlueprint();
+    graphDB.CommitNodesSet();
 
-    graphDB.CreateLinkWithDataBlueprint("testBoundLinksWData", "testLinksFrom", "testLinksTo");
+    graphDB.CreateLinkWithDataBlueprint("testBoundLinksWData");
     graphDB.AddLinkDataField("x");
     graphDB.AddLinkDataField("y");
     graphDB.CommitLinkBlueprint();
+
+    graphDB.CreateLinksSetByBlueprint("testBoundLinksWData", "testBoundLinksWData", "testLinksFrom", "testLinksTo");
 }
 
 int main() {
     cout << "===== Test EgLinksType =====" << endl;
-    std::remove("testLinks_arrowLinks.dnl"); // delete layout file
-    std::remove("testLinks_arrowLinks.gdn"); // delete data nodes file       
+    std::remove("testBoundLinksWData_egArrowLink.dnl"); // delete layout file
+    std::remove("testBoundLinksWData_egArrowLink.gdn"); // delete data nodes file       
 
-    EgDatabaseType theDatabase;
-    EgDataNodesType fromType;
-    EgDataNodesType toType;
-    EgLinksType testLinks;
+    EgDatabase theDatabase;
+    EgDataNodesSet fromType;
+    EgDataNodesSet toType;
+    EgLinksSet testLinks;
 
     initDatabase(theDatabase);
 

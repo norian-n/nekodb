@@ -1,14 +1,77 @@
 #include "egQtInterface.h"
 
+
+void origToScaledScalar (int origVal, int& scaledVal, int zoomFactor) {
+    scaledVal = origVal * (maxZoom - zoomFactor)/maxZoom;
+}
+
+void scaledToOrigScalar (int scaledVal, int& origVal, int zoomFactor) {
+    origVal = scaledVal * maxZoom / (maxZoom - zoomFactor);
+}
+
+void origToScaledCanvas (int origVal, int& scaledVal, int zoomFactor, int canvas) {
+    scaledVal = origVal * (maxZoom - zoomFactor)/maxZoom + canvas;
+}
+
+void scaledToOrigCanvas (int scaledVal, int& origVal, int zoomFactor, int canvas) {
+    origVal = (scaledVal - canvas) * maxZoom / (maxZoom - zoomFactor);
+}
+
+void origToScaledSize (egSize& size, int zoomFactor) {
+    origToScaledScalar(size.origW, size.scaledW, zoomFactor);
+    origToScaledScalar(size.origH, size.scaledH, zoomFactor);    
+}
+
+void scaledToOrigSize(egSize& size, int zoomFactor) {
+    scaledToOrigScalar(size.scaledW, size.origW, zoomFactor);
+    scaledToOrigScalar(size.scaledH, size.origH, zoomFactor);
+}
+
+void origToScaledPoint (egPoint& point, int zoomFactor, egPoint& canvas) {
+    origToScaledCanvas(point.origX, point.scaledX, zoomFactor, canvas.scaledX);
+    origToScaledCanvas(point.origY, point.scaledY, zoomFactor, canvas.scaledY);    
+}
+
+void scaledToOrigPoint(egPoint& point, int zoomFactor, egPoint& canvas) {
+    scaledToOrigCanvas(point.scaledX, point.origX, zoomFactor, canvas.scaledX);
+    scaledToOrigCanvas(point.scaledY, point.origY, zoomFactor, canvas.scaledY);
+}
+
+void origToScaledRect   (egRect& rect, int zoomFactor) {
+    egPoint zeroPoint {0,0};
+    origToScaledPoint(rect.corner, zoomFactor, zeroPoint);
+    origToScaledSize (rect.size, zoomFactor);
+}
+
+void scaledToOrigRect   (egRect& rect, int zoomFactor) {
+    egPoint zeroPoint {0,0};
+    scaledToOrigPoint(rect.corner, zoomFactor, zeroPoint);
+    scaledToOrigSize (rect.size, zoomFactor);
+}
+
+void scaledToOrigLayer   (egRect& rect, int zoomFactor) {
+    rect.corner.origX = 0;
+    rect.corner.origY = 0;
+    rect.corner.scaledX = 0;
+    rect.corner.scaledY = 0;
+    scaledToOrigSize (rect.size, zoomFactor);
+}
+
+void origToScaledLayer   (egRect& rect, int zoomFactor) {
+    origToScaledSize (rect.size, zoomFactor);
+    rect.corner.scaledX = (rect.size.origW - rect.size.scaledW) / 2;
+    rect.corner.scaledY = (rect.size.origH - rect.size.scaledH) / 2;
+}
+
 inline void ByteArrayToQtByteArray(EgByteArrayAbstractType& byteArray, QByteArray& qtBA) {
     qtBA.clear();
-    qtBA.append((const char *) byteArray.dataChunk, (size_t) (byteArray.dataSize-1));
+    qtBA.append((const char *) byteArray.dataChunk, (size_t) (byteArray.dataSize));
 }
 
 inline void QtByteArrayToByteArray(QByteArray& qtBA, EgByteArrayAbstractType& byteArray) {
-    byteArray.reallocDataChunk(qtBA.size()+1);
+    byteArray.reallocDataChunk(qtBA.size());
     memcpy((void*)byteArray.dataChunk, (void*) qtBA.data(), qtBA.size());
-    byteArray.dataChunk[byteArray.dataSize-1] = 0;
+    // byteArray.dataChunk[byteArray.dataSize-1] = 0;
     // PrintByteArray(byteArray);
 }
 
@@ -22,6 +85,7 @@ EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QByteA
     return byteArray;
 }
 
+/*
 void egDataNodeFromList(EgDataNode& newNode, QList<QVariant>& addValues) {
     for (int i = 0; i < addValues.size(); ++i) {
         // std::cout << "egDataNodeFromList() value qt type: " << std::dec << addValues.at(i).type() << std::endl;
@@ -36,7 +100,7 @@ void egDataNodeFromList(EgDataNode& newNode, QList<QVariant>& addValues) {
             newNode.InsertRawByteArrayPtr(egArray);
         }
     }
-}
+} */
 
 EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QString& qtStr) {
         QByteArray tmpBA;
@@ -49,8 +113,17 @@ EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QStrin
         return byteArray;
 }
 
+EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, QString& qtStr) {
+        // PrintByteArray(byteArray);
+        byteArray << qtStr.toStdString();
+        // std::cout << "tmpBA: " << tmpBA.toStdString() << std::endl;
+        // std::cout << "tmpStr: " << tmpStr.toStdString() << std::endl;
+        return byteArray;
+}
+
+/*
 EgDataNode& operator << (EgDataNode& dataNode, QString& qtStr) {
         std::string value =  qtStr.toStdString();
         dataNode << value;
         return dataNode;
-}
+}*/

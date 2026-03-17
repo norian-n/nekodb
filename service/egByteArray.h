@@ -69,16 +69,22 @@ public:
     void reallocDataChunk(uint64_t newSize) override;
 };
 
-void ByteArrayFromCharStr(const char* str, EgByteArrayAbstractType& byteArray);
+// void ByteArrayFromCharStr(const char* str, EgByteArrayAbstractType& byteArray);
 
-template <typename T> void ByteArrayFromType(T&& value, EgByteArrayAbstractType& byteArray) {
-    // std::cout << "ByteArrayFromType() value: " << value << std::endl;
-    byteArray.reallocDataChunk(sizeof(value));
+template <typename T> void CopyBAFromFixedType(T&& value, EgByteArrayAbstractType& byteArray) { // , bool forceWipe = false
+    // std::cout << "ByteArrayFromFixedType() value: " << value << std::endl;
+    byteArray.reallocDataChunk(sizeof(value)); // sets byteArray.dataSize
     memcpy((void*)byteArray.dataChunk, (void*) &value, byteArray.dataSize);
 }
 
-EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, char* str);
-EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const char* str);
+template <typename T> void CopyBAFromVarType(T&& value, EgByteArrayAbstractType& byteArray, uint64_t theSize) { // , bool forceWipe = false
+    // std::cout << "ByteArrayFromFixedType() value: " << value << std::endl;
+    byteArray.reallocDataChunk(theSize); // sets byteArray.dataSize
+    memcpy((void*)byteArray.dataChunk, (void*) &value, byteArray.dataSize);
+}
+
+// EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, char* str);
+// EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const char* str);
 
 EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, std::string& str);
 EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const std::string& str);

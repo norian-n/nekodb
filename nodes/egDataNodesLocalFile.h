@@ -22,7 +22,8 @@ public:
     EgFileType nodesFile;
     bool localTransactOk {false};
     EgLocalFileHeader nodesFileHeader;
-    EgDataNodeBlueprintType* dataNodeBlueprint   { nullptr };    // blueprint == class == type of data nodes    
+    std::string localFileName;
+    EgDataNodeBlueprint* dataNodeBlueprint   { nullptr };    // blueprint == class == type of data nodes    
 
     std::map < std::string, EgIndexesAbstractType* >  localIndexes;
     EgIndexConditionsTree* index_tree       {nullptr};              // indexed fields operations    
@@ -32,19 +33,18 @@ public:
 
     void initIndexes();
 
-    bool InitFile(std::string& layoutName);
-    bool GetLastID(std::string& layoutName, EgDataNodeIDType& lastID);
+    bool InitFile();
+    bool GetLastIDFromFile(EgDataNodeIDType& lastID);
 
     inline bool ReadHeader();    // from opened nodesFile to beforeHeader
     bool WriteHeader();   // from afterHeader to opened nodesFile
     inline void InitNewHeader(); // new beforeHeader
     void PrintHeader();
 
-    bool OpenFileToRead(std::string& layoutName);
-    bool OpenFileToUpdate(std::string& layoutName);
-    bool StartFileUpdate(std::string& layoutName);
-    bool UpdateNodesFile(std::string& layoutName, 
-        EgDataNodesOrdMapType& addedNodes, EgDataNodesMapType& deletedNodes, EgDataNodesMapType& updatedNodes);
+    bool OpenFileToRead();
+    bool OpenFileToUpdate();
+    bool StartFileUpdate();
+    bool UpdateNodesFile(EgDataNodesOrdMapType& addedNodes, EgDataNodesMapType& deletedNodes, EgDataNodesMapType& updatedNodes);
 
     bool getFirstNodeOffset(EgFileOffsetType& theOffset);
     bool getLastNodeOffset(EgFileOffsetType& theOffset);

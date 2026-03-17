@@ -5,15 +5,15 @@
 using namespace std;
 
 string field1 = "111111\0";
-const char* field2 = "test some string 2\0";
+const string field2 = {"test some string 2"};
 string field3("just test 3");
 
 EgIndexSettingsType indexSettings;
-EgDataNodeBlueprintType testBlueprint("testNodes");
-EgDataNodesContainerType nodesContainer;
+EgDataNodeBlueprint testBlueprint("testNodes");
+EgDataNodesContainer nodesContainer;
 
 
-inline void addSampleDataNode(EgDataNodesContainerType& container) {
+inline void addSampleDataNode(EgDataNodesContainer& container) {
     EgDataNode* newNode = new EgDataNode(container.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
@@ -56,7 +56,7 @@ bool testDataNodeBlueprint() {
 
 bool testDataNodesContainer() {
     cout << "===== Test NodesContainerType  =====" << endl;
-    nodesContainer.init(&testBlueprint);
+    nodesContainer.init(&testBlueprint, "testNodes");
 
     if(nodesContainer.LoadLocalBlueprint()) {
         cout << "Error: can't open data nodes blueprint testNodes.dnl" << endl;

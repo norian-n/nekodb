@@ -7,7 +7,7 @@
 const int egBlueprintInit   {1}; // int blueprintMode
 const int egBlueprintActive {2};
 
-class EgDataNodeBlueprintType
+class EgDataNodeBlueprint
 {
 public:
     int blueprintMode {egBlueprintActive};   // blueprint can't be edited freely, data pumping on changes is required
@@ -24,11 +24,11 @@ public:
     std::unordered_map < std::string, EgIndexSettingsType > indexedFields;
 
     EgByteArrayAbstractType egNotFound;
-    const char* egNotFoundStr {"<Data Not Found>"};
+    std::string egNotFoundStr {"<Data Not Found>"};
 
-    EgDataNodeBlueprintType(std::string a_blueprintName): blueprintName(a_blueprintName), blueprintFile(a_blueprintName) 
-        { egNotFound.dataSize = strlen(egNotFoundStr)+1; egNotFound.dataChunk = (unsigned char *) egNotFoundStr; }
-    ~EgDataNodeBlueprintType() { /* std::cout << "EgDataNodeBlueprintType destructor " << std::endl; */ clear(); }
+    EgDataNodeBlueprint(std::string a_blueprintName): blueprintName(a_blueprintName), blueprintFile(a_blueprintName) 
+        { egNotFound.dataSize = egNotFoundStr.size(); egNotFound.dataChunk = (unsigned char *) egNotFoundStr.c_str(); }
+    ~EgDataNodeBlueprint() { /* std::cout << "EgDataNodeBlueprintType destructor " << std::endl; */ clear(); }
 
     void clear() { dataFieldsNames.clear(); indexedFields.clear(); }
 
@@ -50,7 +50,7 @@ public:
 
 // ======================== Debug ========================
 
-void PrintDataNodeBlueprint(EgDataNodeBlueprintType& blueprint);
+void PrintDataNodeBlueprint(EgDataNodeBlueprint& blueprint);
 
 /* struct EgNodeBlueprintSettingsType
 {

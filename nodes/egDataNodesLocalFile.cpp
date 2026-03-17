@@ -11,8 +11,8 @@ void EgDataNodesLocalFileType::initIndexes() {
 }
 // EgIndexes<uint32_t> testIndexes("testIndexes");
 
-bool EgDataNodesLocalFileType::InitFile(std::string& layoutName) { // tests support
-    nodesFile.fileName = layoutName + ".gdn";
+bool EgDataNodesLocalFileType::InitFile() { // tests support
+    nodesFile.fileName = localFileName + ".gdn";
     bool isOk = nodesFile.openToWrite();
     if (isOk)
     {
@@ -48,9 +48,9 @@ inline void EgDataNodesLocalFileType::InitNewHeader() {
     nodesFileHeader.lastNode  = 0;
 }
 
-bool EgDataNodesLocalFileType::GetLastID(std::string& layoutName, EgDataNodeIDType& lastID) {
+bool EgDataNodesLocalFileType::GetLastIDFromFile(EgDataNodeIDType& lastID) {
     EgDataNodeIDType lastNodeID {0};
-    nodesFile.fileName = layoutName + ".gdn";
+    nodesFile.fileName = localFileName + ".gdn";
     bool isOk = nodesFile.openToRead();
     if (isOk) {
         nodesFile.seekRead(lastIDOffset);
@@ -63,25 +63,25 @@ bool EgDataNodesLocalFileType::GetLastID(std::string& layoutName, EgDataNodeIDTy
     return isOk;
 }
 
-bool EgDataNodesLocalFileType::OpenFileToRead(std::string& layoutName) { // tests support
-    nodesFile.fileName = layoutName + ".gdn";
+bool EgDataNodesLocalFileType::OpenFileToRead() { // tests support
+    nodesFile.fileName = localFileName + ".gdn";
     return nodesFile.openToRead();
 }
 
-bool EgDataNodesLocalFileType::OpenFileToUpdate(std::string& layoutName) { // tests support
-    nodesFile.fileName = layoutName + ".gdn";
+bool EgDataNodesLocalFileType::OpenFileToUpdate() { // tests support
+    nodesFile.fileName = localFileName + ".gdn";
     bool isOk = nodesFile.openToUpdate();
     if (!isOk)
     {
-        isOk = InitFile(layoutName);
+        isOk = InitFile();
         if (isOk)
             isOk = nodesFile.openToUpdate();
     }
     return isOk;
 }
 
-bool EgDataNodesLocalFileType::StartFileUpdate(std::string& layoutName) {
-    nodesFile.fileName = layoutName + ".gdn";
+bool EgDataNodesLocalFileType::StartFileUpdate() {
+    nodesFile.fileName = localFileName + ".gdn";
     bool inSubTransact = nodesFile.openToUpdate();
     if (!inSubTransact) { // no file exist
         inSubTransact = nodesFile.openToWrite();
@@ -97,8 +97,7 @@ bool EgDataNodesLocalFileType::StartFileUpdate(std::string& layoutName) {
     return inSubTransact;
 }
 
-bool EgDataNodesLocalFileType::UpdateNodesFile(std::string& layoutName, 
-    EgDataNodesOrdMapType& addedNodes, EgDataNodesMapType& deletedNodes, EgDataNodesMapType& updatedNodes) {
+bool EgDataNodesLocalFileType::UpdateNodesFile(EgDataNodesOrdMapType& addedNodes, EgDataNodesMapType& deletedNodes, EgDataNodesMapType& updatedNodes) {
 /*
     bool inSubTransact = StartFileUpdate(layoutName);
     if (!inSubTransact) {
@@ -113,7 +112,7 @@ bool EgDataNodesLocalFileType::UpdateNodesFile(std::string& layoutName,
         // std::cout << "StoreToLocalFile() container fieldsCount: " << std::dec << (int) ((newNodesIter.second)-> dataNodeBlueprint-> fieldsCount) << std::endl;
         if (newNodesIter.first < nodesFileHeader.lastID) {
             std::cout << "ERROR: UpdateNodesFile() new node ID " << newNodesIter.first << " < last ID " << nodesFileHeader.lastID 
-                      << " at " << layoutName << ".gdn" << std::endl;
+                      << " at " << localFileName << ".gdn" << std::endl;
             return false;
         }
         if (! WriteDataNode(newNodesIter.second))

@@ -6,9 +6,9 @@ using namespace std;
 
 const int TEST_FIELDS_COUNT  {3}; 
 const string fileName("test_data_fields.tdf");
-const char* field1 = "testField1\0";
-const char* field2 = "test some string 2\0";
-const char* field3 = "test3\0";
+const std::string field1 {"testField1"};
+const std::string field2 {"test some string 2"};
+const std::string field3 {"test3"};
 
 const int DATA_CONVERT_MAX_BYTES_COUNT_COPY  {10}; 
 
@@ -61,18 +61,18 @@ void addSampleDataFields(EgDataNode& testNode) {
     // testDataFields.fieldsCount = TEST_FIELDS_COUNT;
 
     EgByteArrayAbstractType* byteArray = new EgByteArrayAbstractType();
-    byteArray-> dataChunk = (ByteType*) field1;                     // no alloc, ptr to global mem
-    byteArray-> dataSize  = strlen(field1)+1;
+    byteArray-> dataChunk = (ByteType*) field1.c_str();                     // no alloc, ptr to global mem
+    byteArray-> dataSize  = field1.size();
     // testDataFields.dataFields.push_back(byteArray);
     testNode.InsertDataFieldFromByteArray(*byteArray);
 
-    byteArray = new EgByteArraySysallocType(strlen(field2)+1);              // sys heap alloc
-    memcpy((void*)byteArray-> dataChunk, (void*) field2, byteArray-> dataSize);
+    byteArray = new EgByteArraySysallocType(field2.size());              // sys heap alloc
+    memcpy((void*)byteArray-> dataChunk, (void*) field2.c_str(), byteArray-> dataSize);
     // testDataFields.dataFields.push_back(byteArray);
     testNode.InsertDataFieldFromByteArray(*byteArray);
 
-    byteArray = new EgByteArraySlicerType(&hamSlicer, strlen(field3)+1);  // use ham slicer allocator
-    memcpy((void*)byteArray-> dataChunk, (void*) field3, byteArray-> dataSize);
+    byteArray = new EgByteArraySlicerType(&hamSlicer, field3.size());  // use ham slicer allocator
+    memcpy((void*)byteArray-> dataChunk, (void*) field3.c_str(), byteArray-> dataSize);
     // testDataFields.dataFields.push_back(byteArray);
     testNode.InsertDataFieldFromByteArray(*byteArray);
 }
@@ -98,7 +98,7 @@ int main() {
                                         << field2 << " " << strlen(field2) << " "
                                         << field3 << " " << strlen(field3) <<  ") =====" << endl;
 */
-    EgDataNodeBlueprintType testBlueprint("testNodes");
+    EgDataNodeBlueprint testBlueprint("testNodes");
 
     testBlueprint.BlueprintInitStart();
     testBlueprint.AddDataFieldName("nodesBlueprintID");

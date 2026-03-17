@@ -5,11 +5,11 @@
 
 using namespace std;
 
-string field1 = "111111\0";
+string field1 = "111111";
 int field2 = 100;
 int field3 = 200;
  
-inline void addSampleDataNode(EgDataNodesType& dataNodes) {
+inline void addSampleDataNode(EgDataNodesSet& dataNodes) {
     EgDataNode* newNode = new EgDataNode(dataNodes.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
@@ -17,7 +17,7 @@ inline void addSampleDataNode(EgDataNodesType& dataNodes) {
     dataNodes << newNode;
 }
 
-bool testLinksResolving(EgFreeLinksType& testLinks, EgDataNodesType& fromType, EgDataNodesType& toType) {
+bool testLinksResolving(EgFreeLinksType& testLinks, EgDataNodesSet& fromType, EgDataNodesSet& toType) {
     addSampleDataNode(fromType);  // nodeID == 1
     addSampleDataNode(fromType);
     addSampleDataNode(fromType);
@@ -67,18 +67,18 @@ bool testLinksStorage(EgFreeLinksType& testLinks, EgBlueprintIDType fromNodesTyp
     return (count == 4);
 }
 
-void initDatabase(EgDatabaseType& graphDB) {
+void initDatabase(EgDatabase& graphDB) {
     // EgNodeTypeSettings typeSettings;
     // typeSettings.useLocation = true;
     // typeSettings.useLinks = true;
 
-    graphDB.CreateNodeBlueprint("testFreeLinksFrom"); // , typeSettings);
+    graphDB.CreateNodesSet("testFreeLinksFrom"); // , typeSettings);
     graphDB.AddNodeDataField("name");
     graphDB.AddNodeDataField("x");
     graphDB.AddNodeDataField("y");    
     graphDB.CommitNodeBlueprint();
 
-    graphDB.CreateNodeBlueprint("testFreeLinksTo"); // , typeSettings);
+    graphDB.CreateNodesSet("testFreeLinksTo"); // , typeSettings);
     graphDB.AddNodeDataField("name");
     graphDB.AddNodeDataField("x");
     graphDB.AddNodeDataField("y");    
@@ -94,9 +94,9 @@ int main() {
     cout << "===== Test EgFreeLinksType =====" << endl;
     std::remove("testLinks.gdn");   // delete file
 
-    EgDatabaseType theDatabase;
-    EgDataNodesType fromType;
-    EgDataNodesType toType;
+    EgDatabase theDatabase;
+    EgDataNodesSet fromType;
+    EgDataNodesSet toType;
 
     initDatabase(theDatabase);
 
@@ -110,11 +110,11 @@ int main() {
     // std::remove("testNodes.gdn");  // delete data nodes file
 
     EgBlueprintIDType fromNodesTypeID {0};
-    if (theDatabase.nodeTypeIDByName(fromType.dataNodesName, fromNodesTypeID)) // reverse return logic - true if not found
+    if (theDatabase.nodeTypeIDByName(fromType.nodesSetName, fromNodesTypeID)) // reverse return logic - true if not found
         cout << "fromNodesTypeID not found in metainfo" << endl;
 
     EgBlueprintIDType toNodesTypeID {0};
-    if (theDatabase.nodeTypeIDByName(toType.dataNodesName, toNodesTypeID)) // reverse return logic - true if not found
+    if (theDatabase.nodeTypeIDByName(toType.nodesSetName, toNodesTypeID)) // reverse return logic - true if not found
         cout << "toNodesTypeID not found in metainfo" << endl;
 
     bool testStor   = testLinksStorage(testLinks, fromNodesTypeID, toNodesTypeID);

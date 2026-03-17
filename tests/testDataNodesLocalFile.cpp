@@ -8,12 +8,12 @@ using namespace std;
 // #include "../nodes/egDataNodesType.h"
 #include "../nodes/egDataNodesLocalFile.h"
 
-EgDataNodeBlueprintType testBlueprint("testLocalFile");
+EgDataNodeBlueprint testBlueprint("testLocalFile");
 
 const int TEST_FIELDS_COUNT  {3}; 
-const char* field1 = "testField1\0";
-const char* field2 = "test some string 2\0";
-const char* field3 = "test3\0";
+const std::string field1 {"testField1"};
+const std::string field2 {"test some string 2"};
+const std::string field3 {"test3"};
 
 inline void addSampleDataFields(EgDataNode& testDataNode) {
     // cout << "===== addSampleDataFields() in " << " =====" << endl;
@@ -68,7 +68,8 @@ int main()
     // PrintEgDataNodeTypeFields(testDataNode);
         // write
     std::string fname {"testLocalFile"};
-    testLocalFile.StartFileUpdate(fname);
+    testLocalFile.localFileName = fname;
+    testLocalFile.StartFileUpdate();
     testDataNode.dataNodeID = 12121212;
     testLocalFile.WriteDataNode(&testDataNode);
     // testLocalFile.PrintHeader();
@@ -82,7 +83,7 @@ int main()
     testLocalFile.nodesFile.close();
 
     EgDataNodeIDType lastNodesID {0};
-    testLocalFile.GetLastID(fname, lastNodesID);
+    testLocalFile.GetLastIDFromFile(lastNodesID);
     // std::cout << "nodesID: " << std::dec << nodesID << std::endl;
 
     if (lastNodesID == 44444444)

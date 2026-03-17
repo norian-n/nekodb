@@ -39,14 +39,14 @@ public:
     inline void readBool ( bool& theValue) { ByteType tmpBool; fileStream >> tmpBool; theValue = tmpBool; }
 
     template<typename T> inline void writeType (T theValue)  {
-        dataStream.seek(0); dataStream << theValue; fileStream.write((const char*) dataStream.bufData, sizeof(T)); }
+        dataStream.seek(0); dataStream << theValue; fileStream.write(dataStream.bufData, sizeof(T)); }
 
     template<typename T> inline void readType  (T& theValue) {
-        fileStream.read ((char*) dataStream.bufData, sizeof(T)); dataStream.seek(0); dataStream >> theValue; }
+        fileStream.read (dataStream.bufData, sizeof(T)); dataStream.seek(0); dataStream >> theValue; }
 
     inline void readStr ( std::string& theValue) { 
-        EgStrSizeType strSize {0}; readType<EgStrSizeType>(strSize); fileStream.read ((char*) dataStream.bufData, strSize);
-        theValue.insert(0, (const char*) dataStream.bufData, strSize); }
+        EgStrSizeType strSize {0}; readType<EgStrSizeType>(strSize); fileStream.read (dataStream.bufData, strSize);
+        theValue.insert(0, dataStream.bufData, strSize); }
     
     // inline void writeStr ( const std::string& theValue) { writeType<EgStrSizeType>( (EgStrSizeType) theValue.size()); fileStream << theValue; }
 

@@ -5,7 +5,7 @@ using namespace std;
 
 
 bool testDatabase() {
-    EgDatabaseType testDatabase;
+    EgDatabase testDatabase;
     cout << "===== Test EgDatabaseType " << " =====" << endl;
 
     string str1("nodesType1");
@@ -15,7 +15,7 @@ bool testDatabase() {
     testDatabase.AddLinksTypeInfo(str2);
 
     testDatabase.StoreDataNodesTypesInfo();
-    testDatabase.LoadDataNodesTypesInfo();
+    testDatabase.LoadDataNodesSetsInfo();
 
     return ((testDatabase.nodesTypesStorage-> dataNodes.size() == 1) 
         &&  (testDatabase.linksTypesStorage-> dataNodes.size() == 1));

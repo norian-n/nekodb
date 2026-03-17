@@ -1,15 +1,15 @@
-#include "../metainfo/egDatabaseType.h"
+#include "../metainfo/egDatabase.h"
 #include <iostream>
 #include <cstring>
 
 using namespace std;
 
-bool initDatabase(EgDatabaseType& graphDB) {
+bool initDatabase(EgDatabase& graphDB) {
     // EgNodeTypeSettings typeSettings;
     // typeSettings.useLocation = true;
     // typeSettings.useLinks = true;
 
-    graphDB.CreateNodeBlueprint("basicops"); // , typeSettings);
+    graphDB.CreateNodesSet("basicops"); // , typeSettings);
 
     graphDB.AddNodeDataField("name");
     graphDB.AddNodeDataField("status"); // , isIndexed create index
@@ -17,7 +17,7 @@ bool initDatabase(EgDatabaseType& graphDB) {
     graphDB.AddNodeDataField("x");
     graphDB.AddNodeDataField("y");    
 
-    graphDB.CommitNodeBlueprint();
+    graphDB.CommitNodesSet();
 
     // graphDB.AddLinkType("basicops_linktype"); // , "locations", "locations"); // create link type
 
@@ -25,15 +25,15 @@ bool initDatabase(EgDatabaseType& graphDB) {
         // &&  (graphDB.linksTypesMetainfo.nodesContainer-> dataNodes.size() == 1));
 }
 
-string field1 = "name\0";
-const char* field2 = "status\0";
+string field1 = "name";
+const string field2 {"status"};
 string field3("image type");
 string field4("100");
 string field5("200");
 int num1 = 100;
 int num2 = 200;
 
-inline void addSampleDataNode(EgDataNodesType& dataNodes) {
+inline void addSampleDataNode(EgDataNodesSet& dataNodes) {
     EgDataNode* newNode = new EgDataNode(dataNodes.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
@@ -45,7 +45,7 @@ inline void addSampleDataNode(EgDataNodesType& dataNodes) {
     dataNodes << newNode;
 }
 
-bool testEgDataNodesTypeBasicNodeOps(EgDataNodesType& testDataNodes)
+bool testEgDataNodesTypeBasicNodeOps(EgDataNodesSet& testDataNodes)
 {
     addSampleDataNode(testDataNodes);
     addSampleDataNode(testDataNodes);
@@ -82,7 +82,7 @@ bool testEgDataNodesTypeBasicNodeOps(EgDataNodesType& testDataNodes)
     return res;
 }
 
-bool reloadData(EgDataNodesType& testDataNodes) {
+bool reloadData(EgDataNodesSet& testDataNodes) {
     // cout << "===== reloadData() " << " =====" << endl;
 
     testDataNodes.LoadAllNodes();
@@ -114,8 +114,8 @@ int main() {
     std::remove("basicops.dnl"); // delete layout file
     std::remove("basicops.gdn"); // delete data nodes file
 
-    EgDatabaseType  graphDB;
-    EgDataNodesType basicopsNodesType;
+    EgDatabase  graphDB;
+    EgDataNodesSet basicopsNodesType;
 
     cout << "===== Test basic database ops " << " =====" << endl;
 

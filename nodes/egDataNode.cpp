@@ -1,6 +1,7 @@
 #include <iostream>
 #include "egDataNode.h"
 #include "egDataNodeBlueprint.h"
+#include "../metainfo/egLiterals.h"
 
 // ========= Byte Array Length Convertors  ===============
 const int DATA_CONVERT_MAX_BYTES_COUNT      {10};   // 64 bits to up to 10 bytes 
@@ -50,7 +51,7 @@ uint8_t egConvertFlexToStatic(ByteType* flexibleVal, StaticLengthType& staticVal
 }
 //  ============================================================================
 
-EgDataNode::EgDataNode(EgDataNodeBlueprintType* a_dataNodeBlueprint, bool initMe):
+EgDataNode::EgDataNode(EgDataNodeBlueprint* a_dataNodeBlueprint, bool initMe):
     dataNodeBlueprint(a_dataNodeBlueprint) {
     if (dataNodeBlueprint) {
         // std::cout << "EgDataNodeType() dataNodeBlueprint-> fieldsCount: " << dataNodeBlueprint->blueprintName << " " << std::dec << (int) dataNodeBlueprint-> fieldsCount << std::endl;
@@ -62,7 +63,7 @@ EgDataNode::EgDataNode(EgDataNodeBlueprintType* a_dataNodeBlueprint, bool initMe
         std::cout << "ERROR: EgDataNodeType(): nullptr blueprint in initMe constructor" << std::endl;
 }
 
-EgDataNode::EgDataNode(EgDataNodeBlueprintType* a_dataNodeBlueprint, void* a_serialDataPtr):
+EgDataNode::EgDataNode(EgDataNodeBlueprint* a_dataNodeBlueprint, void* a_serialDataPtr):
     dataNodeBlueprint(a_dataNodeBlueprint),
     serialDataPtr(a_serialDataPtr) {
     if (dataNodeBlueprint) {
@@ -86,6 +87,13 @@ void EgDataNode::clear() {
     inLinks.clear();
     outLinks.clear();
     indexedFieldsOldValues.clear();
+}
+
+void EgDataNode::getDetailsLayerID (EgDataNodeIDType& theLayerID) {
+    if ( fieldNameExists(detailsLayerIDName) )
+        this-> operator[](detailsLayerIDName) >> theLayerID;
+    else
+        theLayerID = 0;
 }
 
 EgLinkDataPtrsNodePtrsMapType* EgDataNode::getInLinksMap(EgBlueprintIDType linkBlueprintID) {
@@ -208,6 +216,11 @@ EgDataNode* EgDataNode::getOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDa
     return nullptr;
 }
 
+bool EgDataNode::fieldNameExists(const std::string& fieldStrName) {
+    auto iter = dataNodeBlueprint-> dataFieldsNames.find(fieldStrName);
+    return (iter != dataNodeBlueprint-> dataFieldsNames.end());
+}
+
 EgByteArrayAbstractType& EgDataNode::operator[](const std::string& fieldStrName) { // field value by name as stg::string
     auto iter = dataNodeBlueprint-> dataFieldsNames.find(fieldStrName);
     if (iter != dataNodeBlueprint-> dataFieldsNames.end()) {
@@ -218,11 +231,25 @@ EgByteArrayAbstractType& EgDataNode::operator[](const std::string& fieldStrName)
     return dataNodeBlueprint-> egNotFound;
 }
 
-void EgDataNode::InsertDataFieldFromCharStr(const char* str) {
+/* void EgDataNode::InsertDataFieldFromCharStr(const char* str) {
     if (insertIndex < dataNodeBlueprint->fieldsCount) {
         // std::cout << "AddNextDataFieldFromCharStr() in: " << str << std::endl;
         EgByteArraySlicerType* byteArray = new EgByteArraySlicerType(dataNodeBlueprint->theHamSlicer, strlen(str) + 1); // use ham slicer allocator
         memcpy((void *)byteArray->dataChunk, (void *)str, byteArray->dataSize);
+        // PrintByteArray(*byteArray);
+        // std::cout << "insertIndex: " << std::dec << insertIndex << " dataFieldsPtrsArray: " << std::hex << (int64_t) dataFieldsPtrs-> ptrsArray << std::endl;
+        dataFieldsPtrs->ptrsArray[insertIndex++] = byteArray;
+        // PrintPtrsArray<EgByteArrayAbstractType*> (*dataFieldsPtrs);
+    } else
+        std::cout << "ERROR: AddNextDataFieldFromType() fields count overflow: " << dataNodeBlueprint-> blueprintName << std::endl;
+} */
+
+void EgDataNode::InsertDataFieldFromStr(const std::string& str) {
+    if (insertIndex < dataNodeBlueprint->fieldsCount) {
+        // std::cout << "AddNextDataFieldFromCharStr() in: " << str << std::endl;
+        EgByteArraySlicerType* byteArray = new EgByteArraySlicerType(dataNodeBlueprint->theHamSlicer, str.size()); // use ham slicer allocator
+        // byteArray << str;
+        memcpy((void*) byteArray->dataChunk, (void*) str.c_str(), byteArray->dataSize);
         // PrintByteArray(*byteArray);
         // std::cout << "insertIndex: " << std::dec << insertIndex << " dataFieldsPtrsArray: " << std::hex << (int64_t) dataFieldsPtrs-> ptrsArray << std::endl;
         dataFieldsPtrs->ptrsArray[insertIndex++] = byteArray;
@@ -258,8 +285,8 @@ void EgDataNode::writeDataFieldsToFile(EgFileType &theFile) {
             if (field-> dataSize) { // not empty field
                 uint8_t lenSize = egConvertStaticToFlex(field->dataSize, lengthRawData);
                 // std::cout << "writeDataFieldsToFile() lenSize: " << (int) lenSize << " lengthRawData[0]: " << (int) lengthRawData[0] << std::endl;
-                theFile.fileStream.write((const char *)lengthRawData, lenSize);              // write size
-                theFile.fileStream.write((const char *)(field->dataChunk), field->dataSize); // write data
+                theFile.fileStream.write((const char*)lengthRawData, lenSize);              // write size
+                theFile.fileStream.write((const char*)(field->dataChunk), field->dataSize); // write data
             } else {
                 // std::cout << "writeDataFieldsToFile(): zero field size" << std::endl;
                 theFile.fileStream << (ByteType) 0;

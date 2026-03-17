@@ -1,36 +1,103 @@
-#include "../metainfo/egLayersType.h"
-#include "../nodes/egDataNodesType.h"
-#include <iostream>
-#include <cstring>
+#include "testTemplate.h"
+
+#include "../metainfo/egLayers.h"
+#include "../metainfo/egOneLayer.h"
+#include "../nodes/egDataNodesSet.h"
 
 using namespace std;
+
+bool initNodesSets(EgDatabase& graphDB) {
+    // EgNodeTypeSettings typeSettings;
+    // typeSettings.useLocation = true;
+    // typeSettings.useLinks = true;
+
+    graphDB.CreateNodeBlueprint("testNodesBlueprint"); // , typeSettings);
+    graphDB.AddNodeDataField("x");
+    graphDB.AddNodeDataField("y");
+    graphDB.AddNodeDataField("z");
+    graphDB.AddNodeDataField("");
+    graphDB.CommitNodeBlueprint();
+
+    graphDB.CreateLinkWithDataBlueprint("testLinksBlueprint");
+    graphDB.AddLinkDataField("x");
+    graphDB.AddLinkDataField("y");
+    graphDB.CommitLinkBlueprint();
+
+
+    // graphDB.CreateNodesSetByBlueprint("layer2nodes", "testBlueprint");
+
+    // graphDB.AddLinkType("basicops_linktype"); // , "locations", "locations"); // create link type
+
+    return true; // ((graphDB.nodesTypesMetainfo.nodesContainer-> dataNodes.size() == 1));
+        // &&  (graphDB.linksTypesMetainfo.nodesContainer-> dataNodes.size() == 1));
+}
+
+inline void addSampleDataNode(EgDataNodesSet& dataNodes) {
+    EgDataNode* newNode = new EgDataNode(dataNodes.dataNodeBlueprint); // FIXME change to node(nodesSet);
+    (*newNode)["x"] << 1;
+    (*newNode)["y"] << 2;
+    (*newNode)["z"] << 3;
+    dataNodes << newNode;
+}
+
 
 int main() {
     cout << "===== Test EgLayersType =====" << endl;
     std::remove("testlayers_egLayersInfo.dnl"); // delete layout file
     std::remove("testlayers_egLayersInfo.gdn"); // delete data nodes file    
 
-    EgDatabaseType theDatabase;
-    EgLayersType testLayers;
+    EgDatabase theDatabase;
+    EgLayers   testLayers;
 
-    theDatabase.CreateLayersBlueprint("testlayers");
+    initNodesSets(theDatabase); // create testBlueprint
 
-    testLayers.ConnectLayers("testlayers", theDatabase);
+    theDatabase.CreateLayersSet("testLayersSet");
+    testLayers.ConnectLayers("testLayersSet", theDatabase);
 
-    testLayers.AddNodesType("layer1nodes", 1);
-    testLayers.AddNodesType("layer2nodes", 2);
-    testLayers.AddLinksType("layer2links", 2);
+    EgDataNodeIDType topLayerID;
+    theDatabase.CreateNodesSetByBlueprint("topLayerNodes", "testNodesBlueprint");
+    theDatabase.CreateLinksSetByBlueprint("topLayerLinks", "testLinksBlueprint", "topLayerNodes", "topLayerNodes");
+    testLayers.createBlankLayer(topLayerID, 1000, 600, "topLayerNodes", "topLayerLinks"); // "layer1links");  // create top layer
+    
+    EgDataNodesSet topLayerNodesSet;
+    topLayerNodesSet.Connect("topLayerNodes", theDatabase);
+
+    addSampleDataNode(topLayerNodesSet); // add 3 nodes to top layer
+    addSampleDataNode(topLayerNodesSet);
+    EgDataNodeIDType newNodeID = topLayerNodesSet.getAddedNodeID();
+
+    // cout << "top LayerID: " << topLayerID << " top newNodeID: " << newNodeID << endl;
+
+    // add details layers to 2 nodes
+    EgDataNodeIDType newLayerID;
+    testLayers.createDetailsLayer(newNodeID, newLayerID, 100, 100, "testNodesBlueprint", "testLinksBlueprint");
+    addSampleDataNode(topLayerNodesSet);
+    newNodeID = topLayerNodesSet.getAddedNodeID();
+    testLayers.createDetailsLayer(newNodeID, newLayerID, 100, 100, "testNodesBlueprint", "testLinksBlueprint");
+
+    std::string detLayerName = "egDetailsNodesSet_" + std::to_string(newNodeID); // details of new node
+
+    EgDataNodesSet detailsLayerNodesSet;
+    detailsLayerNodesSet.Connect(detLayerName, theDatabase);
+
+    addSampleDataNode(detailsLayerNodesSet); // add 2 nodes to detail layer
+    addSampleDataNode(detailsLayerNodesSet);
+    newNodeID = detailsLayerNodesSet.getAddedNodeID();
+
+    // cout << "details LayerID: " << newLayerID << " details newNodeID: " << newNodeID << endl;
+
+    testLayers.updateWH(topLayerID, 111, 222);
 
     testLayers.StoreLayers();
     testLayers.LoadLayers();
+    
+    // cout << "top Layer W: " << testLayers[topLayerID]-> layerWidth << " H: " << testLayers[topLayerID]-> layerHeight << endl;
+
+    // check nodes count in details 
+    // cout << "detailsLayerNodesSet.nodesContainer-> nodesCount: " << detailsLayerNodesSet.nodesContainer-> nodesCount << endl;
 
     // testLayers.layersStorage.nodesContainer-> PrintDataNodesContainer();
     // cout << "testLayers.layersStorage.nodesContainer-> nodesCount: " << testLayers.layersStorage.nodesContainer-> nodesCount << endl;
 
-    bool res = (testLayers.layersStorage.nodesContainer-> nodesCount == 3);
-
-    if (res)
-        cout << "PASS" << endl;
-    else
-        cout << "FAIL" << endl;
+    contributeTestResultToStatistics( (detailsLayerNodesSet.nodesContainer-> nodesCount == 2) ); // testInDevelopment
 }

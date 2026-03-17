@@ -35,7 +35,7 @@ EgByteArrayAbstractType& EgByteArrayAbstractType::operator=(const EgByteArrayAbs
     return *this;
 }
 
-void ByteArrayFromCharStr(const char* str, EgByteArrayAbstractType& byteArray) {
+/* void ByteArrayFromCharStr(const char* str, EgByteArrayAbstractType& byteArray) {
     // bool resizeFlag = byteArray.dataSize < newSize; // FIXME add capacity size
     int64_t newSize = strlen(str) + 1;
     if (newSize > 1) {
@@ -44,22 +44,17 @@ void ByteArrayFromCharStr(const char* str, EgByteArrayAbstractType& byteArray) {
     } else {
         byteArray.reallocDataChunk(0);
     }
-}
+} */
 
-EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, char* str) {
+/* EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, char* str) {
         // str = reinterpret_cast<char*> (byteArray.dataChunk);
         // std::cout << "byteArray to int: " << std::dec << intNum << std::endl;
         // PrintByteArray(byteArray);
         memcpy((void*)str, (void*) byteArray.dataChunk, byteArray.dataSize);
         return byteArray;
-}
+} */
 
-EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, std::string& str) {
-        str.assign((char*) byteArray.dataChunk, byteArray.dataSize-1);
-        return byteArray;
-}
-
-EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const char* str) {
+/* EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const char* str) {
         int64_t newSize = strlen(str)+1;
         if (newSize > 1) {
             byteArray.reallocDataChunk(newSize);
@@ -68,11 +63,16 @@ EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const 
             byteArray.reallocDataChunk(0);
         }
         return byteArray;
+} */
+
+EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, std::string& str) {
+        str.assign((char*) byteArray.dataChunk, byteArray.dataSize);
+        return byteArray;
 }
 
-EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, std::string& str) {
-        int64_t newSize = str.size()+1;
-        if (newSize > 1) {
+EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const std::string& str) {
+        int64_t newSize = str.size();
+        if (newSize > 0) {
             byteArray.reallocDataChunk(newSize);
             memcpy((void *)byteArray.dataChunk, (void *)str.c_str(), newSize);
         } else {

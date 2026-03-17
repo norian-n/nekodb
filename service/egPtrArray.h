@@ -1,23 +1,24 @@
 #pragma once
 #include "egHamSlicer.h"
 
-template <typename T> class EgPtrArrayType {
+template <typename T> class EgPtrArrayType { // dynamic array of pointers for data node content
 public:
-    uint64_t  ptrsCount           {0};
+    uint64_t  ptrsCount           {0};       // pointers in the array
     // uint64_t  arrayCapacity    {0}; // FIXME TODO add capacity logic
-    T* ptrsArray     {nullptr};
-    EgHamSlicerType* theHamSlicer {nullptr};
-    EgHamBrickIDType brickID      {0};
+    T* ptrsArray     {nullptr};              // primary content - array of pointers  
+    EgHamSlicerType* theHamSlicer {nullptr}; // memory allocator
+    EgHamBrickIDType brickID      {0};       // allocator block, 0 is unused
 
     EgPtrArrayType () = delete;
-    EgPtrArrayType (EgHamSlicerType& a_HamSlicer, uint64_t init_size):
-        ptrsCount(init_size),
+    EgPtrArrayType (EgHamSlicerType& a_HamSlicer, uint64_t initCount):
+        ptrsCount(initCount),
         theHamSlicer(&a_HamSlicer)
     { init(); }
     ~EgPtrArrayType() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); }
 
     inline void init() { if(ptrsCount) theHamSlicer-> getSlice(ptrsCount*sizeof(T), brickID, (ByteType*&) ptrsArray); }
     void clear() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); ptrsCount = 0; brickID = 0; ptrsArray = nullptr; }
+
     void reallocPtrsArray() {
         if (brickID)
             theHamSlicer->freeSlice(brickID);
@@ -29,14 +30,6 @@ public:
         }
     }
 };
-
-/*    EgPtrArrayType (EgHamSlicerType* a_HamSlicer, uint64_t init_size):
-        ptrsCount(init_size),
-        theHamSlicer(a_HamSlicer)
-    { init(); } */
-
-// EgPtrArrayType& operator = (const EgPtrArrayType& rightBA);
-// std::cout << "EgPtrArrayType() brickID: " << std::dec << brickID << " ptr: "<< std::hex << (int64_t) ptrsArray << std::endl;
 
 /* template <typename T> void PrintPtrsArray(EgPtrArrayType<T>& bArray) {
     std::cout << "PrintPtrArray ptrs count: " << std::dec << bArray.ptrsCount << " ";

@@ -1,0 +1,46 @@
+all: makethelib clean
+.PHONY: all clean
+
+# CFLAGS = -O3 -Wall -Wall -Wextra -pedantic -fPIC
+
+TARGET = libegdb.so
+
+CC = g++
+LDLIBS += -lstdc++fs
+CPPFLAGS = -fPIC -std=c++20 -O3
+INCLUDES =
+# -I/home/fran/some_directory
+
+# SRC_FILES = tests/testDataFields.cpp service/egByteArray.cpp nodes/egDataNode.cpp
+SRC_FILES_SERVICE = $(shell find service -name '*.cpp')
+SRC_FILES_NODES = $(shell find nodes -name '*.cpp')
+SRC_FILES_INDEXES = $(shell find indexes -name '*.cpp')
+SRC_FILES_LINKS = $(shell find links -name '*.cpp')
+SRC_FILES_METAINFO = $(shell find metainfo -name '*.cpp')
+# SRC_FILES_QTINTERFACE = $(shell find qtinterface -name '*.cpp')
+SRC_FILES = $(SRC_FILES_SERVICE) $(SRC_FILES_NODES) $(SRC_FILES_INDEXES) $(SRC_FILES_LINKS) $(SRC_FILES_METAINFO) 
+# $(SRC_FILES_QTINTERFACE)
+
+#   $(name:string1=string2) For each word in 'name' replace 'string1' with 'string2'
+OBJS = $(SRC_FILES:.cpp=.o)
+    
+makethelib:    $(TARGET)
+	@echo ===============  Finished compilation of $(TARGET) ===============
+	@ls -la | grep $(TARGET)
+
+# compile object file to .so shared library $(INCLUDES)
+
+$(TARGET): $(OBJS)
+	$(CC) -shared -o $(TARGET) $(OBJS)
+
+# compile source files to object files
+# this is a suffix replacement rule for building .o's from .c's
+# it uses automatic variables $<: the name of the prerequisite of
+# the rule(a .c file) and $@: the name of the target of the rule (a .o file)
+
+%.o : %.cpp
+	$(CC) $(CPPFLAGS) $(INCLUDES) -c $< -o $@
+
+clean:
+	@echo ===============  clean  ===============
+	$(RM) $(OBJS)

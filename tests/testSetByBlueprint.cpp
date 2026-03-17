@@ -4,20 +4,23 @@
 
 using namespace std;
 
-bool initDatabase(EgDatabase& graphDB) {
+bool initNodesSets(EgDatabase& graphDB) {
     // EgNodeTypeSettings typeSettings;
     // typeSettings.useLocation = true;
     // typeSettings.useLinks = true;
 
-    graphDB.CreateNodesSet("generalops"); // , typeSettings);
+    graphDB.CreateNodeBlueprint("testBlueprint"); // , typeSettings);
 
     graphDB.AddNodeDataField("name");
-    graphDB.AddNodeDataField("status"); // , isIndexed create index
-    graphDB.AddNodeDataField("imageType");
+    graphDB.AddNodeDataField("status");
     graphDB.AddNodeDataField("x");
-    graphDB.AddNodeDataField("y");    
+    graphDB.AddNodeDataField("y");
+    graphDB.AddNodeDataField("z");
 
-    graphDB.CommitNodesSet();
+    graphDB.CommitNodeBlueprint();
+
+    graphDB.CreateNodesSetByBlueprint("testNodesSet1", "testBlueprint");
+    graphDB.CreateNodesSetByBlueprint("testNodesSet2", "testBlueprint");
 
     // graphDB.AddLinkType("basicops_linktype"); // , "locations", "locations"); // create link type
 
@@ -27,58 +30,27 @@ bool initDatabase(EgDatabase& graphDB) {
 
 string field1 = "name";
 const string field2 {"status"};
-string field3("image type");
-string field4("100");
-string field5("200");
 int num1 = 100;
 int num2 = 200;
+int num3 = 300;
 
 inline void addSampleDataNode(EgDataNodesSet& dataNodes) {
     EgDataNode* newNode = new EgDataNode(dataNodes.dataNodeBlueprint);
     *newNode << field1;
     *newNode << field2;
-    *newNode << field3;
     *newNode << num1;
     *newNode << num2;
-    // dataNodes.AddDataNode(newNode);
-    // PrintEgDataNodeTypeFields(*newNode);
+    *newNode << num3;
     dataNodes << newNode;
 }
 
-bool testDeleteAllAddSome(EgDataNodesSet& testDataNodes)
+bool testEgDataNodesTypeBasicNodeOps(EgDataNodesSet& testDataNodes)
 {
     addSampleDataNode(testDataNodes);
     addSampleDataNode(testDataNodes);
     addSampleDataNode(testDataNodes);
-
     testDataNodes.Store();
-    testDataNodes.LoadAllNodes();
-
-    testDataNodes.DeleteDataNode(1);
-    testDataNodes.DeleteDataNode(2);
-    testDataNodes.DeleteDataNode(3);
-
-    addSampleDataNode(testDataNodes);
-    addSampleDataNode(testDataNodes);
-
-    testDataNodes.Store();
-    testDataNodes.LoadAllNodes();    
-
-    /*cout << "dataNodes: " << testDataNodes.nodesContainer-> dataNodes.size() << endl;
-    cout << "addedDataNodes: " << testDataNodes.nodesContainer-> addedDataNodes.size() << endl;
-    cout << "deletedDataNodes: " << testDataNodes.nodesContainer-> deletedDataNodes.size() << endl;
-    cout << "updatedDataNodes: " << testDataNodes.nodesContainer-> updatedDataNodes.size() << endl;*/
-
-    bool res = ((testDataNodes.nodesContainer-> addedDataNodes.size() == 0)
-            && (testDataNodes.nodesContainer-> dataNodes.size() == 2)
-            && (testDataNodes.nodesContainer-> deletedDataNodes.size() == 0)
-            && (testDataNodes.nodesContainer-> updatedDataNodes.size() == 0));
-
-    // testDataNodes.nodesContainer->LocalNodesFile-> PrintNodesChain();
-
-    // testShowResult(res, FNS);
-
-    return res;
+    return (testDataNodes.nodesContainer-> dataNodes.size() == 3);
 }
 
 bool reloadData(EgDataNodesSet& testDataNodes) {
@@ -110,27 +82,26 @@ bool reloadData(EgDataNodesSet& testDataNodes) {
 
 
 int main() {
-    std::remove("generalops.dnl"); // delete layout file
-    std::remove("generalops.gdn"); // delete data nodes file
+    std::remove("testBlueprint.dnl");
+    std::remove("testNodesSet1.gdn");
+    std::remove("testNodesSet2.gdn");
 
     EgDatabase  graphDB;
-    EgDataNodesSet basicopsNodesType;
+    EgDataNodesSet nodesSet1;
+    EgDataNodesSet nodesSet2;
 
-    cout << "===== Test general database ops " << " =====" << endl;
+    cout << "===== Test nodes set by blueprint " << " =====" << endl;
 
-    bool res = initDatabase(graphDB);
+    initNodesSets(graphDB);
 
-    // cout << "===== initDatabase() res: " << res << " =====" << endl;
-
-    int result = basicopsNodesType.Connect("generalops", graphDB);
-
+    nodesSet1.Connect("testNodesSet1", graphDB);
+    nodesSet2.Connect("testNodesSet2", graphDB);
     // cout << "===== After connect result: " << std::dec << result << " =====" << endl;
 
-    // PrintDataNodeLayout(*(locationsNodesType.dataNodeBlueprint));
-    bool res1 = testDeleteAllAddSome(basicopsNodesType);
-    // bool res2 = reloadData(basicopsNodesType);
+    bool res1 = testEgDataNodesTypeBasicNodeOps(nodesSet1);
+    bool res2 = testEgDataNodesTypeBasicNodeOps(nodesSet2);
 
-    if (res1) //  && res2)
+    if (res1 && res2)
         cout << "PASS" << endl;
     else
         cout << "FAIL" << endl;

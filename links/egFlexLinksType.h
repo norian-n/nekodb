@@ -1,5 +1,5 @@
 #pragma once
-#include "../metainfo/egDatabaseType.h"
+#include "../metainfo/egDatabase.h"
 
 //  ============================================================================
 //          EXTERNAL TYPES
@@ -18,21 +18,21 @@ public:
     // EgBlueprintIDType              linkTypeID          { 0 };
     EgBlueprintIDType           linkBlueprintID          { 0 };
     std::string                 linkTypeName;
-    EgDatabaseType*             metaInfoDatabase    { nullptr };    
-    EgDataNodeBlueprintType*    linksStorageBlueprint  { nullptr };
-    EgDataNodesContainerType*   linksStorage        { nullptr };
+    EgDatabase*             metaInfoDatabase    { nullptr };    
+    EgDataNodeBlueprint*    linksStorageBlueprint  { nullptr };
+    EgDataNodesContainer*   linksStorage        { nullptr };
     // EgDataNodesContainerType* linkDataStorage;
 
-    EgFreeLinksType(std::string& a_Name, EgDatabaseType& a_Database):
+    EgFreeLinksType(std::string& a_Name, EgDatabase& a_Database):
             linkTypeName(a_Name),
              metaInfoDatabase(&a_Database),           
-            linksStorageBlueprint(new EgDataNodeBlueprintType(a_Name)),
-            linksStorage (new EgDataNodesContainerType()) { linksStorage->init(linksStorageBlueprint); initFlexLinkBlueprint(linksStorageBlueprint); }
+            linksStorageBlueprint(new EgDataNodeBlueprint(a_Name)),
+            linksStorage (new EgDataNodesContainer()) { linksStorage->init(linksStorageBlueprint, linkTypeName); initFlexLinkBlueprint(linksStorageBlueprint); }
 
     ~EgFreeLinksType() { clear(); delete linksStorage; delete linksStorageBlueprint; }
     
     void clear();
-    void initFlexLinkBlueprint(EgDataNodeBlueprintType* linkBlueprint);
+    void initFlexLinkBlueprint(EgDataNodeBlueprint* linkBlueprint);
     void AddRawLink(EgBlueprintIDType fromLayID, EgDataNodeIDType fromID, EgBlueprintIDType toLayID, EgDataNodeIDType toID);
     void AddContainersLink(EgBlueprintIDType fromLayID, EgDataNodeIDType fromID, EgBlueprintIDType toLayID, EgDataNodeIDType toID);
     int LoadLinks();

@@ -1,15 +1,15 @@
-#include "../metainfo/egDatabaseType.h"
+#include "../metainfo/egDatabase.h"
 #include <iostream>
 #include <cstring>
 
 using namespace std;
 
-bool initDatabase(EgDatabaseType& graphDB) {
+bool initDatabase(EgDatabase& graphDB) {
     // EgNodeTypeSettings typeSettings;
     // typeSettings.useLocation = true;
     // typeSettings.useLinks = true;
 
-    graphDB.CreateNodeBlueprint("indexops");
+    graphDB.CreateNodesSet("indexops");
 
     graphDB.AddNodeDataField("name");
     graphDB.AddNodeDataField("x");
@@ -18,7 +18,7 @@ bool initDatabase(EgDatabaseType& graphDB) {
     graphDB.AddIndex("x", 4, egIndexesSpace::egIntFT);
     graphDB.AddIndex("y", 4, egIndexesSpace::egIntFT);
 
-    graphDB.CommitNodeBlueprint();
+    graphDB.CommitNodesSet();
 
     // graphDB.AddLinkType("basicops_linktype"); // , "locations", "locations"); // create link type
 
@@ -34,7 +34,7 @@ string field1 = "name\0";
 int num1 = 0xab;
 int num2 = 0xcd;
 
-inline void addSampleDataNode(EgDataNodesType& dataNodes, int x, int y) {
+inline void addSampleDataNode(EgDataNodesSet& dataNodes, int x, int y) {
     EgDataNode* newNode = new EgDataNode(dataNodes.dataNodeBlueprint);
     *newNode << field1;
     // *newNode << field2;
@@ -46,7 +46,7 @@ inline void addSampleDataNode(EgDataNodesType& dataNodes, int x, int y) {
     dataNodes << newNode;
 }
 
-bool testEgDataNodesTypeBasicNodeOps(EgDataNodesType& testDataNodes)
+bool testEgDataNodesTypeBasicNodeOps(EgDataNodesSet& testDataNodes)
 {
     addSampleDataNode(testDataNodes, 0xa1c1, 0xb1d1);
     addSampleDataNode(testDataNodes, 0xa2c2, 0xb2d2);
@@ -82,7 +82,7 @@ bool testEgDataNodesTypeBasicNodeOps(EgDataNodesType& testDataNodes)
     return res;
 }
 
-bool reloadData(EgDataNodesType& testDataNodes) {
+bool reloadData(EgDataNodesSet& testDataNodes) {
     // cout << "===== reloadData() " << " =====" << endl;
 
     testDataNodes.LoadAllNodes();
@@ -114,8 +114,8 @@ int main() {
     std::remove("indexops.dnl"); // delete layout file
     std::remove("indexops.gdn"); // delete data nodes file
 
-    EgDatabaseType  graphDB;
-    EgDataNodesType indexOpsNodesType;
+    EgDatabase  graphDB;
+    EgDataNodesSet indexOpsNodesType;
 
     cout << "===== Test indexes ops " << " =====" << endl;
 

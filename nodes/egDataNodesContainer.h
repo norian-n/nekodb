@@ -1,11 +1,11 @@
 #pragma once
 #include "egDataNodesLocalFile.h"
 
-class EgDataNodesContainerType {
+class EgDataNodesContainer {
 public:
     EgDataNodeIDType    nodesCount  {0};
-    EgDataNodeIDType    lastNodeID  {0}; 
-    EgDataNodeBlueprintType*    dataNodeBlueprint   { nullptr };    // blueprint == class == type of data nodes
+    EgDataNodeIDType    lastNodeID  {0};
+    EgDataNodeBlueprint*    dataNodeBlueprint   { nullptr };    // blueprint == class == type of data nodes
     EgDataNodesLocalFileType*   LocalNodesFile      { nullptr };    // data files *.gdn load/store support
         // data nodes content and changes tracking
     EgDataNodesMapType dataNodes;        // active nodes container
@@ -13,21 +13,21 @@ public:
     EgDataNodesMapType updatedDataNodes;
     EgDataNodesMapType deletedDataNodes; // TODO : clear all addons on node delete
 
-    EgDataNodesContainerType():
+    EgDataNodesContainer():
             LocalNodesFile (new EgDataNodesLocalFileType()) {}
-    void init(EgDataNodeBlueprintType* a_dataNodeBlueprint); // get blueprint from upper layer TODO init indexes by blueprint
-    ~EgDataNodesContainerType() { clear(); /* delete dataNodeBlueprint;*/ delete LocalNodesFile; } // FIXME check dynamic blueprint
+    void init(EgDataNodeBlueprint* a_dataNodeBlueprint, const std::string& nodesSetName); // get info from upper layer TODO init indexes by blueprint
+    ~EgDataNodesContainer() { clear(); /* delete dataNodeBlueprint;*/ delete LocalNodesFile; } // FIXME check dynamic blueprint
 
     void clear();
-    int  GetLastID();
+    // int  GetLastID();
     int  LoadLocalBlueprint();
     EgDataNode* GetNodePtrByID(EgDataNodeIDType nodeID);
 
-    int  AddDataNode(EgDataNode* newNode);
+    EgDataNodeIDType AddDataNode(EgDataNode* newNode);
     int  MarkUpdatedDataNode(EgDataNodeIDType nodeID);
     void DeleteDataNode(const EgDataNodeIDType delID);
 
-    EgDataNodesContainerType& operator << (EgDataNode* newNode);
+    EgDataNodesContainer& operator << (EgDataNode* newNode);
 
     int  StoreToLocalFile();
     int  LoadAllLocalFileNodes();

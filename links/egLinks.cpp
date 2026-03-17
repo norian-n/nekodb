@@ -1,22 +1,32 @@
 #include <iostream>
-#include "egLinksType.h"
+#include "egLinks.h"
+#include "../metainfo/egLiterals.h"
 
-void EgLinksType::clear() {
+void EgLinksSet::clear() {
     linksDataStorage.clear();
 }
 
-int EgLinksType::ConnectLinks(const std::string& linkNameStr, EgDatabaseType& myDB) {
-    metaInfoDatabase = &myDB;
-    if (linksDataStorage.ConnectSystemNodeType(linkNameStr + "_arrowLinks") != 0) {
-        std::cout << "ConnectLinks() not found storage: " << linkNameStr << std::endl;
+int EgLinksSet::ConnectLinks(const std::string& linkNameStr, EgDatabase& myDB) {
+    if (linksDataStorage.isConnected) {
+        EG_LOG_STUB << "WARNING: ConnectLinks(): trying to connect links set again: " << linkNameStr << FN;
     }
-
-    dataNodeBlueprint = linksDataStorage.dataNodeBlueprint;
-
+    metaInfoDatabase = &myDB;
+    linkNameShort = linkNameStr;
+    linkNameFull = linkNameStr + linkSuffixName;
+    if ( myDB.blueprintNameByLinkName(linkNameStr, linkBlueprintName) ) { // look in links metainfo
+        EG_LOG_STUB << "ERROR: ConnectLinks() set name not found in metainfo: " << linkNameStr << FN;
+        return -1;
+    }
+    linkBlueprintNameFull = linkBlueprintName + linkSuffixName;
+    if (linksDataStorage.ConnectSystemNodeType(linkNameFull, linkBlueprintNameFull) != 0) {
+        EG_LOG_STUB << "ERROR: ConnectLinks() can't find storage: " << linkNameFull << " or blueprint " << linkBlueprintNameFull << FN;
+        return -2;        
+    }
+    dataNodeBlueprint = linksDataStorage.dataNodeBlueprint; // shortcut ref FIXME check usage
     return 0;
 }
 
-void EgLinksType::AddRawLink(EgDataNodeIDType fromID, EgDataNodeIDType toID) {
+void EgLinksSet::AddRawLink(EgDataNodeIDType fromID, EgDataNodeIDType toID) {
     EgDataNode *newNode = new EgDataNode(linksDataStorage.dataNodeBlueprint);
     *newNode << fromID;
     *newNode << toID;
@@ -24,12 +34,12 @@ void EgLinksType::AddRawLink(EgDataNodeIDType fromID, EgDataNodeIDType toID) {
     linksDataStorage << newNode;
 }
 
-int EgLinksType::AddNodeContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType toID) {
+int EgLinksSet::AddNodeContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType toID) {
     EgDataNode *fromNodePtr = fromDataNodes->GetNodePtrByID(fromID);
     EgDataNode *toNodePtr = toDataNodes->GetNodePtrByID(toID);
     if (!(fromNodePtr && toNodePtr))
     {
-        std::cout << linkTypeName << " : AddContainersLink() ERROR : Nodes ptrs NOT found, tried IDs:"
+        std::cout << linkNameShort << " : AddContainersLink() ERROR : Nodes ptrs NOT found, tried IDs:"
                   << std::dec << (int)fromID << " " << (int)toID << std::endl;
         return -1;
     }
@@ -37,7 +47,7 @@ int EgLinksType::AddNodeContainersLink(EgDataNodeIDType fromID, EgDataNodeIDType
     return 0;
 }
 
-void EgLinksType::DeleteArrowLink(EgDataLinkIDType linkID) {
+void EgLinksSet::DeleteArrowLink(EgDataLinkIDType linkID) {
     EgDataNode*  linkDataNode = &(linksDataStorage[linkID]);
     if (fromDataNodes) {
         EgDataNodeIDType nodeID = *(reinterpret_cast<EgDataNodeIDType *>(linkDataNode->operator[]("fromID").dataChunk));
@@ -55,7 +65,7 @@ void EgLinksType::DeleteArrowLink(EgDataLinkIDType linkID) {
     linksDataStorage.DeleteDataNode(linkID);
 }
 
-void EgLinksType::DeleteOutLink(EgDataLinkIDType linkID) {
+void EgLinksSet::DeleteOutLink(EgDataLinkIDType linkID) {
     EgDataNode*  linkDataNode = &(linksDataStorage[linkID]);
     if (toDataNodes) {
         EgDataNodeIDType nodeID = *(reinterpret_cast<EgDataNodeIDType *>(linkDataNode->operator[]("toID").dataChunk));
@@ -67,7 +77,7 @@ void EgLinksType::DeleteOutLink(EgDataLinkIDType linkID) {
     linksDataStorage.DeleteDataNode(linkID);
 }
 
-void EgLinksType::DeleteInLink(EgDataLinkIDType linkID) {
+void EgLinksSet::DeleteInLink(EgDataLinkIDType linkID) {
     EgDataNode*  linkDataNode = &(linksDataStorage[linkID]);
     if (fromDataNodes) {
         EgDataNodeIDType nodeID = *(reinterpret_cast<EgDataNodeIDType *>(linkDataNode->operator[]("fromID").dataChunk));
@@ -79,12 +89,12 @@ void EgLinksType::DeleteInLink(EgDataLinkIDType linkID) {
     linksDataStorage.DeleteDataNode(linkID);
 }
 
-int EgLinksType::LoadLinks() {
+int EgLinksSet::LoadLinks() {
     linksDataStorage.clear();
     return linksDataStorage.LoadAllNodes();
 }
 
-int EgLinksType::StoreLinks() {
+int EgLinksSet::StoreLinks() {
     return linksDataStorage.Store();
 }
 /*
@@ -93,7 +103,7 @@ void EgLinksType::ConnectLinkToNodesTypes(EgDataNodesType &from, EgDataNodesType
     toDataNodes = to.nodesContainer;
 } */
 
-int EgLinksType::AddLinkPtrsToNodes(EgDataNode& link, EgDataNode &from, EgDataNode &to) {
+int EgLinksSet::AddLinkPtrsToNodes(EgDataNode& link, EgDataNode &from, EgDataNode &to) {
     // std::cout << "AddLinkPtrsToNodes() linkID " << link.dataNodeID << " fromID: " << from.dataNodeID << " toID: " << to.dataNodeID << std::endl;
     auto iterFrom = from.outLinks.find(linkBlueprintID);
     if (iterFrom == from.outLinks.end()) {
@@ -118,12 +128,12 @@ int EgLinksType::AddLinkPtrsToNodes(EgDataNode& link, EgDataNode &from, EgDataNo
     return 0;
 }
 
-int EgLinksType::ResolveNodesIDsToPtrs(EgDataNodesType &from, EgDataNodesType &to) {
+int EgLinksSet::ResolveNodesIDsToPtrs(EgDataNodesSet &from, EgDataNodesSet &to) {
     fromDataNodes = from.nodesContainer;
     toDataNodes = to.nodesContainer;
     if (!(fromDataNodes && toDataNodes))
     {
-        std::cout << "ResolveNodesIDsToPtrs() Error : nodes types not connected for link type " << linkTypeName << std::endl;
+        std::cout << "ResolveNodesIDsToPtrs() Error : nodes types not connected for link type " << linkNameShort << std::endl;
         return -1;
     }
     for (auto linksDataIter : dataMap)
@@ -152,7 +162,7 @@ int EgLinksType::ResolveNodesIDsToPtrs(EgDataNodesType &from, EgDataNodesType &t
         }
         else
         {
-            std::cout << " : ResolveNodesIDsToPtrs() ERROR : Nodes ptrs NOT found for some IDs of " << linksDataStorage.dataNodesName << std::dec 
+            std::cout << " : ResolveNodesIDsToPtrs() ERROR : Nodes ptrs NOT found for some IDs of " << linksDataStorage.nodesSetName << std::dec 
                 << " " << (int) *(reinterpret_cast<EgDataNodeIDType*> (linksDataIter.second->operator[]("fromID").dataChunk)) << " -> "
                 <<  (int) *(reinterpret_cast<EgDataNodeIDType*> (linksDataIter.second->operator[]("toID").dataChunk)) << std::endl;
             return -2;

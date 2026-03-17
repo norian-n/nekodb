@@ -1,16 +1,16 @@
 #pragma once
-#include <cstdint>
+// #include <cstdint>
 
-typedef uint32_t egMaxStreamSizeType;
+typedef unsigned int egMaxStreamSizeType; // uint_32
 
 class EgDataStream {
 public:
     egMaxStreamSizeType bufSize  {0};
     egMaxStreamSizeType bufIndex {0};
-    uint8_t*   bufData           {nullptr};
+    char*   bufData              {nullptr};
 
     EgDataStream(egMaxStreamSizeType buf_size) :
-        bufSize(buf_size), bufData(new uint8_t[buf_size]) {} // MEM_NEW --> destructor
+        bufSize(buf_size), bufData(new char[buf_size]) {} // MEM_NEW --> destructor
     ~EgDataStream() { delete bufData; }
 
     void seek(egMaxStreamSizeType idx) { bufIndex = idx; } 

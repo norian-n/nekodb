@@ -1,26 +1,35 @@
 #include <iostream>
-#include "egOneLayerType.h"
-#include "../links/egLinksType.h"
+#include "egOneLayer.h"
+#include "../links/egLinks.h"
 
-EgOneLayerType::EgOneLayerType(EgLayersType& a_Layers, EgDataNodeIDType a_layerID):  
+EgOneLayer::EgOneLayer(EgLayers& a_Layers, EgDataNodeIDType a_layerID):  
     layers {&a_Layers}, layerID {a_layerID}  {
 }
 
-void EgOneLayerType::clear() {
+void EgOneLayer::clear() {
     for (auto nodesIter : nodesMap) // MEM_DELETE
-        delete nodesIter.second;
+        delete nodesIter.second; // .nodesSetPtr;
     nodesMap.clear();
     for (auto linksIter : linksMap) // MEM_DELETE
         delete linksIter.second;
     linksMap.clear(); // FIXME TODO delete nodes objects
 }
 
-void EgOneLayerType::getLayerNodes(EgDataNodesType*& graphNodes, serialLoadFunctionType loadNodeObjectFromDb, 
+/*
+void EgOneLayerType::setNodesInfo (std::string nodesName, serialLoadFunctionType loadNodeFunc, serialStoreFunctionType storeNodeFunc) {
+    auto nodesIter = nodesMap.find(nodesName);
+    if (nodesIter != nodesMap.end()) {
+        nodesIter-> second.loadNodeFromDb = loadNodeFunc;
+        nodesIter-> second.storeNodeToDb  = storeNodeFunc;
+    }
+} */
+
+void EgOneLayer::getLayerNodes(EgDataNodesSet*& graphNodes, serialLoadFunctionType loadNodeObjectFromDb, 
     serialStoreFunctionType storeNodeObjectToDb) {
     auto nodesIter = nodesMap.begin(); // FIXME only one nodes type -> many types
     if (nodesIter != nodesMap.end()) {
         // std::cout << "loadLayerNodes() name: " << nodesIter-> first << std::endl;
-        graphNodes = nodesIter-> second;
+        graphNodes = nodesIter-> second; // .nodesSetPtr;
         if ( ! graphNodes-> isDataLoaded ) {
             graphNodes-> serialLoadFunction  = loadNodeObjectFromDb;
             graphNodes-> serialStoreFunction = storeNodeObjectToDb;
@@ -29,7 +38,7 @@ void EgOneLayerType::getLayerNodes(EgDataNodesType*& graphNodes, serialLoadFunct
     }
 }
 
-void EgOneLayerType::getLayerLinks(EgLinksType*& graphLinks, serialLoadFunctionType loadLinkObjectFromDb, 
+void EgOneLayer::getLayerLinks(EgLinksSet*& graphLinks, serialLoadFunctionType loadLinkObjectFromDb, 
     serialStoreFunctionType storeLinkObjectToDb) {
     auto linksIter = linksMap.begin(); // FIXME only one nodes type -> many types
     if (linksIter != linksMap.end()) {
@@ -43,14 +52,16 @@ void EgOneLayerType::getLayerLinks(EgLinksType*& graphLinks, serialLoadFunctionT
     }
 }
 
-void EgOneLayerType::addNodeType(const std::string& nodesName, EgDatabaseType* graphDB) {
-    EgDataNodesType* graphNodes = new EgDataNodesType(); // MEM_NEW --> clear()
+void EgOneLayer::connectNodeType(const std::string& nodesName, EgDatabase* graphDB) {
+    // nodesSetInfo nodesInfo;
+    EgDataNodesSet* graphNodes = new EgDataNodesSet(); // MEM_NEW --> clear()
     graphNodes->Connect(nodesName, *graphDB);
-    nodesMap.insert(std::make_pair(nodesName, graphNodes));
+    // nodesInfo.nodesSetPtr = graphNodes;
+    nodesMap.insert(std::make_pair(nodesName, graphNodes)); // nodesInfo));
 }
 
-void EgOneLayerType::addLinkType(const std::string& linksName, EgDatabaseType* graphDB) {
-    EgLinksType* graphLinks = new EgLinksType(); // MEM_NEW --> clear()
+void EgOneLayer::connectLinkType(const std::string& linksName, EgDatabase* graphDB) {
+    EgLinksSet* graphLinks = new EgLinksSet(); // MEM_NEW --> clear()
     graphLinks-> ConnectLinks(linksName, *graphDB);
     linksMap.insert(std::make_pair(linksName, graphLinks));
 }

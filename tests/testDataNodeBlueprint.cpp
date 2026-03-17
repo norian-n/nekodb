@@ -8,7 +8,7 @@ bool testDataNodeBlueprint() {
 
     cout << "===== Test DataNodeBlueprint (2 errors must appear in negative tests) " << " =====" << endl;
 
-    EgDataNodeBlueprintType testBlueprint("testNodes");
+    EgDataNodeBlueprint testBlueprint("testNodes");
     EgIndexSettingsType indexSettings;
 
     std::remove("testNodes.dnl"); // delete file

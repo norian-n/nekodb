@@ -57,7 +57,7 @@ int main() {
     EgDataNodeIDType topLayerID;
     theDatabase.CreateNodesSetByBlueprint("topLayerNodes", "testNodesBlueprint");
     theDatabase.CreateLinksSetByBlueprint("topLayerLinks", "testLinksBlueprint", "topLayerNodes", "topLayerNodes");
-    testLayers.createBlankLayer(topLayerID, 1000, 600, "topLayerNodes", "topLayerLinks"); // "layer1links");  // create top layer
+    testLayers.createBlankLayer(topLayerID, 0, 1000, 600, "topLayerNodes", "topLayerLinks"); // "layer1links");  // create top layer
     
     EgDataNodesSet topLayerNodesSet;
     topLayerNodesSet.Connect("topLayerNodes", theDatabase);
@@ -70,10 +70,10 @@ int main() {
 
     // add details layers to 2 nodes
     EgDataNodeIDType newLayerID;
-    testLayers.createDetailsLayer(newNodeID, newLayerID, 100, 100, "testNodesBlueprint", "testLinksBlueprint");
+    testLayers.createDetailsLayer(newNodeID, newLayerID, topLayerID, 100, 100, "egDetailsNodesSet", "testNodesBlueprint", "testLinksBlueprint");
     addSampleDataNode(topLayerNodesSet);
     newNodeID = topLayerNodesSet.getAddedNodeID();
-    testLayers.createDetailsLayer(newNodeID, newLayerID, 100, 100, "testNodesBlueprint", "testLinksBlueprint");
+    testLayers.createDetailsLayer(newNodeID, newLayerID, topLayerID, 100, 100, "egDetailsNodesSet", "testNodesBlueprint", "testLinksBlueprint");
 
     std::string detLayerName = "egDetailsNodesSet_" + std::to_string(newNodeID); // details of new node
 

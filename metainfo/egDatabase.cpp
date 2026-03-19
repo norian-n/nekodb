@@ -329,6 +329,7 @@ int EgDatabase::CreateLayersSet(const std::string& layersTypeName) {
     layersBlueprint-> AddDataFieldName("linksNames");
     layersBlueprint-> AddDataFieldName("layerWidth");
     layersBlueprint-> AddDataFieldName("layerHeight");
+    layersBlueprint-> AddDataFieldName("parentLayerID");
     layersBlueprint-> BlueprintInitCommit();
     AddLayersTypeInfo(layersBlueprint-> blueprintID, layersBlueprint-> blueprintName);
     // EG_LOG_STUB << "newBlueprint after: " << linkBlueprint->blueprintName << " " << (int)linkBlueprint->blueprintID << FN;

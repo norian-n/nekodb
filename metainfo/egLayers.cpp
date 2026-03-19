@@ -23,45 +23,36 @@ int EgLayers::ConnectLayers(const std::string& a_layersTypeName, EgDatabase& a_D
     return 0;
 }
 
-void EgLayers::createDetailsLayer(EgDataNodeIDType parentNodeID, EgDataNodeIDType& newLayerID, uint32_t W, uint32_t H,
-        const std::string& layerNodesBlueprint, const std::string& layerLinksBlueprint) {
-    std::string newNodesName = "egDetailsNodesSet_" + std::to_string(parentNodeID); // gen nodesSet and linksSet names
-    std::string newLinksName = "egDetailsLinksSet_" + std::to_string(parentNodeID);;
-    EG_LOG_STUB << "newNodesName: " << newNodesName << " newLinksName: " << newLinksName << FN;
-    metaInfoDatabase-> CreateNodesSetByBlueprint(newNodesName, layerNodesBlueprint);
-    metaInfoDatabase-> CreateLinksSetByBlueprint(newLinksName, layerLinksBlueprint, newNodesName, newNodesName);
-    // add node to layers
+inline void EgLayers::addLayerData(EgDataNodeIDType& newLayerID, EgDataNodeIDType parentLayerID, uint32_t W, uint32_t H, const std::string& nodesName, const std::string& linksName) {
     EgDataNode *newNode = new EgDataNode(layersStorage.dataNodeBlueprint);
-    (*newNode)["nodesNames"]  << newNodesName;
-    (*newNode)["linksNames"]  << newLinksName;
-    (*newNode)["layerWidth"]  << W;
-    (*newNode)["layerHeight"] << H;
-    // PrintEgDataNodeFields(*newNode);
-    layersStorage << newNode;
-    newLayerID = layersStorage.getAddedNodeID();
-    StoreLayers();
-    LoadLayers();
-/*          EgOneLayerType *newLayer = new EgOneLayerType(*this, layersIter.first); // MEM_NEW --> clear()
-            std::string name;
-            (*(layersIter.second))["nodesNames"] >> name;
-            std::cout << "LoadLayers() nodeName: " << name << std::endl;
-            newLayer-> connectNodeType(name, metaInfoDatabase);
-            (*(layersIter.second))["linksNames"] >> name;
-            std::cout << "LoadLayers() linkName: " << name << std::endl;
-            newLayer-> connectLinkType(name, metaInfoDatabase);
-            layersMap.insert(std::make_pair(layersIter.first, newLayer)); */
-}
-
-void EgLayers::createBlankLayer(EgDataNodeIDType& newLayerID, uint32_t W, uint32_t H, const std::string& nodesName, const std::string& linksName) {
-    EgDataNode *newNode = new EgDataNode(layersStorage.dataNodeBlueprint);
-    (*newNode)["nodesNames"]  << nodesName;
-    (*newNode)["linksNames"]  << linksName;
-    (*newNode)["layerWidth"]  << W; // FIXME STUB
-    (*newNode)["layerHeight"] << H;
-    // PrintEgDataNodeFields(*newNode);
+    (*newNode)["nodesNames"]    << nodesName;
+    (*newNode)["linksNames"]    << linksName;
+    (*newNode)["layerWidth"]    << W;
+    (*newNode)["layerHeight"]   << H;
+    (*newNode)["parentLayerID"] << parentLayerID;
     layersStorage << newNode;
     newLayerID = layersStorage.getAddedNodeID();
     layersStorage.Store();
+    EgOneLayer *newLayer  = new EgOneLayer(*this, newLayerID, parentLayerID); // MEM_NEW --> clear()
+    newLayer->layerWidth  = W;
+    newLayer->layerHeight = H;
+    newLayer->connectNodeType(nodesName, metaInfoDatabase);
+    newLayer->connectLinkType(linksName, metaInfoDatabase);
+    layersMap.insert(std::make_pair(newLayerID, newLayer));
+}
+
+void EgLayers::createBlankLayer(EgDataNodeIDType& newLayerID, EgDataNodeIDType parentLayerID, uint32_t W, uint32_t H, const std::string& nodesName, const std::string& linksName) {
+    addLayerData(newLayerID, parentLayerID, W, H, nodesName, linksName);
+}
+
+void EgLayers::createDetailsLayer(EgDataNodeIDType parentNodeID, EgDataNodeIDType& newLayerID, EgDataNodeIDType parentLayerID, uint32_t W, uint32_t H,
+    const std::string& parentNodesName, const std::string& layerNodesBlueprint, const std::string& layerLinksBlueprint) {
+    std::string newNodesName = parentNodesName + "_" + std::to_string(parentNodeID); // gen nodesSet and linksSet names
+    std::string newLinksName = parentNodesName + "_" + std::to_string(parentNodeID);;
+    EG_LOG_STUB << "newNodesName: " << newNodesName << " newLinksName: " << newLinksName << FN;
+    metaInfoDatabase-> CreateNodesSetByBlueprint(newNodesName, layerNodesBlueprint);
+    metaInfoDatabase-> CreateLinksSetByBlueprint(newLinksName, layerLinksBlueprint, newNodesName, newNodesName);
+    addLayerData(newLayerID, parentLayerID, W, H, newNodesName, newLinksName);
 }
 
 void EgLayers::updateWH(EgDataNodeIDType layerID, uint32_t W, uint32_t H) {
@@ -110,7 +101,9 @@ int EgLayers::LoadLayers() {
         std::cout << "LoadLayers() ERROR: " << layersTypeName << std::endl;
     } else {
         for (auto layersIter : layersStorage.dataMap) {
-            EgOneLayer *newLayer = new EgOneLayer(*this, layersIter.first); // MEM_NEW --> clear()
+            EgDataNodeIDType parentLayerID;
+            (*(layersIter.second))["parentLayerID"] >> parentLayerID;
+            EgOneLayer *newLayer = new EgOneLayer(*this, layersIter.first, parentLayerID); // MEM_NEW --> clear()
             (*(layersIter.second))["layerWidth"]  >> newLayer-> layerWidth;
             (*(layersIter.second))["layerHeight"] >> newLayer-> layerHeight;
             std::string name;

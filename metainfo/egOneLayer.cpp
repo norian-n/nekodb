@@ -2,8 +2,8 @@
 #include "egOneLayer.h"
 #include "../links/egLinks.h"
 
-EgOneLayer::EgOneLayer(EgLayers& a_Layers, EgDataNodeIDType a_layerID):  
-    layers {&a_Layers}, layerID {a_layerID}  {
+EgOneLayer::EgOneLayer(EgLayers& a_Layers, EgDataNodeIDType a_layerID, EgDataNodeIDType a_parentLayerID):  
+    layers {&a_Layers}, layerID {a_layerID}, parentLayerID {a_parentLayerID}  {
 }
 
 void EgOneLayer::clear() {
@@ -55,14 +55,16 @@ void EgOneLayer::getLayerLinks(EgLinksSet*& graphLinks, serialLoadFunctionType l
 void EgOneLayer::connectNodeType(const std::string& nodesName, EgDatabase* graphDB) {
     // nodesSetInfo nodesInfo;
     EgDataNodesSet* graphNodes = new EgDataNodesSet(); // MEM_NEW --> clear()
-    graphNodes->Connect(nodesName, *graphDB);
+    graphNodes->nodesSetName = nodesName;
+    // graphNodes->Connect(nodesName, *graphDB);
     // nodesInfo.nodesSetPtr = graphNodes;
     nodesMap.insert(std::make_pair(nodesName, graphNodes)); // nodesInfo));
 }
 
 void EgOneLayer::connectLinkType(const std::string& linksName, EgDatabase* graphDB) {
     EgLinksSet* graphLinks = new EgLinksSet(); // MEM_NEW --> clear()
-    graphLinks-> ConnectLinks(linksName, *graphDB);
+    graphLinks-> linkNameShort = linksName; // FIXME check full name
+    // graphLinks-> ConnectLinks(linksName, *graphDB);
     linksMap.insert(std::make_pair(linksName, graphLinks));
 }
 

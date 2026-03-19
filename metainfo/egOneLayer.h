@@ -10,11 +10,12 @@
 
 class EgOneLayer {
 public:
-    EgLayers*        layers     { nullptr };
-    EgDataNodeIDType layerID    { 0 };
+    EgLayers*        layers        { nullptr };
+    EgDataNodeIDType layerID       { 0 };
+    EgDataNodeIDType parentLayerID { 0 };
 
-    uint32_t        layerWidth  {0}; // load from layers storage
-    uint32_t        layerHeight {0};
+    uint32_t        layerWidth     {0}; // load from layers storage
+    uint32_t        layerHeight    {0};
 
     // std::unordered_map < std::string, nodesSetInfo > nodesMap;
 
@@ -22,7 +23,7 @@ public:
     std::unordered_map<std::string, EgLinksSet*>     linksMap;
 
     EgOneLayer() = delete;
-    EgOneLayer(EgLayers& a_Layers, EgDataNodeIDType a_layerID);
+    EgOneLayer(EgLayers& a_Layers, EgDataNodeIDType a_layerID, EgDataNodeIDType a_parentLayerID);
 
     ~EgOneLayer() { clear(); }
     

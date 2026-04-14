@@ -4,8 +4,11 @@
 // #include "../links/egLinksType.h"
 
 void EgLayers::clear() {
-    for (auto layersIter : layersMap) // MEM_DELETE
+    // EG_LOG_STUB << "EgLayers::clear() " << FN;
+    for (auto layersIter : layersMap) { // MEM_DELETE
+        layersIter.second-> clear();
         delete layersIter.second;
+    }
     layersMap.clear();
     layersStorage.clear();
 }
@@ -25,7 +28,7 @@ int EgLayers::ConnectLayers(const std::string& a_layersTypeName, EgDatabase& a_D
 
 inline void EgLayers::addLayerData(EgDataNodeIDType& newLayerID, EgDataNodeIDType parentLayerID, uint32_t W, uint32_t H, const std::string& nodesName, const std::string& linksName) {
     EgDataNode *newNode = new EgDataNode(layersStorage.dataNodeBlueprint);
-    (*newNode)["nodesNames"]    << nodesName;
+    (*newNode)["nodesNames"]    << nodesName; // FIXME literals
     (*newNode)["linksNames"]    << linksName;
     (*newNode)["layerWidth"]    << W;
     (*newNode)["layerHeight"]   << H;
@@ -49,7 +52,7 @@ void EgLayers::createDetailsLayer(EgDataNodeIDType parentNodeID, EgDataNodeIDTyp
     const std::string& parentNodesName, const std::string& layerNodesBlueprint, const std::string& layerLinksBlueprint) {
     std::string newNodesName = parentNodesName + "_" + std::to_string(parentNodeID); // gen nodesSet and linksSet names
     std::string newLinksName = parentNodesName + "_" + std::to_string(parentNodeID);;
-    EG_LOG_STUB << "newNodesName: " << newNodesName << " newLinksName: " << newLinksName << FN;
+    // EG_LOG_STUB << "newNodesName: " << newNodesName << " newLinksName: " << newLinksName << FN;
     metaInfoDatabase-> CreateNodesSetByBlueprint(newNodesName, layerNodesBlueprint);
     metaInfoDatabase-> CreateLinksSetByBlueprint(newLinksName, layerLinksBlueprint, newNodesName, newNodesName);
     addLayerData(newLayerID, parentLayerID, W, H, newNodesName, newLinksName);
@@ -57,7 +60,7 @@ void EgLayers::createDetailsLayer(EgDataNodeIDType parentNodeID, EgDataNodeIDTyp
 
 void EgLayers::updateWH(EgDataNodeIDType layerID, uint32_t W, uint32_t H) {
     EgDataNode& updNode = layersStorage[layerID];
-    updNode["layerWidth"]  << W;
+    updNode["layerWidth"]  << W; // FIXME literals
     updNode["layerHeight"] << H;
     layersStorage.MarkUpdatedDataNode(layerID);
     layersStorage.Store();
@@ -81,7 +84,7 @@ void EgLayers::getLayerNodesAndLinks(std::unordered_set<std::string>& nodesNames
     std::string theName;
     if (layersStorage.isConnected) {
         for (auto nodesIter : layersStorage.dataMap) {
-            (*nodesIter.second)["layerNum"] >> theLayer;
+            (*nodesIter.second)["layerNum"] >> theLayer; // FIXME literals
             if (theLayer == layerNum) {
                 (*nodesIter.second)["isLink"] >> isLink;
                 (*nodesIter.second)["name"]   >> theName;
@@ -102,7 +105,7 @@ int EgLayers::LoadLayers() {
     } else {
         for (auto layersIter : layersStorage.dataMap) {
             EgDataNodeIDType parentLayerID;
-            (*(layersIter.second))["parentLayerID"] >> parentLayerID;
+            (*(layersIter.second))["parentLayerID"] >> parentLayerID; // FIXME literals
             EgOneLayer *newLayer = new EgOneLayer(*this, layersIter.first, parentLayerID); // MEM_NEW --> clear()
             (*(layersIter.second))["layerWidth"]  >> newLayer-> layerWidth;
             (*(layersIter.second))["layerHeight"] >> newLayer-> layerHeight;

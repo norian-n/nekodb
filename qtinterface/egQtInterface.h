@@ -7,24 +7,6 @@
 #include <QVariant>
 #include <QString>
 
-/*
-class QByteArray {
-public:
-    QByteArray(const char *data, int size = -1) {}
-    void clear() {}
-    void append(const char *str, int len) {}
-    int size()    { return 0; }
-    char * data() { return nullptr; }
-};
-*/
-
-/* struct egPointSize {
-    int origXW; // x or width
-    int origYH; // y or height
-    int scaledXW;
-    int scaledYH;
-}; */
-
 struct egPoint {
     int origX; // x or width
     int origY; // y or height
@@ -45,6 +27,8 @@ struct egRect {
 };
 
 const int maxZoom {10};
+
+void alignToGrid(int& coord, int gridCellSize, int canvasIndent);
 
 void resetToOrigSize  (egSize& size);
 void resetToOrigPoint (egPoint& point);
@@ -69,8 +53,8 @@ void scaledToOrigRectCanvas   (egRect& rect, int zoomFactor, egPoint& canvas);
 void scaledToOrigLayer   (egRect& rect, int zoomFactor);
 void origToScaledLayer   (egRect& rect, int zoomFactor);
 
-inline void ByteArrayToQtByteArray(EgByteArrayAbstractType& byteArray, QByteArray& qtBA);
-inline void QtByteArrayToByteArray(QByteArray& qtBA, EgByteArrayAbstractType& byteArray);
+void ByteArrayToQtByteArray(EgByteArrayAbstractType& byteArray, QByteArray& qtBA);
+void QtByteArrayToByteArray(QByteArray& qtBA, EgByteArrayAbstractType& byteArray);
 
 QByteArray& operator >> (QByteArray& qtBA, EgByteArrayAbstractType& byteArray);
 EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QByteArray& qtBA);
@@ -79,6 +63,8 @@ EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QByteA
 
 EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QString& qtStr);
 EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, QString& qtStr);
+
+void byteArrayFromQtStr(EgByteArrayAbstractType& byteArray, QString& qtStr);
 
 // EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, int& intNum);
 // EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, int intNum);

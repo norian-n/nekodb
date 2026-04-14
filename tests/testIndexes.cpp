@@ -9,7 +9,7 @@ EgIndexes<uint32_t> testIndexes("testIndexes");
 
 bool testAddIndex(uint32_t theKey, uint64_t dataOffset) {
     EgByteArrayAbstractType* byteArray = new EgByteArrayAbstractType();
-    byteArray-> dataChunk = (ByteType*) &theKey;                     // no alloc, ptr to global mem
+    byteArray-> dataChunk = (EgByteType*) &theKey;                     // no alloc, ptr to global mem
     byteArray-> dataSize  = sizeof(theKey);
     return testIndexes.AddNewIndex(*byteArray, dataOffset);
 }
@@ -20,22 +20,22 @@ bool testAddFirstChunk() {
 
 bool testUpdateDataOffset(uint32_t theKey, uint64_t oldDataOffset, uint64_t newDataOffset) {
     EgByteArrayAbstractType* byteArray = new EgByteArrayAbstractType();
-    byteArray-> dataChunk = (ByteType*) &theKey;                     // no alloc, ptr to global mem
+    byteArray-> dataChunk = (EgByteType*) &theKey;                     // no alloc, ptr to global mem
     byteArray-> dataSize  = sizeof(theKey);
     return testIndexes.UpdateDataOffset(*byteArray, oldDataOffset, newDataOffset);
 }
 
 bool testDeleteIndex(uint32_t theKey, uint64_t dataOffset) {
     EgByteArrayAbstractType* byteArray = new EgByteArrayAbstractType();
-    byteArray-> dataChunk = (ByteType*) &theKey;                     // no alloc, ptr to global mem
+    byteArray-> dataChunk = (EgByteType*) &theKey;                     // no alloc, ptr to global mem
     byteArray-> dataSize  = sizeof(theKey);    
     return testIndexes.DeleteIndex(*byteArray, dataOffset);
 }
 
 int main() {
     cout << "===== Test EgIndexes " << " =====" << endl;
-    std::remove("testIndexes.fng"); // delete files
-    std::remove("testIndexes.ind"); // delete files
+    std::remove("egdb/testIndexes.fng"); // delete files
+    std::remove("egdb/testIndexes.ind"); // delete files
 
     if ( testAddFirstChunk() && testAddIndex(0x35, 0x11111111)
                              && testUpdateDataOffset(0x44, 0xcdef4455, 0x222222)

@@ -7,6 +7,7 @@ EgOneLayer::EgOneLayer(EgLayers& a_Layers, EgDataNodeIDType a_layerID, EgDataNod
 }
 
 void EgOneLayer::clear() {
+    // EG_LOG_STUB << "layerID: " << layerID << " parentLayerID: " << parentLayerID << FN;
     for (auto nodesIter : nodesMap) // MEM_DELETE
         delete nodesIter.second; // .nodesSetPtr;
     nodesMap.clear();
@@ -30,11 +31,11 @@ void EgOneLayer::getLayerNodes(EgDataNodesSet*& graphNodes, serialLoadFunctionTy
     if (nodesIter != nodesMap.end()) {
         // std::cout << "loadLayerNodes() name: " << nodesIter-> first << std::endl;
         graphNodes = nodesIter-> second; // .nodesSetPtr;
-        if ( ! graphNodes-> isDataLoaded ) {
+        // if ( ! graphNodes-> isDataLoaded ) {
             graphNodes-> serialLoadFunction  = loadNodeObjectFromDb;
             graphNodes-> serialStoreFunction = storeNodeObjectToDb;
             // graphNodes-> LoadAllNodes();
-        }
+        // }
     }
 }
 
@@ -42,13 +43,13 @@ void EgOneLayer::getLayerLinks(EgLinksSet*& graphLinks, serialLoadFunctionType l
     serialStoreFunctionType storeLinkObjectToDb) {
     auto linksIter = linksMap.begin(); // FIXME only one nodes type -> many types
     if (linksIter != linksMap.end()) {
-        std::cout << "getLayerLinks() name: " << linksIter-> first << std::endl;
+        // std::cout << "getLayerLinks() name: " << linksIter-> first << std::endl;
         graphLinks = linksIter-> second;
-        if ( ! graphLinks-> linksDataStorage.isDataLoaded ) {
+        // if ( ! graphLinks-> linksDataStorage.isDataLoaded ) {
             graphLinks-> linksDataStorage.serialLoadFunction  = loadLinkObjectFromDb;
             graphLinks-> linksDataStorage.serialStoreFunction = storeLinkObjectToDb;
             // graphNodes-> LoadAllNodes();
-        }
+        // }
     }
 }
 

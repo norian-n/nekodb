@@ -55,8 +55,8 @@ int main()
          << field2 << "\" " << " \""
          << field3 << "\" " << ")*/ << "=====" << endl;
 
-    std::remove("testLocalFile.dnl"); // delete blueprint file
-    std::remove("testLocalFile.gdn"); // delete blueprint file
+    std::remove("egdb/testLocalFile.dnl"); // delete blueprint file
+    std::remove("egdb/testLocalFile.gdn"); // delete blueprint file
 
     EgDataNodesLocalFileType testLocalFile;
     initDataNodeBlueprint();

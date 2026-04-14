@@ -121,8 +121,8 @@ bool testDataNodesContainer() {
 }
 
 int main() {
-    std::remove("testNodes.dnl"); // delete blueprint file
-    std::remove("testNodes.gdn"); // delete data nodes file
+    std::remove("egdb/testNodes.dnl"); // delete blueprint file
+    std::remove("egdb/testNodes.gdn"); // delete data nodes file
 
     testDataNodeBlueprint(); // create blueprint file
 

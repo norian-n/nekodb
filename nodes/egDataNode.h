@@ -73,10 +73,6 @@ public:
     void readDataFieldsFromFile(EgFileType& theFile);
 };
 
-// ========= Byte Array Length Convertors  ===============
-uint8_t egConvertStaticToFlex(StaticLengthType staticVal, ByteType* flexibleVal); // convert fixed length dataset size to variable length
-uint8_t egConvertFlexToStatic(ByteType* flexibleVal, StaticLengthType& staticVal); // reverse convert variable length dataset size to fixed length
-
 // ======================== Debug ========================
 // void PrintEgDataNodeOffsets(const EgDataNodeType& dataNode);
 void PrintEgDataNodeFields (const EgDataNode& dataNode);

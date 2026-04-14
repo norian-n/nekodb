@@ -82,9 +82,9 @@ bool reloadData(EgDataNodesSet& testDataNodes) {
 
 
 int main() {
-    std::remove("testBlueprint.dnl");
-    std::remove("testNodesSet1.gdn");
-    std::remove("testNodesSet2.gdn");
+    std::remove("egdb/testBlueprint.dnl");
+    std::remove("egdb/testNodesSet1.gdn");
+    std::remove("egdb/testNodesSet2.gdn");
 
     EgDatabase  graphDB;
     EgDataNodesSet nodesSet1;

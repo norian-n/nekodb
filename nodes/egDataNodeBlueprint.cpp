@@ -1,7 +1,7 @@
 #include "egDataNodeBlueprint.h"
 
 int EgDataNodeBlueprint::BlueprintInitStart() {
-    blueprintFile.fileName = blueprintName + ".dnl";
+    blueprintFile.fileName = "egdb/" + blueprintName + ".dnl";
     if (blueprintFile.checkIfExists())
     {
         std::cout << "ERROR: Can't create DataNodeBlueprint: \"" << blueprintName << "\" - file already exists, use data pumping" << std::endl;
@@ -105,7 +105,7 @@ inline void EgDataNodeBlueprint::readIndexesFields() {
 }
 
 int EgDataNodeBlueprint::LocalStoreBlueprint() {
-    blueprintFile.fileName = blueprintName + ".dnl";
+    blueprintFile.fileName = "egdb/" + blueprintName + ".dnl";
     blueprintFile.openToWrite();
     // EG_LOG_STUB << "DEBUG: blueprint file opened to store: " << blueprintFile.fileName << FN;
 
@@ -133,7 +133,7 @@ int EgDataNodeBlueprint::LocalStoreBlueprint() {
 int EgDataNodeBlueprint::LocalLoadBlueprint() {
     clear();
 
-    blueprintFile.fileName = blueprintName + ".dnl";
+    blueprintFile.fileName = "egdb/" + blueprintName + ".dnl";
     if (!blueprintFile.openToRead()) {
         // EG_LOG_STUB << "ERROR: can't open blueprint file: " << blueprintFile.fileName << FN;
         return -1;

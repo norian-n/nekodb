@@ -43,8 +43,8 @@ inline void addSampleDataNode(EgDataNodesSet& dataNodes) {
 
 int main() {
     cout << "===== Test EgLayersType =====" << endl;
-    std::remove("testlayers_egLayersInfo.dnl"); // delete layout file
-    std::remove("testlayers_egLayersInfo.gdn"); // delete data nodes file    
+    std::remove("egdb/testlayers_egLayersInfo.dnl"); // delete layout file
+    std::remove("egdb/testlayers_egLayersInfo.gdn"); // delete data nodes file    
 
     EgDatabase theDatabase;
     EgLayers   testLayers;

@@ -1,31 +1,36 @@
 #include <iostream>
 #include "egByteArray.h"
 
-void EgByteArraySlicerType::reallocDataChunk(uint64_t newSize) {
-    // std::cout << "reassign dynamicDataAlloc: " << dynamicDataAlloc << std::endl;
+void EgByteArraySlicerType::
+
+reallocDataChunk(uint64_t newSize) {
+    // EG_LOG_STUB << "dataSize: " << DEC << (int) dataSize << " newSize: " << (int) newSize << " brickID: " << brickID << FN;
     if (dataSize == newSize) // FIXME TODO data wipe option
         return;
-    dataSize = newSize;
-    if (brickID)
-        theHamSlicer-> freeSlice(brickID);
-    if (dataSize) 
-        theHamSlicer-> getSlice(dataSize, brickID, dataChunk);
-    else {
-        brickID = 0;
-        dataChunk = nullptr;
+    if (dataSize < newSize) { // FIXME TODO data wipe option
+        if (brickID)
+            theHamSlicer->freeSlice(brickID);
+        if (newSize)
+            theHamSlicer->getSlice(newSize, brickID, dataChunk);
+        else {
+            brickID = 0;
+            dataChunk = nullptr;
+        }
     }
+    dataSize = newSize;
 }
 
 void EgByteArraySysallocType::reallocDataChunk(uint64_t newSize) {
-    // std::cout << "reassign dynamicDataAlloc: " << dynamicDataAlloc << std::endl;
     if (dataSize == newSize) // FIXME TODO data wipe option
         return;
+    if (dataSize < newSize) { // FIXME TODO data wipe option
+        delete dataChunk;
+        if (newSize)
+            dataChunk = new EgByteType[newSize];
+        else
+            dataChunk = nullptr;
+    }
     dataSize = newSize;
-    delete dataChunk;
-    if (dataSize)
-        dataChunk = new ByteType[dataSize];
-    else
-        dataChunk = nullptr;
 }
 
 EgByteArrayAbstractType& EgByteArrayAbstractType::operator=(const EgByteArrayAbstractType &rightBA) {
@@ -81,12 +86,60 @@ EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, const 
         return byteArray;
 }
 
+EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, std::string& str) {
+        int64_t newSize = str.size();
+        if (newSize > 0) {
+            byteArray.reallocDataChunk(newSize);
+            memcpy((void *)byteArray.dataChunk, (void *)str.c_str(), newSize);
+        } else {
+            byteArray.reallocDataChunk(0);
+        }
+        return byteArray;
+}
+
+// convert fixed length dataset size to variable length one to save file space 
+uint8_t EgByteArrayAbstractType::egConvertStaticToFlex(EgStaticLengthType staticVal, EgByteType* flexibleVal)
+{
+    EgStaticLengthType    buf         {0};
+    int                 byteCount   {1};
+    while (staticVal && (byteCount < (DATA_CONVERT_MAX_BYTES_COUNT+1))) {
+        buf = staticVal & egMask7f; // get 7 bits to next byte
+        flexibleVal[byteCount-1] = static_cast<EgByteType>(buf);
+        staticVal = staticVal >> 7; // shift static counter to get next 7 bits
+        if (staticVal) {
+            flexibleVal[byteCount-1] |=  egMask80; // not last byte
+            byteCount++;
+        } 
+    }
+    return byteCount;
+}
+
+uint8_t EgByteArrayAbstractType::egConvertFlexToStatic(EgByteType* flexibleVal, EgStaticLengthType& staticVal)
+{
+    staticVal = 0;
+    EgStaticLengthType buf         {0};
+    int                byteCount   {1};
+    while ( byteCount < (DATA_CONVERT_MAX_BYTES_COUNT+1) ) {
+        buf = static_cast<EgByteType> (flexibleVal[byteCount-1]) & egMask7f; // get 7 bits to next byte       
+        staticVal = (buf << 7 * (byteCount-1)) | staticVal;
+        // EG_LOG_STUB << "staticVal: " << DEC << staticVal << FN;
+        if ( !(flexibleVal[byteCount-1] & egMask80) ) // check "continue" bit - last byte
+            break;
+        byteCount++;
+    }
+    return byteCount;
+}
+
 void PrintByteArray(EgByteArrayAbstractType& bArray, bool isStr) {
     std::cout << " size: " << std::dec << bArray.dataSize;
     if (bArray.dataSize) {
         // if ((bArray.dataSize > 1) && !bArray.dataChunk[bArray.dataSize - 1] && bArray.dataChunk[0] > 0x29)
-        if (isStr)
-            std::cout << " Str: \"" << (char *)bArray.dataChunk << "\"";
+
+        if (isStr) {
+            std::string str;
+            bArray >> str;
+            std::cout << " Str: \"" << str << "\"";
+        }
         else
             std::cout << " Int: " << (int)*(bArray.dataChunk);
         std::cout << " Hex: " << std::hex;
@@ -97,18 +150,8 @@ void PrintByteArray(EgByteArrayAbstractType& bArray, bool isStr) {
     std::cout << std::endl;
 }
 
-void PrintHamSlices(EgHamSlicerType theSlicer) {
-    std::cout << "PrintHamSlices hamBricks: " << theSlicer.hamBricks.size() << std::endl;
-    for (auto bricsIter : theSlicer.hamBricks) {
-        std::cout << std::dec << bricsIter.first
-                  << " ID: "                   << bricsIter.second.brickID
-                  << " , freeSize: "             << bricsIter.second.freeSize
-                  << " , usedSlicesCount: "      << bricsIter.second.usedSlicesCount
-                  << " , brickPtr: " << std::hex << (uint64_t) bricsIter.second.brickPtr << std::endl;
-    }
-    std::cout << "PrintHamSlices hamBricksByFree: " << theSlicer.hamBricksByFree.size() << std::endl;
-    for (auto bricsFreeIter : theSlicer.hamBricksByFree) {
-        std::cout << std::dec << "freeSize: " << bricsFreeIter.first
-                  << " , ID: " << bricsFreeIter.second-> brickID << std::endl;
-    }
+void CopyBAFromStr(std::string& str, EgByteArrayAbstractType& byteArray) { // , bool forceWipe = false
+    // std::cout << "ByteArrayFromFixedType() value: " << value << std::endl;
+    byteArray.reallocDataChunk(str.size()); // sets byteArray.dataSize
+    memcpy((void*)byteArray.dataChunk, (void*) str.c_str(), byteArray.dataSize);
 }

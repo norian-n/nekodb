@@ -1,5 +1,18 @@
 #include "egQtInterface.h"
 
+void alignToGrid(int& coord, int gridCellSize, int canvasIndent)
+{
+    if (coord < canvasIndent)
+        coord = canvasIndent;
+    int modulo = coord % gridCellSize;
+    if (! modulo)
+        return;
+    if (modulo < gridCellSize/2)
+        coord -= modulo;
+    else
+        coord += gridCellSize-modulo;
+    // cout << "alignToGrid() modulo: " << dec << modulo << " coord: " << coord << endl;
+}
 
 void resetToOrigSize  (egSize& size) {
     size.scaledW = size.origW;
@@ -86,15 +99,15 @@ void origToScaledLayer   (egRect& rect, int zoomFactor) {
     rect.corner.scaledY = (rect.size.origH - rect.size.scaledH) / 2;
 }
 
-inline void ByteArrayToQtByteArray(EgByteArrayAbstractType& byteArray, QByteArray& qtBA) {
+void ByteArrayToQtByteArray(EgByteArrayAbstractType& byteArray, QByteArray& qtBA) {
     qtBA.clear();
-    qtBA.append((const char *) byteArray.dataChunk, (size_t) (byteArray.dataSize));
+    if (byteArray.dataChunk)
+        qtBA.append((const char *) byteArray.dataChunk, (size_t) (byteArray.dataSize));
 }
 
-inline void QtByteArrayToByteArray(QByteArray& qtBA, EgByteArrayAbstractType& byteArray) {
+void QtByteArrayToByteArray(QByteArray& qtBA, EgByteArrayAbstractType& byteArray) {
     byteArray.reallocDataChunk(qtBA.size());
     memcpy((void*)byteArray.dataChunk, (void*) qtBA.data(), qtBA.size());
-    // byteArray.dataChunk[byteArray.dataSize-1] = 0;
     // PrintByteArray(byteArray);
 }
 
@@ -128,7 +141,7 @@ void egDataNodeFromList(EgDataNode& newNode, QList<QVariant>& addValues) {
 EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QString& qtStr) {
         QByteArray tmpBA;
         // PrintByteArray(byteArray);
-        byteArray >> tmpBA;
+        ByteArrayToQtByteArray(byteArray, tmpBA);
         // std::cout << "tmpBA: " << tmpBA.toStdString() << std::endl;
         QString tmpStr(tmpBA);
         // std::cout << "tmpStr: " << tmpStr.toStdString() << std::endl;
@@ -137,11 +150,19 @@ EgByteArrayAbstractType& operator >> (EgByteArrayAbstractType& byteArray, QStrin
 }
 
 EgByteArrayAbstractType& operator << (EgByteArrayAbstractType& byteArray, QString& qtStr) {
-        // PrintByteArray(byteArray);
         byteArray << qtStr.toStdString();
-        // std::cout << "tmpBA: " << tmpBA.toStdString() << std::endl;
-        // std::cout << "tmpStr: " << tmpStr.toStdString() << std::endl;
+        // std::string tmpStr = qtStr.toStdString();
+        // CopyBAFromVarType(tmpStr, byteArray, tmpStr.size());
         return byteArray;
+}
+
+void byteArrayFromQtStr(EgByteArrayAbstractType& byteArray, QString& qtStr) {
+        // byteArray << qtStr.toStdString();
+        // PrintByteArray(byteArray);
+        std::string tmpStr = qtStr.toStdString();
+        // std::cout << "tmpStr: " << tmpStr << std::endl;
+        CopyBAFromStr(tmpStr, byteArray);
+        // PrintByteArray(byteArray);
 }
 
 /*

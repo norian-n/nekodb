@@ -1,7 +1,7 @@
 #pragma once
 #include "egHamSlicer.h"
 
-template <typename T> class EgPtrArrayType { // dynamic array of pointers for data node content
+template <typename T> class EgPtrArrayType { // dynamic array of pointers for data node content, T is pointer type
 public:
     uint64_t  ptrsCount           {0};       // pointers in the array
     // uint64_t  arrayCapacity    {0}; // FIXME TODO add capacity logic
@@ -16,14 +16,14 @@ public:
     { init(); }
     ~EgPtrArrayType() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); }
 
-    inline void init() { if(ptrsCount) theHamSlicer-> getSlice(ptrsCount*sizeof(T), brickID, (ByteType*&) ptrsArray); }
+    inline void init() { if(ptrsCount) theHamSlicer-> getSlice(ptrsCount*sizeof(T), brickID, (EgByteType*&) ptrsArray); }
     void clear() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); ptrsCount = 0; brickID = 0; ptrsArray = nullptr; }
 
     void reallocPtrsArray() {
         if (brickID)
             theHamSlicer->freeSlice(brickID);
         if (ptrsCount)
-            theHamSlicer->getSlice(ptrsCount * sizeof(T), brickID, (ByteType *&)ptrsArray);
+            theHamSlicer->getSlice(ptrsCount * sizeof(T), brickID, (EgByteType *&)ptrsArray);
         else {
             brickID = 0;
             ptrsArray = nullptr;

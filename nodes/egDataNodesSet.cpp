@@ -18,7 +18,7 @@ EgDataNodesSet::~EgDataNodesSet() {
 
 int EgDataNodesSet::Connect(const std::string& nodesNameStr, EgDatabase& myDB) {
     if (isConnected) {
-        std::cout << "WARNING: Connect(): trying to connect data nodes type again: " << nodesNameStr << std::endl;
+        EG_LOG_STUB << "WARNING: Connect(): trying to connect data nodes type again: " << nodesNameStr << FN;
         return 0;
     }
     metaInfoDatabase = &myDB;
@@ -39,6 +39,7 @@ int EgDataNodesSet::Connect(const std::string& nodesNameStr, EgDatabase& myDB) {
     // metaInfoNode-> serialDataPtr = static_cast < void* > (this);  // FIXME check & doc shortcut, parallel issue
     nodesContainer-> init(dataNodeBlueprint, nodesSetName);
     isConnected = true;
+    // EG_LOG_STUB << "connected nodes set: " << nodesSetName << FN;
     return 0;
 }
 /*
@@ -156,8 +157,8 @@ int EgDataNodesSet::LoadAllNodes() {
     // std::cout << "LoadAllNodes() res: " << res << std::endl;
     if (serialLoadFunction)
         for (auto nodesIter : nodesContainer-> dataNodes) {
+            // EG_LOG_STUB << "call serialLoadFunction for node: " << nodesIter.second-> dataNodeID << FN;
             (*serialLoadFunction)(*nodesIter.second);
-            // std::cout << "iter nodeID: " << nodesIter.second-> dataNodeID << std::endl;
         }
     isDataLoaded = ! (bool) res;
     return res;

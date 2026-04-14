@@ -66,7 +66,7 @@ bool testDelFingerByPtr(uint32_t theKey) {
 
 int main() {
     cout << "===== Test EgFingers Stage 1" << " =====" << endl;
-    std::remove("testFingres.fng"); // delete file
+    std::remove("egdb/testFingres.fng"); // delete file
     if (testAddRootFinger() && testAddFinger(0x66, 0x66cc55bb44aa)
                             && testAddFinger(0x10, 0x12cc11bb10aa, true) // swap fingers cause key is minimal
                             && testAddFinger(0x58, 0x58cc57bb56aa)
@@ -75,7 +75,7 @@ int main() {
         cout << "PASS" << endl;
     else
         cout << "FAIL" << endl;
-    // std::remove("testFingres.fng"); // delete file
+    // std::remove("egdb/testFingres.fng"); // delete file
     // testFingers.rootFingerIsLoaded = false; // reset()
     cout << "===== Test EgFingers Stage 2" << " =====" << endl;
     if (testDelFingerByChain(0x58)  && testUpdFingerByPtr(0x55, 0x57) && testDelFingerByPtr(0x66))

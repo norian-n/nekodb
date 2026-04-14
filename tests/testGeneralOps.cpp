@@ -110,8 +110,8 @@ bool reloadData(EgDataNodesSet& testDataNodes) {
 
 
 int main() {
-    std::remove("generalops.dnl"); // delete layout file
-    std::remove("generalops.gdn"); // delete data nodes file
+    std::remove("egdb/generalops.dnl"); // delete layout file
+    std::remove("egdb/generalops.gdn"); // delete data nodes file
 
     EgDatabase  graphDB;
     EgDataNodesSet basicopsNodesType;

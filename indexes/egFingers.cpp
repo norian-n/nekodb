@@ -210,7 +210,8 @@ template <typename KeyType> bool EgFingers<KeyType>::DeleteCurrentFingerByChain(
 
 template <typename KeyType> bool EgFingers<KeyType>::DeleteFingersFile() {
     fingersFileStream.close();
-    return (bool) std::remove(fingersFileName.c_str());
+    std::string path = "egdb/" + fingersFileName;
+    return (bool) std::remove(path.c_str());
 }
 
 template <typename KeyType> inline bool EgFingers<KeyType>::DeleteFingerFromChunk() {
@@ -612,7 +613,8 @@ template <typename KeyType> inline bool EgFingers<KeyType>::DeleteFingersChunk(u
         }
         // EG_LOG_STUB << "otherEmptyChunks = " << std::dec << otherEmptyChunks << FN;
         fingersFileStream.close();
-        std::filesystem::path filename = fingersFileName.c_str(); // experimental::
+        std::string path = "egdb/" + fingersFileName;
+        std::filesystem::path filename = path.c_str(); // experimental::
         std::filesystem::resize_file(filename, fingersChunkOffset - (fingersChunkSize * otherEmptyChunks));  // experimental::
         fingersFileStream.openToUpdate();
     } else {

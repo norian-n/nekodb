@@ -1,11 +1,6 @@
 #pragma once
 #include <cstdint>
 
-#define EG_LOG_STUB std::cout
-#define FN " [" << __FUNCTION__  << "(), " << __FILE__ << "]" << std::endl
-#define FNS std::string(" [") + std::string(__FUNCTION__) + std::string("(), ") + std::string(__FILE__) + std::string("]")
-#define HEX std::hex
-
 struct EgIndexSettingsType {
     uint8_t                     indexSizeBytes  {0};
     uint8_t                     indexFamilyType {0};        // egIntFT, egUnsignedIntFT, egFloatFT, etc.

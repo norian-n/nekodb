@@ -16,7 +16,7 @@ public:
     EgDataStream dataStream;
 
     EgFileType():dataStream(streamBufSize) {}
-    EgFileType(const std::string& a_name): fileName(a_name), dataStream(streamBufSize) {}
+    EgFileType(const std::string& a_name): fileName(std::string("egdb/") + a_name), dataStream(streamBufSize) { std::filesystem::create_directory("egdb"); }
     ~EgFileType() { if (fileStream.is_open()) fileStream.close(); }
 
     inline bool good() { return /* (bool) fileStream.good();*/ ! (fileStream.bad() || fileStream.fail()); }
@@ -35,8 +35,8 @@ public:
     inline void seekWrite(EgFileOffsetType position) { fileStream.seekp(position); }
     inline void seekWriteToEnd(EgFileOffsetType& position) { fileStream.seekg (0, std::ios::end); position = (EgFileOffsetType) fileStream.tellg(); }
 
-    inline void writeBool( bool theValue)  { fileStream << (ByteType) theValue; }
-    inline void readBool ( bool& theValue) { ByteType tmpBool; fileStream >> tmpBool; theValue = tmpBool; }
+    inline void writeBool( bool theValue)  { fileStream << (EgByteType) theValue; }
+    inline void readBool ( bool& theValue) { EgByteType tmpBool; fileStream >> tmpBool; theValue = tmpBool; }
 
     template<typename T> inline void writeType (T theValue)  {
         dataStream.seek(0); dataStream << theValue; fileStream.write(dataStream.bufData, sizeof(T)); }
@@ -50,10 +50,10 @@ public:
     
     // inline void writeStr ( const std::string& theValue) { writeType<EgStrSizeType>( (EgStrSizeType) theValue.size()); fileStream << theValue; }
 
-    // inline void readBuf (ByteType* bufData, uint64_t count) { fileStream.read ((char*) bufData, count); }
-    // inline void writeBuf(ByteType* bufData, uint64_t count) { fileStream.write((char*) bufData, count); }
-    // inline void readBufPos (ByteType* bufData, EgFileOffsetType position, uint64_t count) { seekRead(position);  fileStream.read ((char*) bufData, count); }
-    // inline void writeBufPos(ByteType* bufData, EgFileOffsetType position, uint64_t count) { seekWrite(position); fileStream.write((char*) bufData, count); }
+    // inline void readBuf (EgByteType* bufData, uint64_t count) { fileStream.read ((char*) bufData, count); }
+    // inline void writeBuf(EgByteType* bufData, uint64_t count) { fileStream.write((char*) bufData, count); }
+    // inline void readBufPos (EgByteType* bufData, EgFileOffsetType position, uint64_t count) { seekRead(position);  fileStream.read ((char*) bufData, count); }
+    // inline void writeBufPos(EgByteType* bufData, EgFileOffsetType position, uint64_t count) { seekWrite(position); fileStream.write((char*) bufData, count); }
 };
 
 template <typename T> inline EgFileType& operator >> (EgFileType &egFile, T& i) { egFile.readType<T>(i); return egFile; }

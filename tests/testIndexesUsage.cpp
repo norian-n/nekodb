@@ -111,8 +111,8 @@ bool reloadData(EgDataNodesSet& testDataNodes) {
 
 
 int main() {
-    std::remove("indexops.dnl"); // delete layout file
-    std::remove("indexops.gdn"); // delete data nodes file
+    std::remove("egdb/indexops.dnl"); // delete layout file
+    std::remove("egdb/indexops.gdn"); // delete data nodes file
 
     EgDatabase  graphDB;
     EgDataNodesSet indexOpsNodesType;

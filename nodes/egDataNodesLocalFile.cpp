@@ -12,7 +12,7 @@ void EgDataNodesLocalFileType::initIndexes() {
 // EgIndexes<uint32_t> testIndexes("testIndexes");
 
 bool EgDataNodesLocalFileType::InitFile() { // tests support
-    nodesFile.fileName = localFileName + ".gdn";
+    nodesFile.fileName = "egdb/" + localFileName + ".gdn";
     bool isOk = nodesFile.openToWrite();
     if (isOk)
     {
@@ -50,7 +50,7 @@ inline void EgDataNodesLocalFileType::InitNewHeader() {
 
 bool EgDataNodesLocalFileType::GetLastIDFromFile(EgDataNodeIDType& lastID) {
     EgDataNodeIDType lastNodeID {0};
-    nodesFile.fileName = localFileName + ".gdn";
+    nodesFile.fileName = "egdb/" + localFileName + ".gdn";
     bool isOk = nodesFile.openToRead();
     if (isOk) {
         nodesFile.seekRead(lastIDOffset);
@@ -64,12 +64,12 @@ bool EgDataNodesLocalFileType::GetLastIDFromFile(EgDataNodeIDType& lastID) {
 }
 
 bool EgDataNodesLocalFileType::OpenFileToRead() { // tests support
-    nodesFile.fileName = localFileName + ".gdn";
+    nodesFile.fileName = + "egdb/" + localFileName + ".gdn";
     return nodesFile.openToRead();
 }
 
 bool EgDataNodesLocalFileType::OpenFileToUpdate() { // tests support
-    nodesFile.fileName = localFileName + ".gdn";
+    nodesFile.fileName = "egdb/" + localFileName + ".gdn";
     bool isOk = nodesFile.openToUpdate();
     if (!isOk)
     {
@@ -81,7 +81,7 @@ bool EgDataNodesLocalFileType::OpenFileToUpdate() { // tests support
 }
 
 bool EgDataNodesLocalFileType::StartFileUpdate() {
-    nodesFile.fileName = localFileName + ".gdn";
+    nodesFile.fileName = "egdb/" + localFileName + ".gdn";
     bool inSubTransact = nodesFile.openToUpdate();
     if (!inSubTransact) { // no file exist
         inSubTransact = nodesFile.openToWrite();

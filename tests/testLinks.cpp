@@ -89,7 +89,7 @@ void initDatabase(EgDatabase& graphDB) {
     graphDB.AddNodeDataField("y");    
     graphDB.CommitNodesSet();
 
-    graphDB.CreateLinkWithDataBlueprint("testBoundLinksWData");
+    graphDB.CreateLinkBlueprint("testBoundLinksWData");
     graphDB.AddLinkDataField("x");
     graphDB.AddLinkDataField("y");
     graphDB.CommitLinkBlueprint();

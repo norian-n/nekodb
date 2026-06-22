@@ -8,7 +8,7 @@ EgDataNode nodeNotFound(&bpNotFound);  // dummy data node for GUI if no data fou
 
 EgDataNodesSet::EgDataNodesSet(): 
     nodesContainer (new EgDataNodesContainer), // MEM_NEW --> destructor
-    dataMap(nodesContainer-> dataNodes) {}         // real container init at Connect()
+    dataMap(nodesContainer-> dataNodes) {}     // ref
 
 EgDataNodesSet::~EgDataNodesSet() { 
     clear(); 
@@ -73,6 +73,7 @@ int EgDataNodesSet::ConnectSystemNodeType(const std::string dataNodesSetName, co
     if (isConnected) return 0;
     isConnected = false;
     nodesSetName = dataNodesSetName;
+    nodeBlueprintName = blueprintName;
     if (! dataNodeBlueprint)
         dataNodeBlueprint = new EgDataNodeBlueprint(blueprintName); // MEM_NEW --> destructor
     if (dataNodeBlueprint-> LocalLoadBlueprint()) {
@@ -81,7 +82,6 @@ int EgDataNodesSet::ConnectSystemNodeType(const std::string dataNodesSetName, co
     }
     nodesContainer-> init(dataNodeBlueprint, nodesSetName);
     isConnected = true;
-    // std::cout << "ConnectSystemNodeType() done for " << dataNodesSetName << " , " << blueprintName << std::endl;
     return 0;
 }
 
@@ -154,7 +154,7 @@ int EgDataNodesSet::LoadAllNodes() {
         return -1;
     }
     int res = nodesContainer-> LoadAllLocalFileNodes();
-    // std::cout << "LoadAllNodes() res: " << res << std::endl;
+    // EG_LOG_STUB << "res: " << res << FN;
     if (serialLoadFunction)
         for (auto nodesIter : nodesContainer-> dataNodes) {
             // EG_LOG_STUB << "call serialLoadFunction for node: " << nodesIter.second-> dataNodeID << FN;

@@ -17,9 +17,9 @@ SRC_FILES_NODES = $(shell find nodes -name '*.cpp')
 SRC_FILES_INDEXES = $(shell find indexes -name '*.cpp')
 SRC_FILES_LINKS = $(shell find links -name '*.cpp')
 SRC_FILES_METAINFO = $(shell find metainfo -name '*.cpp')
-# SRC_FILES_QTINTERFACE = $(shell find qtinterface -name '*.cpp')
-SRC_FILES = $(SRC_FILES_SERVICE) $(SRC_FILES_NODES) $(SRC_FILES_INDEXES) $(SRC_FILES_LINKS) $(SRC_FILES_METAINFO) 
-# $(SRC_FILES_QTINTERFACE)
+SRC_FILES_GUISUPPORT = $(shell find guisupport -name '*.cpp')
+
+SRC_FILES = $(SRC_FILES_SERVICE) $(SRC_FILES_NODES) $(SRC_FILES_INDEXES) $(SRC_FILES_LINKS) $(SRC_FILES_METAINFO) $(SRC_FILES_GUISUPPORT)
 
 #   $(name:string1=string2) For each word in 'name' replace 'string1' with 'string2'
 OBJS = $(SRC_FILES:.cpp=.o)

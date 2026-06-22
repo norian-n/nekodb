@@ -1,7 +1,7 @@
 #include "testTemplate.h"
 
-#include "../metainfo/egLayers.h"
-#include "../metainfo/egOneLayer.h"
+#include "../guisupport/egLayers.h"
+#include "../guisupport/egOneLayer.h"
 #include "../nodes/egDataNodesSet.h"
 
 using namespace std;
@@ -15,14 +15,12 @@ bool initNodesSets(EgDatabase& graphDB) {
     graphDB.AddNodeDataField("x");
     graphDB.AddNodeDataField("y");
     graphDB.AddNodeDataField("z");
-    graphDB.AddNodeDataField("");
     graphDB.CommitNodeBlueprint();
 
-    graphDB.CreateLinkWithDataBlueprint("testLinksBlueprint");
+    graphDB.CreateLinkBlueprint("testLinksBlueprint");
     graphDB.AddLinkDataField("x");
     graphDB.AddLinkDataField("y");
     graphDB.CommitLinkBlueprint();
-
 
     // graphDB.CreateNodesSetByBlueprint("layer2nodes", "testBlueprint");
 
@@ -33,6 +31,7 @@ bool initNodesSets(EgDatabase& graphDB) {
 }
 
 inline void addSampleDataNode(EgDataNodesSet& dataNodes) {
+    // PrintDataNodeBlueprint(*(dataNodes.dataNodeBlueprint));
     EgDataNode* newNode = new EgDataNode(dataNodes.dataNodeBlueprint); // FIXME change to node(nodesSet);
     (*newNode)["x"] << 1;
     (*newNode)["y"] << 2;
@@ -43,8 +42,8 @@ inline void addSampleDataNode(EgDataNodesSet& dataNodes) {
 
 int main() {
     cout << "===== Test EgLayersType =====" << endl;
-    std::remove("egdb/testlayers_egLayersInfo.dnl"); // delete layout file
-    std::remove("egdb/testlayers_egLayersInfo.gdn"); // delete data nodes file    
+    std::remove("egdb/testLayersSet_egLayersInfo.dnl"); // delete layout file
+    std::remove("egdb/testLayersSet_egLayersInfo.gdn"); // delete data nodes file    
 
     EgDatabase theDatabase;
     EgLayers   testLayers;
@@ -54,9 +53,10 @@ int main() {
     theDatabase.CreateLayersSet("testLayersSet");
     testLayers.ConnectLayers("testLayersSet", theDatabase);
 
-    EgDataNodeIDType topLayerID;
     theDatabase.CreateNodesSetByBlueprint("topLayerNodes", "testNodesBlueprint");
     theDatabase.CreateLinksSetByBlueprint("topLayerLinks", "testLinksBlueprint", "topLayerNodes", "topLayerNodes");
+
+    EgDataNodeIDType topLayerID;
     testLayers.createBlankLayer(topLayerID, 0, 1000, 600, "topLayerNodes", "topLayerLinks"); // "layer1links");  // create top layer
     
     EgDataNodesSet topLayerNodesSet;
@@ -75,6 +75,8 @@ int main() {
     newNodeID = topLayerNodesSet.getAddedNodeID();
     testLayers.createDetailsLayer(newNodeID, newLayerID, topLayerID, 100, 100, "egDetailsNodesSet", "testNodesBlueprint", "testLinksBlueprint");
 
+    testLayers.updateWH(topLayerID, 111, 222);
+
     std::string detLayerName = "egDetailsNodesSet_" + std::to_string(newNodeID); // details of new node
 
     EgDataNodesSet detailsLayerNodesSet;
@@ -86,7 +88,7 @@ int main() {
 
     // cout << "details LayerID: " << newLayerID << " details newNodeID: " << newNodeID << endl;
 
-    testLayers.updateWH(topLayerID, 111, 222);
+    // testLayers.updateWH(topLayerID, 111, 222);
 
     testLayers.StoreLayers();
     testLayers.LoadLayers();
@@ -97,7 +99,7 @@ int main() {
     // cout << "detailsLayerNodesSet.nodesContainer-> nodesCount: " << detailsLayerNodesSet.nodesContainer-> nodesCount << endl;
 
     // testLayers.layersStorage.nodesContainer-> PrintDataNodesContainer();
-    // cout << "testLayers.layersStorage.nodesContainer-> nodesCount: " << testLayers.layersStorage.nodesContainer-> nodesCount << endl;
+    cout << "testLayers.layersStorage.nodesContainer-> nodesCount: " << testLayers.layersStorage.nodesContainer-> nodesCount << endl;
 
-    contributeTestResultToStatistics( (detailsLayerNodesSet.nodesContainer-> nodesCount == 2) ); // testInDevelopment
+    contributeTestResultToStatistics( testLayers.layersStorage.nodesContainer-> nodesCount == 3 ); // testInDevelopment
 }

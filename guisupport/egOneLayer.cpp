@@ -29,7 +29,6 @@ void EgOneLayer::getLayerNodes(EgDataNodesSet*& graphNodes, serialLoadFunctionTy
     serialStoreFunctionType storeNodeObjectToDb) {
     auto nodesIter = nodesMap.begin(); // FIXME only one nodes type -> many types
     if (nodesIter != nodesMap.end()) {
-        // std::cout << "loadLayerNodes() name: " << nodesIter-> first << std::endl;
         graphNodes = nodesIter-> second; // .nodesSetPtr;
         // if ( ! graphNodes-> isDataLoaded ) {
             graphNodes-> serialLoadFunction  = loadNodeObjectFromDb;

@@ -1,13 +1,11 @@
 #include <iostream>
 #include "egStrArray.h"
-#include "../metainfo/egLiterals.h"
+// #include "../metainfo/egLiterals.h"
 
 EgStrArray::EgStrArray(EgMultArrayCountType count):
     strCount(count) {
-
         // EG_LOG_STUB << "EgDataNodeType()  fieldsCount: " << blueprintName << " " << std::dec << (int)  fieldsCount << FN;
         byteArrayPtrs = new EgPtrArrayType<EgByteArrayAbstractType*> (theHamSlicer,  strCount);
-        // PrintPtrsArray<EgByteArrayAbstractType*> (*dataFieldsPtrs);
 }
 
 void EgStrArray::init() {
@@ -29,7 +27,7 @@ EgByteArrayAbstractType& EgStrArray::operator[](int strIndex) { // value by inde
 }
 
 void EgStrArray::storeToByteArray(EgByteArrayAbstractType& ba) {
-    // FIXME process empty multarray
+    // FIXME process empty array
     uint8_t lenSize {0};
     uint64_t totalSize {0};
     EgByteType lengthRawData[DATA_CONVERT_MAX_BYTES_COUNT]; // flex size buffer, see egDataConvert.h
@@ -43,12 +41,7 @@ void EgStrArray::storeToByteArray(EgByteArrayAbstractType& ba) {
         totalSize += (byteArrayPtrs->ptrsArray[i]-> dataSize + lenSize);
     }
 
-    // lenSize = field-> egConvertStaticToFlex(totalSize, lengthRawData);
     ba.reallocDataChunk(totalSize); // + lenSize);
-
-    // memcpy((void*) ba.dataChunk, (void*) lengthRawData, lenSize);
-    // EG_LOG_STUB << "totalSize: " << DEC << (int) lenSize << " lengthRawData[0]: " << (int) lengthRawData[0] << FN;
-    // PrintByteArray(ba, false);
 
     uint64_t insertIndex {0};
     for (int i =0; i < strCount; i++) {

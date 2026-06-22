@@ -16,10 +16,11 @@ public:
     { init(); }
     ~EgPtrArrayType() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); }
 
-    inline void init() { if(ptrsCount) theHamSlicer-> getSlice(ptrsCount*sizeof(T), brickID, (EgByteType*&) ptrsArray); }
-    void clear() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); ptrsCount = 0; brickID = 0; ptrsArray = nullptr; }
+    inline void init() { if(ptrsCount) theHamSlicer-> getSlice(ptrsCount*sizeof(T), brickID, (EgByteType*&) ptrsArray); 
+                        for (int i = 0; i < ptrsCount; i++) ptrsArray[i] = nullptr; }
+    inline void clear() { if (theHamSlicer && brickID) theHamSlicer-> freeSlice(brickID); ptrsCount = 0; brickID = 0; ptrsArray = nullptr; }
 
-    void reallocPtrsArray() {
+    inline void reallocPtrsArray() {
         if (brickID)
             theHamSlicer->freeSlice(brickID);
         if (ptrsCount)
@@ -29,6 +30,8 @@ public:
             ptrsArray = nullptr;
         }
     }
+
+    T& operator[] (uint64_t ptrIndex) { return ptrsArray[ptrIndex]; }
 };
 
 /* template <typename T> void PrintPtrsArray(EgPtrArrayType<T>& bArray) {

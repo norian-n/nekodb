@@ -1,14 +1,14 @@
 #include <iostream>
 #include "egDataNode.h"
-#include "../metainfo/egLiterals.h"
+#include "../guisupport/egLiteralsGuisupport.h"
 
-EgDataNode::EgDataNode(EgDataNodeBlueprint* a_dataNodeBlueprint, bool initMe):
+EgDataNode::EgDataNode(EgDataNodeBlueprint* a_dataNodeBlueprint, bool initFieldsBA):
     dataNodeBlueprint(a_dataNodeBlueprint) {
     if (dataNodeBlueprint) {
         // EG_LOG_STUB << "EgDataNodeType() dataNodeBlueprint-> fieldsCount: " << dataNodeBlueprint->blueprintName << " " << std::dec << (int) dataNodeBlueprint-> fieldsCount << FN;
         dataFieldsPtrs = new EgPtrArrayType<EgByteArrayAbstractType*> (dataNodeBlueprint->theHamSlicer, dataNodeBlueprint-> fieldsCount);
-        if (initMe)
-            init();
+        if (initFieldsBA)
+            initByteArrays();
         // PrintPtrsArray<EgByteArrayAbstractType*> (*dataFieldsPtrs);
     } else
         EG_LOG_STUB << "ERROR: EgDataNodeType(): nullptr blueprint in initMe constructor" << FN;
@@ -20,20 +20,21 @@ EgDataNode::EgDataNode(EgDataNodeBlueprint* a_dataNodeBlueprint, void* a_serialD
     if (dataNodeBlueprint) {
         // EG_LOG_STUB << "EgDataNodeType() dataNodeBlueprint-> fieldsCount: " << std::dec << (int) dataNodeBlueprint-> fieldsCount << FN;
         dataFieldsPtrs = new EgPtrArrayType<EgByteArrayAbstractType*> (dataNodeBlueprint->theHamSlicer, dataNodeBlueprint-> fieldsCount);
-        init();
+        initByteArrays();
         // PrintPtrsArray<EgByteArrayAbstractType*> (*dataFieldsPtrs);
     } else
         EG_LOG_STUB << "ERROR: EgDataNodeType(): nullptr blueprint in a_serialDataPtr constructor" << FN;
 }
 
-void EgDataNode::init() {
+void EgDataNode::initByteArrays() {
     for (int i = 0; i < dataNodeBlueprint->fieldsCount; i++) {
-        EgByteArraySlicerType* byteArray = new EgByteArraySlicerType(dataNodeBlueprint-> theHamSlicer, 0); // FIXME STUB check size
-        dataFieldsPtrs-> ptrsArray[i] = byteArray;
+        (*dataFieldsPtrs)[i] = new EgByteArraySlicerType(dataNodeBlueprint-> theHamSlicer, 0);
     }
 }
 
 void EgDataNode::clear() {
+    for (int i = 0; i < dataNodeBlueprint->fieldsCount; i++) // delete byte arrays
+        delete (*dataFieldsPtrs)[i];
     dataFieldsPtrs-> clear();
     inLinks.clear();
     outLinks.clear();

@@ -18,6 +18,7 @@ public:
 
     EgDatabase*             metaInfoDatabase    { nullptr };    // nodes and links central info/metadata storage
     EgDataNodeBlueprint*    dataNodeBlueprint   { nullptr };    // layout == blueprint == class == type of these data nodes
+    EgDataNodeBlueprint*    glamourBlueprint    { nullptr };    // for widgets, etc. FIXME TODO
     EgDataNodesContainer*   nodesContainer      { nullptr };    // data storage of all these nodes
     EgDataNodesMapType&     dataMap;                            // shortcut to container nodes map,  for (auto iter : dataMap)
 

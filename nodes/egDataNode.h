@@ -20,9 +20,9 @@ public:
 
     EgDataNode() = delete; // {} // for debug only
 
-    EgDataNode(EgDataNodeBlueprint* a_dataNodeBlueprint, bool initMe = true);
+    EgDataNode(EgDataNodeBlueprint* a_dataNodeBlueprint, bool initFieldsBA = true); // call initByteArrays flag
     EgDataNode(EgDataNodeBlueprint* a_dataNodeBlueprint, void* a_serialDataPtr);
-    ~EgDataNode() { /*std::cout << "EgDataNodeType destructor, ID = " << dataNodeID << std::endl; clear(); */ }
+    ~EgDataNode() { clear(); delete dataFieldsPtrs; /*std::cout << "EgDataNodeType destructor, ID = " << dataNodeID << std::endl; clear(); */ }
 
     EgByteArrayAbstractType& operator[](const std::string& fieldStrName);  // field data by name
 
@@ -42,7 +42,7 @@ public:
     }
 
     void clear();
-    void init();
+    void initByteArrays();
 
     bool fieldNameExists(const std::string& fieldStrName);
     void getDetailsLayerID (EgDataNodeIDType& thelayerID);

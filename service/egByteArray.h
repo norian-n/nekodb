@@ -29,7 +29,10 @@ public:
     EgByteArrayAbstractType& operator = (const EgByteArrayAbstractType& rightBA);
 
     template<typename T> EgByteArrayAbstractType& operator >> (T& value) {
-        value = *(reinterpret_cast<T*> (this-> dataChunk));
+        if (dataSize)
+            value = *(reinterpret_cast<T*> (this-> dataChunk));
+        else
+            value = 0;
         return *this; }
 
     template<typename T> EgByteArrayAbstractType& operator << (const T& value) {

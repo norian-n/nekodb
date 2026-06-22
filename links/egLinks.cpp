@@ -1,6 +1,6 @@
 #include <iostream>
 #include "egLinks.h"
-#include "../metainfo/egLiterals.h"
+#include "../metainfo/egLiteralsMetainfo.h"
 
 void EgLinksSet::clear() {
     linksDataStorage.clear();

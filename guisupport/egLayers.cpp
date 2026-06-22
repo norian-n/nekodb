@@ -1,7 +1,6 @@
 #include <iostream>
 #include "egLayers.h"
 #include "egOneLayer.h"
-// #include "../links/egLinksType.h"
 
 void EgLayers::clear() {
     // EG_LOG_STUB << "EgLayers::clear() " << FN;
@@ -20,14 +19,12 @@ int EgLayers::ConnectLayers(const std::string& a_layersTypeName, EgDatabase& a_D
     // if (layersStorage.Connect(a_layersTypeName + "_egLayersInfo", a_Database) != 0) { // FIXME check
         std::cout << "ConnectLayers() not found storage: " << a_layersTypeName << std::endl;
     }
-
-    // layersContentStorageBlueprint = layersContentStorage.dataNodeBlueprint;
-
     return 0;
 }
 
 inline void EgLayers::addLayerData(EgDataNodeIDType& newLayerID, EgDataNodeIDType parentLayerID, uint32_t W, uint32_t H, const std::string& nodesName, const std::string& linksName) {
-    EgDataNode *newNode = new EgDataNode(layersStorage.dataNodeBlueprint);
+    // PrintDataNodeBlueprint(*(layersStorage.dataNodeBlueprint));
+    EgDataNode* newNode = new EgDataNode(layersStorage.dataNodeBlueprint);
     (*newNode)["nodesNames"]    << nodesName; // FIXME literals
     (*newNode)["linksNames"]    << linksName;
     (*newNode)["layerWidth"]    << W;
@@ -36,6 +33,8 @@ inline void EgLayers::addLayerData(EgDataNodeIDType& newLayerID, EgDataNodeIDTyp
     layersStorage << newNode;
     newLayerID = layersStorage.getAddedNodeID();
     layersStorage.Store();
+    // delete newNode;
+    
     EgOneLayer *newLayer  = new EgOneLayer(*this, newLayerID, parentLayerID); // MEM_NEW --> clear()
     newLayer->layerWidth  = W;
     newLayer->layerHeight = H;
@@ -51,19 +50,65 @@ void EgLayers::createBlankLayer(EgDataNodeIDType& newLayerID, EgDataNodeIDType p
 void EgLayers::createDetailsLayer(EgDataNodeIDType parentNodeID, EgDataNodeIDType& newLayerID, EgDataNodeIDType parentLayerID, uint32_t W, uint32_t H,
     const std::string& parentNodesName, const std::string& layerNodesBlueprint, const std::string& layerLinksBlueprint) {
     std::string newNodesName = parentNodesName + "_" + std::to_string(parentNodeID); // gen nodesSet and linksSet names
-    std::string newLinksName = parentNodesName + "_" + std::to_string(parentNodeID);;
+    std::string newLinksName = parentNodesName + "_" + std::to_string(parentNodeID);
     // EG_LOG_STUB << "newNodesName: " << newNodesName << " newLinksName: " << newLinksName << FN;
     metaInfoDatabase-> CreateNodesSetByBlueprint(newNodesName, layerNodesBlueprint);
     metaInfoDatabase-> CreateLinksSetByBlueprint(newLinksName, layerLinksBlueprint, newNodesName, newNodesName);
     addLayerData(newLayerID, parentLayerID, W, H, newNodesName, newLinksName);
 }
 
+void EgLayers::createNewTopLayer(EgDataNodeIDType oldLayerID, EgDataNodeIDType& newLayerID, uint32_t W, uint32_t H, const std::string& oldLayerName,
+    const std::string& layerNodesBlueprint, const std::string& layerLinksBlueprint) {
+    std::string newNodesName = std::string("TL_") + oldLayerName; // gen nodesSet and linksSet names
+    std::string newLinksName = std::string("TL_") + oldLayerName;
+
+    // EG_LOG_STUB << "newNodesName: " << newNodesName << " newLinksName: " << newLinksName << FN;
+    metaInfoDatabase-> CreateNodesSetByBlueprint(newNodesName, layerNodesBlueprint);
+    metaInfoDatabase-> CreateLinksSetByBlueprint(newLinksName, layerLinksBlueprint, newNodesName, newNodesName);
+
+    EgDataNodesSet newLayerNodes; // create header node for old layer
+    newLayerNodes.Connect(newNodesName, *metaInfoDatabase);
+    EgDataNode* oldLayerLabelNode = new EgDataNode(newLayerNodes.dataNodeBlueprint);
+    (*oldLayerLabelNode)["name"]    << std::string("OldTopLayer"); // FIXME literals
+    (*oldLayerLabelNode)["cornerX"] << 64;
+    (*oldLayerLabelNode)["cornerY"] << 64;
+    (*oldLayerLabelNode)["rectH"]   << 64;
+    (*oldLayerLabelNode)["rectW"]   << 96;
+    (*oldLayerLabelNode)["detailsLayerID"] << oldLayerID;
+    newLayerNodes << *oldLayerLabelNode;
+    // EgDataNodeIDType parentLayerID = newLayerNodes.getAddedNodeID();
+    newLayerNodes.Store();
+    // delete oldLayerLabelNode;
+
+    addLayerData(newLayerID, 0/* parentLayerID */, W, H, newNodesName, newLinksName);
+    updateParentID(oldLayerID, newLayerID);
+    metaInfoDatabase-> ConnectLayersMetainfo();
+    metaInfoDatabase->layersMetainfo-> updateTopLayerID(layersTypeName, newLayerID); // update top layer ID in metainfo
+}
+
 void EgLayers::updateWH(EgDataNodeIDType layerID, uint32_t W, uint32_t H) {
-    EgDataNode& updNode = layersStorage[layerID];
-    updNode["layerWidth"]  << W; // FIXME literals
-    updNode["layerHeight"] << H;
+    // EG_LOG_STUB << "layerID: " << DEC << layerID << " layersStorage: " << layersStorage.nodesSetName << " layersBP: " << layersStorage.nodeBlueprintName << FN;
+    // EgDataNode& updNode = layersStorage[layerID];
+    // PrintEgDataNodeFields (layersStorage[layerID]);
+    layersStorage[layerID]["layerWidth"]  << W; // FIXME literals
+    layersStorage[layerID]["layerHeight"] << H;
     layersStorage.MarkUpdatedDataNode(layerID);
     layersStorage.Store();
+    auto layersIter = layersMap.find(layerID); // update loaded oneLayer info
+    if (layersIter != layersMap.end()) {
+        layersIter->second-> layerWidth  = W;
+        layersIter->second-> layerHeight = H;
+    }
+}
+
+void EgLayers::updateParentID(EgDataNodeIDType layerID, EgDataNodeIDType parentLayerID) {
+    EgDataNode& updNode = layersStorage[layerID];
+    updNode["parentLayerID"] << parentLayerID;
+    layersStorage.MarkUpdatedDataNode(layerID);
+    layersStorage.Store();
+    auto layersIter = layersMap.find(layerID); // update loaded oneLayer info
+    if (layersIter != layersMap.end())
+        layersIter->second-> parentLayerID = parentLayerID;
 }
 
 /* void EgLayersType::AddLinksType(const std::string& nodesName, EgDataNodeIDType layerNum) {
@@ -75,6 +120,7 @@ void EgLayers::updateWH(EgDataNodeIDType layerID, uint32_t W, uint32_t H) {
     layersStorage << newNode;
 } */
 
+/*
 void EgLayers::getLayerNodesAndLinks(std::unordered_set<std::string>& nodesNames, std::unordered_set<std::string>& linksNames, 
                                          EgDataNodeIDType layerNum) {
     nodesNames.clear();
@@ -95,7 +141,7 @@ void EgLayers::getLayerNodesAndLinks(std::unordered_set<std::string>& nodesNames
             }
         }
     }
-}
+} */
 
 int EgLayers::LoadLayers() {
     clear();

@@ -9,6 +9,8 @@ EgHamSlicerType::~EgHamSlicerType() {
 
 bool EgHamSlicerType::initBrick(uint64_t sliceSize) { // create ham brick MEM_NEW --> freeSlice()
     newBrickPtr = new EgHamBrickType;
+    if (! newBrickPtr)
+        return false; // cant alloc brick descriptor
     uint64_t allocSize = std::max<uint64_t> (hamBrickSize, sliceSize);
     newBrickPtr-> dataPtr = new EgByteType[allocSize];
     newBrickPtr-> brickID  = nextID++;
@@ -18,7 +20,7 @@ bool EgHamSlicerType::initBrick(uint64_t sliceSize) { // create ham brick MEM_NE
         hamBricks.insert(std::make_pair(newBrickPtr-> brickID, newBrickPtr)); // copy to map FIXME dont copy
         hamBricksByFree.insert(std::make_pair(newBrickPtr-> freeSize, newBrickPtr));
     } else
-        delete newBrickPtr; // cant alloc
+        delete newBrickPtr; // cant alloc brick data
     return (newBrickPtr-> dataPtr);
 }
 
@@ -41,8 +43,10 @@ bool EgHamSlicerType::getSlice(uint64_t sliceSize, EgHamBrickIDType &brickID, Eg
             brickID  = newBrickPtr-> brickID;
             slicePtr = newBrickPtr-> dataPtr;
         }
-        else
+        else {
+            std::cout << "ERROR: getSlice() cant alloc memory" << std::endl;
             return false;
+        }
     // std::cout << "EgHamSlicerType getSlice() ok " << brickID << " " <<  sliceSize << std::endl;
     return true;
 }

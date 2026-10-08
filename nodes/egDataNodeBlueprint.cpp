@@ -1,24 +1,21 @@
 #include "egDataNodeBlueprint.h"
 
-int EgDataNodeBlueprint::BlueprintInitStart() {
-    blueprintFile.fileName = "egdb/" + blueprintName + ".dnl";
-    if (blueprintFile.checkIfExists())
-    {
-        std::cout << "ERROR: Can't create DataNodeBlueprint: \"" << blueprintName << "\" - file already exists, use data pumping" << std::endl;
-        return -1;
-    }
-    else
-    {
+bool EgDataNodeBlueprint::BlueprintInitStart() {
+    blueprintFile.fileName = egDefaultFolderName + blueprintName + ".dnl";
+    if (blueprintFile.checkIfExists()) {
+        EG_LOG_STUB << "ERROR: data node blueprint blueprint file already exists: " << blueprintName << FN;
+        return false;
+    } else {
         fieldsCount = 0;
         dataFieldsNames.clear();
         // indexedFields.clear();
-        blueprintMode = egBlueprintInit;
+        blueprintInitMode = true; // egBlueprintInit;
     }
-    return 0;
+    return true;
 }
 
 void EgDataNodeBlueprint::AddDataFieldName(std::string fieldName) { // , uint8_t indexSizeBytes, uint8_t indexSubType) {
-    if (blueprintMode != egBlueprintInit)
+    if ( ! blueprintInitMode ) //  != egBlueprintInit)
         std::cout << "ERROR: Can't add field \"" << fieldName << "\" to DataNodeBlueprint: \"" << blueprintName << "\". Call BlueprintInitStart() first" << std::endl;
     else
         dataFieldsNames.insert(std::make_pair(fieldName, fieldsCount++));
@@ -26,35 +23,29 @@ void EgDataNodeBlueprint::AddDataFieldName(std::string fieldName) { // , uint8_t
 }
 
 void EgDataNodeBlueprint::AddIndex(std::string indexName, uint8_t indexSizeBytes, uint8_t indexSubType) {
-    if (blueprintMode != egBlueprintInit)
+    if ( ! blueprintInitMode) // != egBlueprintInit)
         std::cout << "ERROR: Can't add index \"" << indexName << "\" to DataNodeBlueprint: \"" << blueprintName << "\". Call BlueprintInitStart() first" << std::endl;
-    else {
-        if (dataFieldsNames.contains(indexName))
-        {
+    else if (dataFieldsNames.contains(indexName)) {
             EgIndexSettingsType indexSettings;
             indexSettings.indexSizeBytes = indexSizeBytes;
             indexSettings.indexFamilyType = indexSubType;
             indexedFields.insert(std::make_pair(indexName, indexSettings));
             // std::cout  << "AddDataField name: " << fieldName << " index: " << fieldsCount-1 << " to DataNodeBlueprint: " << blueprintName << std::endl;
-        } else
+         } else
             std::cout << "ERROR: AddIndex() for DataNodeBlueprint: \"" << blueprintName << "\" field name \"" << indexName << "\" not found" << std::endl;
-    }
 }
 
 void EgDataNodeBlueprint::BlueprintInitCommit() {
-    if (blueprintMode == egBlueprintInit)
-    {
+    if (blueprintInitMode) { //  == egBlueprintInit)
         LocalStoreBlueprint();
-        blueprintMode = egBlueprintActive;
-    }
-    else
+        blueprintInitMode = false; // egBlueprintActive;
+    } else
         std::cout << "ERROR: Can't commit fields to DataNodeBlueprint: \"" << blueprintName << "\". Call BlueprintInitStart() first" << std::endl;
 }
 
 inline void EgDataNodeBlueprint::writeDataFieldsNames() {
     // blueprintFile.writeType<EgFieldsCountType>((EgFieldsCountType)dataFieldsNames.size());
-    for (auto fieldsIter : dataFieldsNames)
-    { // 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
+    for (auto fieldsIter : dataFieldsNames) {
         // blueprintFile.writeType<EgFieldNameLengthType>((EgFieldNameLengthType) fieldsIter.first.size());
         blueprintFile.writeType<EgStrSizeType>((EgStrSizeType)fieldsIter.first.size());
         blueprintFile.fileStream << fieldsIter.first;
@@ -67,9 +58,7 @@ inline void EgDataNodeBlueprint::readDataFieldsNames() {
     EgFieldsCountType order{0};
     std::string fieldName;
     // blueprintFile.readType<EgFieldsCountType>(fieldsCountTmp);
-    // std::cout << "readDataFieldsNames() fieldsCountTmp: " << std::dec << (int) fieldsCountTmp << std::endl;
-    for (EgFieldsCountType i = 0; i < fieldsCount; i++)
-    {
+    for (EgFieldsCountType i = 0; i < fieldsCount; i++) {
         fieldName.clear();
         blueprintFile >> fieldName;
         blueprintFile.readType<EgFieldsCountType>(order);
@@ -80,8 +69,7 @@ inline void EgDataNodeBlueprint::readDataFieldsNames() {
 
 inline void EgDataNodeBlueprint::writeIndexedFields() {
     blueprintFile.writeType<EgFieldsCountType>((EgFieldsCountType)indexedFields.size());
-    for (auto fieldsIter : indexedFields)
-    {
+    for (auto fieldsIter : indexedFields) {
         blueprintFile.writeType<EgStrSizeType>((EgStrSizeType)fieldsIter.first.size());
         blueprintFile.fileStream << fieldsIter.first;
         blueprintFile << fieldsIter.second.indexFamilyType;
@@ -94,8 +82,7 @@ inline void EgDataNodeBlueprint::readIndexesFields() {
     std::string indexName;
     EgIndexSettingsType indexSettings;
     blueprintFile.readType<EgFieldsCountType>(fieldsCountTmp);
-    for (EgFieldsCountType i = 0; i < fieldsCountTmp; i++)
-    {
+    for (EgFieldsCountType i = 0; i < fieldsCountTmp; i++) {
         indexName.clear();
         blueprintFile >> indexName;
         blueprintFile >> indexSettings.indexFamilyType;
@@ -104,62 +91,33 @@ inline void EgDataNodeBlueprint::readIndexesFields() {
     }
 }
 
-int EgDataNodeBlueprint::LocalStoreBlueprint() {
-    blueprintFile.fileName = "egdb/" + blueprintName + ".dnl";
-    blueprintFile.openToWrite();
-    // EG_LOG_STUB << "DEBUG: blueprint file opened to store: " << blueprintFile.fileName << FN;
-
+bool EgDataNodeBlueprint::LocalStoreBlueprint() {
+    blueprintFile.fileName = egDefaultFolderName + blueprintName + ".dnl";
+    if (! blueprintFile.openToWrite()) {
+        EG_LOG_STUB << "ERROR: cant open blueprint file: " << blueprintName << FN;
+        return false;
+    }
     blueprintFile << fieldsCount;
-    // std::cout << "LocalStoreBlueprint() fieldsCount: " << std::dec << (int) fieldsCount << std::endl;
-    // blueprintFile << nodesCount;
-    // blueprintFile << nextNodeID;
-
-/*    blueprintFile << blueprintSettings.isServiceType;
-    blueprintFile << blueprintSettings.useLinks;
-    blueprintFile << blueprintSettings.useSubGraph;
-    blueprintFile << blueprintSettings.useEntryNodes;
-    blueprintFile << blueprintSettings.useVisualSpace;
-    blueprintFile << blueprintSettings.useNamedAttributes;
-    blueprintFile << blueprintSettings.useGUIsettings; */
-
     writeDataFieldsNames();
     writeIndexedFields();
-
     blueprintFile.close();
-    // EG_LOG_STUB << "DEBUG: blueprint file write closed: " << blueprintFile.fileName << FN;
-    return 0;
+    return true;
 }
 
-int EgDataNodeBlueprint::LocalLoadBlueprint() {
+bool EgDataNodeBlueprint::LocalLoadBlueprint() {
     clear();
 
-    blueprintFile.fileName = "egdb/" + blueprintName + ".dnl";
+    blueprintFile.fileName = egDefaultFolderName + blueprintName + ".dnl";
     if (!blueprintFile.openToRead()) {
         // EG_LOG_STUB << "ERROR: can't open blueprint file: " << blueprintFile.fileName << FN;
-        return -1;
+        return false;
     }
-    // EG_LOG_STUB << "DEBUG: blueprint file opened: " << blueprintFile.fileName << FN;
     blueprintFile >> fieldsCount;
-
-    // std::cout << "LocalLoadBlueprint() fieldsCount: " << std::dec << (int) fieldsCount << std::endl;
-    // blueprintFile >> nodesCount;
-    // blueprintFile >> nextNodeID;
-
-/*    blueprintFile >> blueprintSettings.isServiceType;
-    blueprintFile >> blueprintSettings.useLinks;
-    blueprintFile >> blueprintSettings.useSubGraph;
-    blueprintFile >> blueprintSettings.useEntryNodes;
-    blueprintFile >> blueprintSettings.useVisualSpace;
-    blueprintFile >> blueprintSettings.useNamedAttributes;
-    blueprintFile >> blueprintSettings.useGUIsettings; */
-
-    // std::cout << "Names file pos: " << std::hex << (int) blueprintFile.fileStream.tellg() << std::endl;
     readDataFieldsNames();
     readIndexesFields();
 
     blueprintFile.close();
-    // EG_LOG_STUB << "DEBUG: blueprint file closed: " << blueprintFile.fileName << FN;
-    return 0;
+    return true;
 }
 
 bool EgDataNodeBlueprint::isIndexedField(std::string& name) {

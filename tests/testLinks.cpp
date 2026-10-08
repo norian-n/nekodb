@@ -77,28 +77,24 @@ void initDatabase(EgDatabase& graphDB) {
     // typeSettings.useLocation = true;
     // typeSettings.useLinks = true;
 
-    graphDB.CreateNodesSet("testLinksFrom"); // , typeSettings);
+    graphDB.CreateNodeBlueprint("testLinks"); // , typeSettings);
     graphDB.AddNodeDataField("name");
     graphDB.AddNodeDataField("x");
     graphDB.AddNodeDataField("y");    
-    graphDB.CommitNodesSet();
-
-    graphDB.CreateNodesSet("testLinksTo"); // , typeSettings);
-    graphDB.AddNodeDataField("name");
-    graphDB.AddNodeDataField("x");
-    graphDB.AddNodeDataField("y");    
-    graphDB.CommitNodesSet();
+    graphDB.CommitNodeBlueprint();
+    graphDB.CreateNodesSetByBlueprint("testLinksFrom", "testLinks");
+    graphDB.CreateNodesSetByBlueprint("testLinksTo", "testLinks");
 
     graphDB.CreateLinkBlueprint("testBoundLinksWData");
     graphDB.AddLinkDataField("x");
     graphDB.AddLinkDataField("y");
-    graphDB.CommitLinkBlueprint();
+    graphDB.CommitBoundLinkBlueprint();
 
-    graphDB.CreateLinksSetByBlueprint("testBoundLinksWData", "testBoundLinksWData", "testLinksFrom", "testLinksTo");
+    graphDB.CreateBoundLinksSetByBlueprint("testBoundLinksWData", "testBoundLinksWData", "testLinksFrom", "testLinksTo");
 }
 
 int main() {
-    cout << "===== Test EgLinksType =====" << endl;
+    cout << "===== Test EgLinksType ===== COUNTME" << endl;
     std::remove("egdb/testBoundLinksWData_egArrowLink.dnl"); // delete layout file
     std::remove("egdb/testBoundLinksWData_egArrowLink.gdn"); // delete data nodes file       
 
@@ -110,7 +106,7 @@ int main() {
     initDatabase(theDatabase);
 
     fromType.Connect("testLinksFrom", theDatabase);
-    toType.Connect  ("testLinksTo", theDatabase);
+    toType.  Connect("testLinksTo", theDatabase);
     testLinks.ConnectLinks("testBoundLinksWData", theDatabase);
     // std::remove("testNodes.gdn");  // delete data nodes file
 

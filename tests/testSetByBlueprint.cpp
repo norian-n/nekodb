@@ -90,7 +90,7 @@ int main() {
     EgDataNodesSet nodesSet1;
     EgDataNodesSet nodesSet2;
 
-    cout << "===== Test nodes set by blueprint " << " =====" << endl;
+    cout << "===== Test nodes set by blueprint ===== COUNTME" << endl;
 
     initNodesSets(graphDB);
 

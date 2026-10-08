@@ -10,7 +10,7 @@ void EgPalettes::clear() {
 int EgPalettes::ConnectPalettesSet(const std::string& a_paletteTypeName, EgDatabase& a_Database) {
     paletteTypeName = a_paletteTypeName;
     metaInfoDatabase = &a_Database;
-    if (paletteStorage.ConnectSystemNodeType(a_paletteTypeName + "_egPalettesSet", palettesSetBPName) != 0) {
+    if ( ! paletteStorage.ConnectSystemNodesSet(a_paletteTypeName + "_egPalettesSet", palettesSetBPName) ) {
     // if (paletteStorage.Connect(a_paletteTypeName + "_egPaletteInfo", a_Database) != 0) { // FIXME check
         std::cout << "ConnectPalette() not found storage: " << a_paletteTypeName << std::endl;
     }
@@ -34,7 +34,7 @@ bool EgPalettes::onePaletteIDByName(const std::string& paletteName, EgDataNodeID
 }
 
 int EgPalettes::CreateOnePalette(const std::string& paletteName) {
-    std::string fullPaletteName = paletteName + std::string("_egPalettesSet");
+    // std::string fullPaletteName = paletteName + std::string("_egPalettesSet");
     // check if one palette already exists
     
     // metaInfoDatabase->CreateNodesSetByBlueprint(fullPaletteName, onePaletteBPName);
@@ -49,8 +49,8 @@ int EgPalettes::CreateOnePalette(const std::string& paletteName) {
 
 int EgPalettes::LoadPalette() {
     clear();
-    int res = paletteStorage.LoadAllNodes();
-    if (res) {
+    bool res =  paletteStorage.LoadAllNodes();
+    if (! res) {
         std::cout << "LoadPalette() ERROR: " << paletteTypeName << std::endl;
     } else {
         for (auto paletteIter : paletteStorage.dataMap) {
@@ -59,7 +59,7 @@ int EgPalettes::LoadPalette() {
             /* paletteMap.insert(std::make_pair(paletteIter.first, newLayer)); */
         }
     }
-    return res;
+    return ! res;
 }
 
 int EgPalettes::StorePalette() {

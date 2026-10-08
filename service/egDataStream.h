@@ -1,6 +1,4 @@
 #pragma once
-// #include <cstdint>
-
 typedef unsigned int egMaxStreamSizeType; // uint_32
 
 class EgDataStream {

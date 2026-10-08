@@ -49,7 +49,7 @@ bool testLinksResolving(EgFreeLinksType& testLinks, EgDataNodesSet& fromType, Eg
     return ((linksIterFrom->second.size() == 3) && (linksIterTo->second.size() == 1));
 }
 
-bool testLinksStorage(EgFreeLinksType& testLinks, EgBlueprintIDType fromNodesTypeID, EgBlueprintIDType toNodesTypeID) {
+bool testLinksStorage(EgFreeLinksType& testLinks, EgNodesSetIDType fromNodesTypeID, EgNodesSetIDType toNodesTypeID) {
 
     testLinks.AddRawLink(fromNodesTypeID, 1, toNodesTypeID, 2); // nodeID == 1, outLinks[0], 3 items
     testLinks.AddRawLink(fromNodesTypeID, 1, toNodesTypeID, 3);
@@ -109,11 +109,11 @@ int main() {
     // testLinks.Connect(theDatabase);
     // std::remove("testNodes.gdn");  // delete data nodes file
 
-    EgBlueprintIDType fromNodesTypeID {0};
+    EgNodesSetIDType fromNodesTypeID {0};
     if (theDatabase.nodeTypeIDByName(fromType.nodesSetName, fromNodesTypeID)) // reverse return logic - true if not found
         cout << "fromNodesTypeID not found in metainfo" << endl;
 
-    EgBlueprintIDType toNodesTypeID {0};
+    EgNodesSetIDType toNodesTypeID {0};
     if (theDatabase.nodeTypeIDByName(toType.nodesSetName, toNodesTypeID)) // reverse return logic - true if not found
         cout << "toNodesTypeID not found in metainfo" << endl;
 

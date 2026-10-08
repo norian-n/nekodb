@@ -126,7 +126,7 @@ int main() {
     testBlueprint.AddDataFieldName("nodesTypeName");
     testBlueprint.AddDataFieldName("nodesTypeData");
     // testBlueprint.blueprintSettings.isServiceType = true;
-    testBlueprint.blueprintMode = egBlueprintActive; // virtual, do NOT commit to db
+    testBlueprint.blueprintInitMode = false; // egBlueprintActive; // virtual, do NOT commit to db
 
     EgDataNode testNodeWrite(&testBlueprint);
     EgDataNode testNodeRead(&testBlueprint);

@@ -1,8 +1,10 @@
 #include <iostream>
 #include "egOneLayer.h"
 #include "../links/egLinks.h"
+#include "../links/egLiteralsLinks.h"
+#include "../guisupport/egLiteralsGuisupport.h"
 
-EgOneLayer::EgOneLayer(EgLayers& a_Layers, EgDataNodeIDType a_layerID, EgDataNodeIDType a_parentLayerID):  
+EgOneLayer::EgOneLayer(EgStdLayers& a_Layers, EgDataNodeIDType a_layerID, EgDataNodeIDType a_parentLayerID):  
     layers {&a_Layers}, layerID {a_layerID}, parentLayerID {a_parentLayerID}  {
 }
 
@@ -35,12 +37,14 @@ void EgOneLayer::getLayerNodes(EgDataNodesSet*& graphNodes, serialLoadFunctionTy
             graphNodes-> serialStoreFunction = storeNodeObjectToDb;
             // graphNodes-> LoadAllNodes();
         // }
+        if ( ! graphNodes-> ConnectSystemNodesSet(nodesIter-> first, nodeWidgetBPName) )
+            EG_LOG_STUB << "ERROR: can't connect layer nodes: " << nodesIter-> first << FN;
     }
 }
 
 void EgOneLayer::getLayerLinks(EgLinksSet*& graphLinks, serialLoadFunctionType loadLinkObjectFromDb, 
     serialStoreFunctionType storeLinkObjectToDb) {
-    auto linksIter = linksMap.begin(); // FIXME only one nodes type -> many types
+    auto linksIter = linksMap.begin(); // FIXME only one links type -> many types
     if (linksIter != linksMap.end()) {
         // std::cout << "getLayerLinks() name: " << linksIter-> first << std::endl;
         graphLinks = linksIter-> second;
@@ -49,10 +53,48 @@ void EgOneLayer::getLayerLinks(EgLinksSet*& graphLinks, serialLoadFunctionType l
             graphLinks-> linksDataStorage.serialStoreFunction = storeLinkObjectToDb;
             // graphNodes-> LoadAllNodes();
         // }
+        // EG_LOG_STUB << "getLayerLinks() links set name: " << linksIter-> first << FN;
+        if ( graphLinks-> ConnectLayerLinks(linksIter-> first) != 0 )
+            EG_LOG_STUB << "ERROR: can't connect layer links: " << linksIter-> first << FN;
     }
 }
 
-void EgOneLayer::connectNodeType(const std::string& nodesName, EgDatabase* graphDB) {
+/*
+void EgOneLayer::getLayerDarkNodesLinks() {
+    auto nodesIter = nodesMap.begin(); // gen dark links name
+    if (nodesIter != nodesMap.end()) {
+        // graphNodes = nodesIter-> second;
+    }
+} */
+
+/*      AddLinkDataField(linksFromID_FieldName);
+        AddLinkDataField(linksToID_FieldName);
+        AddLinkDataField(linksFromSetName_FieldName);
+        AddLinkDataField(linksToSetName_FieldName); */
+
+void EgOneLayer::getDarkNodeID(EgDataNodeIDType widgetID, EgDataNodeIDType& darkNodeID) {
+    darkNodeID = 0; // not found
+    EgDataNodeIDType currentWidgetID {0};
+    std::string darkNodesLinksName;
+    auto nodesIter = nodesMap.begin(); // FIXME only one nodes type -> many types
+    if (nodesIter != nodesMap.end()) {
+        darkNodesLinksName = nodesIter-> first + oneLayerDarkNodesPostfix;
+    } // FIXME else error
+    if (! darkNodesLinks.linksDataStorage.isConnected)
+        darkNodesLinks.ConnectLinks(darkNodesLinksName, *(layers-> metaInfoDatabase));
+    darkNodesLinks.LoadLinks();
+    // search widgetID  linksToID_FieldName
+    for (auto layersIter : darkNodesLinks.linksDataStorage.dataMap) {
+        (*(layersIter.second))[linksToID_FieldName]  >> currentWidgetID;
+        // EG_LOG_STUB << "currentWidgetID: " << currentWidgetID << FN;
+        if (currentWidgetID == widgetID) {
+            (*(layersIter.second))[linksFromID_FieldName]  >> darkNodeID;
+            break;
+        }
+    }
+}
+
+void EgOneLayer::addNodesSetToMap(const std::string& nodesName, EgDatabase* graphDB) {
     // nodesSetInfo nodesInfo;
     EgDataNodesSet* graphNodes = new EgDataNodesSet(); // MEM_NEW --> clear()
     graphNodes->nodesSetName = nodesName;
@@ -61,7 +103,7 @@ void EgOneLayer::connectNodeType(const std::string& nodesName, EgDatabase* graph
     nodesMap.insert(std::make_pair(nodesName, graphNodes)); // nodesInfo));
 }
 
-void EgOneLayer::connectLinkType(const std::string& linksName, EgDatabase* graphDB) {
+void EgOneLayer::addLinksSetToMap(const std::string& linksName, EgDatabase* graphDB) {
     EgLinksSet* graphLinks = new EgLinksSet(); // MEM_NEW --> clear()
     graphLinks-> linkNameShort = linksName; // FIXME check full name
     // graphLinks-> ConnectLinks(linksName, *graphDB);

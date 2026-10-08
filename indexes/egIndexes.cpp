@@ -121,7 +121,7 @@ template <typename KeyType> inline void EgIndexes<KeyType>::DeleteIndexesChunk(u
         }
         // EG_LOG_STUB << "otherEmptyChunks = " << std::dec << otherEmptyChunks << FN;
         indexFileStream.close();
-        std::string path = "egdb/" + indexFileName;        
+        std::string path = egDefaultFolderName + indexFileName;        
         std::filesystem::path filename = path.c_str(); // experimental::
         std::filesystem::resize_file(filename, indexesChunkOffset - (indexChunkSize * otherEmptyChunks));
         indexFileStream.openToUpdate();

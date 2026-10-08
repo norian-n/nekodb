@@ -12,7 +12,7 @@ void EgDataNodesLocalFileType::initIndexes() {
 // EgIndexes<uint32_t> testIndexes("testIndexes");
 
 bool EgDataNodesLocalFileType::InitFile() { // tests support
-    nodesFile.fileName = "egdb/" + localFileName + ".gdn";
+    nodesFile.fileName = egDefaultFolderName + localFileName + ".gdn";
     bool isOk = nodesFile.openToWrite();
     if (isOk)
     {
@@ -50,7 +50,7 @@ inline void EgDataNodesLocalFileType::InitNewHeader() {
 
 bool EgDataNodesLocalFileType::GetLastIDFromFile(EgDataNodeIDType& lastID) {
     EgDataNodeIDType lastNodeID {0};
-    nodesFile.fileName = "egdb/" + localFileName + ".gdn";
+    nodesFile.fileName = egDefaultFolderName + localFileName + ".gdn";
     bool isOk = nodesFile.openToRead();
     if (isOk) {
         nodesFile.seekRead(lastIDOffset);
@@ -64,12 +64,12 @@ bool EgDataNodesLocalFileType::GetLastIDFromFile(EgDataNodeIDType& lastID) {
 }
 
 bool EgDataNodesLocalFileType::OpenFileToRead() { // tests support
-    nodesFile.fileName = + "egdb/" + localFileName + ".gdn";
+    nodesFile.fileName = egDefaultFolderName + localFileName + ".gdn";
     return nodesFile.openToRead();
 }
 
 bool EgDataNodesLocalFileType::OpenFileToUpdate() { // tests support
-    nodesFile.fileName = "egdb/" + localFileName + ".gdn";
+    nodesFile.fileName = egDefaultFolderName + localFileName + ".gdn";
     bool isOk = nodesFile.openToUpdate();
     if (!isOk)
     {
@@ -81,7 +81,7 @@ bool EgDataNodesLocalFileType::OpenFileToUpdate() { // tests support
 }
 
 bool EgDataNodesLocalFileType::StartFileUpdate() {
-    nodesFile.fileName = "egdb/" + localFileName + ".gdn";
+    nodesFile.fileName = egDefaultFolderName + localFileName + ".gdn";
     bool inSubTransact = nodesFile.openToUpdate();
     if (!inSubTransact) { // no file exist
         inSubTransact = nodesFile.openToWrite();
@@ -98,18 +98,8 @@ bool EgDataNodesLocalFileType::StartFileUpdate() {
 }
 
 bool EgDataNodesLocalFileType::UpdateNodesFile(EgDataNodesOrdMapType& addedNodes, EgDataNodesMapType& deletedNodes, EgDataNodesMapType& updatedNodes) {
-/*
-    bool inSubTransact = StartFileUpdate(layoutName);
-    if (!inSubTransact) {
-        std::cout << "ERROR: UpdateNodesFile() can't process header of " << layoutName << ".gdn" << std::endl;
-        return false;
-    }
-*/
-    // PrintHeader();
     std::string fieldName;
     for (auto newNodesIter : addedNodes) {
-        // PrintEgDataNodeFields(*(newNodesIter.second));
-        // std::cout << "StoreToLocalFile() container fieldsCount: " << std::dec << (int) ((newNodesIter.second)-> dataNodeBlueprint-> fieldsCount) << std::endl;
         if (newNodesIter.first < nodesFileHeader.lastID) {
             std::cout << "ERROR: UpdateNodesFile() new node ID " << newNodesIter.first << " < last ID " << nodesFileHeader.lastID 
                       << " at " << localFileName << ".gdn" << std::endl;
@@ -122,11 +112,8 @@ bool EgDataNodesLocalFileType::UpdateNodesFile(EgDataNodesOrdMapType& addedNodes
             localIndexes[fieldName]-> AddNewIndex(newNodesIter.second-> operator[] (fieldName), newNodesIter.second-> dataFileOffset);
         }
         nodesFileHeader.nodesCount++;
-        // PrintHeader();
     }    
     for (auto updNodesIter : updatedNodes) {
-        // PrintEgDataNodeTypeFields(*(updNodesIter.second));
-        // std::cout  << std::endl; 
         // EG_LOG_STUB << "old offset: " << std::hex << updNodesIter.second-> dataFileOffset << FN;       
         if (! DeleteDataNode(updNodesIter.second))
             return false;
@@ -146,8 +133,7 @@ bool EgDataNodesLocalFileType::UpdateNodesFile(EgDataNodesOrdMapType& addedNodes
         // std::cout << "UpdateNodesFile() new offset: " << updNodesIter.second-> dataFileOffset << std::dec << std::endl;             
             // update local indexes
     }
-    for (auto delNodesIter : deletedNodes) { // 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
-        // PrintEgDataNodeTypeFields(*(delNodesIter.second));
+    for (auto delNodesIter : deletedNodes) {
         if (! DeleteDataNode(delNodesIter.second))
             return false;
         for (auto index : localIndexes) { // delete local indexes
@@ -160,8 +146,7 @@ bool EgDataNodesLocalFileType::UpdateNodesFile(EgDataNodesOrdMapType& addedNodes
         nodesFileHeader.nodesCount--;
     }
     WriteHeader();
-    // PrintHeader();
-    // nodesFile.close(); // called in peer
+    // nodesFile.close(); // called by peer func
     return localTransactOk;
 }
 
@@ -199,6 +184,14 @@ bool EgDataNodesLocalFileType::WriteDataNode(EgDataNode* theNode) { // write to 
     nodesFileHeader.lastID = std::max(theNode-> dataNodeID, nodesFileHeader.lastID);
     return nodesFile.fileStream.good();
 }
+
+bool EgDataNodesLocalFileType::ReadDataNodeIDOnly(EgDataNode *theNode, EgFileOffsetType &nextOffset) {
+    nodesFile.seekRead(theNode-> dataFileOffset);
+    nodesFile >> theNode-> dataNodeID;
+    nodesFile >> nextOffset;
+    return nodesFile.fileStream.good();
+}
+
 
 bool EgDataNodesLocalFileType::ReadDataNode(EgDataNode *theNode, EgFileOffsetType &nextOffset) {
     theNode-> indexedFieldsOldValues.clear();

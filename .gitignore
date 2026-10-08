@@ -37,4 +37,4 @@ backup.sh
 
 junkyard/*
 tests_exec/*
-
+tests_inactive/*

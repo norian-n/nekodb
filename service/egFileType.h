@@ -16,7 +16,7 @@ public:
     EgDataStream dataStream;
 
     EgFileType():dataStream(streamBufSize) {}
-    EgFileType(const std::string& a_name): fileName(std::string("egdb/") + a_name), dataStream(streamBufSize) { std::filesystem::create_directory("egdb"); }
+    EgFileType(const std::string& a_name): fileName(egDefaultFolderName + a_name), dataStream(streamBufSize) { std::filesystem::create_directory("egdb"); }
     ~EgFileType() { if (fileStream.is_open()) fileStream.close(); }
 
     inline bool good() { return /* (bool) fileStream.good();*/ ! (fileStream.bad() || fileStream.fail()); }

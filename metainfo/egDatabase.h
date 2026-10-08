@@ -14,8 +14,8 @@ public:
     EgLayersMetainfo*   layersMetainfo   {nullptr};
     EgPalettesMetainfo* palettesMetainfo {nullptr};
 
-    bool nodesTypesMetainfoLoaded {false};  // metainfo status flags
-    bool linksTypesMetainfoLoaded {false};
+    // bool nodesTypesMetainfoLoaded {false};  // metainfo status flags
+    // bool linksTypesMetainfoLoaded {false};
 
     bool CreateNodeBlueprintFlag  {false};   // create status flags
     bool CreateLinkBlueprintFlag  {false};
@@ -35,29 +35,27 @@ public:
     // inline void createSystemStorage(const std::string& storName, const std::string& fieldName, const std::string& fieldBP);
     inline void createNodesMetainfo();
     inline void createLinksMetainfo();
+    inline void createStdLinkBlueprints();
     // inline void createLayersMetainfo();
 
 // ======================== nodes metadata API ========================
-    int  CreateNodesSet(const std::string& nodesSetName); // blueprint and set at once
+    // int  CreateNodesSet(const std::string& nodesSetName); // blueprint and set at once
+    // void CommitNodesSet();
+    bool CreateNodeBlueprint(const std::string& blueprintName); // blueprint only, not set
     void AddNodeDataField   (const std::string& fieldName);
     void AddIndex(const std::string& indexName, uint8_t indexSizeBytes = 4, uint8_t indexSubType = egIndexesSpace::egIntFT);
-    void CommitNodesSet();
-
-    int  CreateNodeBlueprint(const std::string& blueprintName); // blueprint only, not set
     void CommitNodeBlueprint();         // use AddNodeDataField() prior to commit
-    void CommitSystemNodeBlueprint();   // dont add info to blueprints metadata storage (e.g. to create system storages from scratch)
     int  CreateNodesSetByBlueprint(const std::string& nodesSetName, const std::string& nodeBlueprintName);
 // ======================== links metadata API ========================
-    int  CreateSimpleLinkSet(const std::string& linkTypeName, const std::string& nodesFrom, const std::string& nodesTo); // between 2 (1) node types only
-    int  CreateLinkBlueprint(const std::string& linkTypeName);
+    int  CreateLinkBlueprint(const std::string& linksBlueprintName);
     void AddLinkDataField(const std::string& fieldName);
-    void CommitLinkBlueprint(); // use AddLinkDataField() to add fields prior to commit
-    // void CommitFreeLinkBlueprint(); // FIXME TODO
+    void CommitBoundLinkBlueprint(); // use AddLinkDataField() to add fields prior to commit
+    void CommitFreeLinkBlueprint(); // use AddLinkDataField() to add fields prior to commit
 
-    int  CreateLinksSetByBlueprint(const std::string& linksSetName, const std::string& blueprintName, const std::string& nodesFrom, const std::string& nodesTo);  // FIXME TODO STUB    
-
-    int  CreateFreeLinkBlueprint(const std::string& linkTypeName) { /* FIXME TODO STUB */ return 0; } // between any node types, 4 IDs per link
-    int  CreateFreeLinkWithDataBlueprint(const std::string& linkTypeName) { /* FIXME TODO STUB */ return 0; }
+    int  CreateFreeLinksSetByBlueprint(const std::string& linksSetName, const std::string& blueprintName);
+    int  CreateBoundLinksSetByBlueprint(const std::string& linksSetName, const std::string& blueprintName,
+        const std::string& nodesFrom, const std::string& nodesTo);
+    int CreateStdBoundLinkSet(const std::string& linksSetName, const std::string& nodesFrom, const std::string& nodesTo);
 // ======================== layers metadata API ========================
     void ConnectLayersMetainfo() { if (! layersMetainfo) layersMetainfo = new EgLayersMetainfo(this); }
     int  CreateLayersSet(const std::string& layersTypeName) { ConnectLayersMetainfo(); return layersMetainfo-> CreateLayersSet(layersTypeName); }
@@ -65,27 +63,27 @@ public:
 // ======================== palettes metadata API ========================
     void ConnectPalettesMetainfo() { if (! palettesMetainfo) palettesMetainfo = new EgPalettesMetainfo(this); }
     int  CreatePalettesSet(const std::string& paletteName) { ConnectPalettesMetainfo(); return palettesMetainfo-> CreatePalettesSet(paletteName); }
-    // ======================== gui support funcs ========================
+// ======================== blueprints support funcs ========================
     int  CreateBlueprintByTemplate(const std::string& oldBPName, const std::string& newBPName, std::unordered_set<std::string>& addFields); // blueprint for guisupport
 
 // nodes metadata internal funcs
-    int  AddDataNodesTypeInfo(const std::string& nodesSetName, const std::string& blueprintName, const std::string& glamBPName);
+    // int  AddDataNodesTypeInfo(const std::string& nodesSetName, const std::string& blueprintName, const std::string& glamBPName);
     int  AddDataNodesTypeInfo(const std::string& nodesSetName, const std::string& blueprintName);
     void LoadDataNodesSetsInfo();
     // int  StoreDataNodesTypesInfo();
-    bool nodeTypeIDByName(const std::string& typeName, EgBlueprintIDType& nodeTypeID);
+    bool nodeTypeIDByName(const std::string& typeName, EgNodesSetIDType& nodeTypeID);
     EgDataNode* dataNodePtrByNodesType(EgDataNodesSet* nodesType);    
 
     bool blueprintNameByNodeName(const std::string& nodesSetName, std::string& nodeBlueprintName);
-    EgDataNodesSet* GetNodesTypePtrByID(EgBlueprintIDType nodeTypeID);
+    EgDataNodesSet* GetNodesTypePtrByID(EgNodesSetIDType nodeTypeID);
 // links metadata internal funcs
     int  AddLinksTypeInfo(const std::string& linksSetName, const std::string& blueprintName, const std::string& nodesFrom, const std::string& nodesTo);
     void LoadLinksInfo();
-    bool linkTypeIDByName(const std::string& linkName, EgBlueprintIDType& linkTypeID);
-    bool blueprintNameByLinkName(const std::string& nodesSetName, std::string& nodeBlueprintName);
+    bool linkTypeIDByName(const std::string& linkName, EgNodesSetIDType& linkTypeID);
+    bool blueprintNameByLinkName(const std::string& nodesSetName, std::string& nodeBlueprintName, EgNodesSetIDType& linksSetID);
 
-    inline int LoadLocalFileNode(const std::string& nodesSetName, EgDataNodeIDType nodeID, EgDataNode*& newNode);
-    int  CherryPickNode(const std::string& nodesSetName, EgDataNodeIDType nodeID, EgDataNode*& newNode, EgDataNodeBlueprint*& newNodeBP); // MEMLEAK delete after use
+    inline bool LoadLocalFileNode(const std::string& nodesSetName, EgDataNodeIDType nodeID, EgDataNode*& newNode);
+    bool CherryPickNode(const std::string& nodesSetName, EgDataNodeIDType nodeID, EgDataNode*& newNode, EgDataNodeBlueprint*& newNodeBP); // MEMLEAK delete after use
     
     // FIXME TODO : delete nodes, links, layers metadata
 };

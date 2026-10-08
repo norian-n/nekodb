@@ -10,7 +10,7 @@ void EgOnePalette::clear() {
 int EgOnePalette::ConnectPalette(const std::string& a_paletteTypeName, EgDatabase& a_Database) {
     paletteTypeName = a_paletteTypeName;
     metaInfoDatabase = &a_Database;
-    if (paletteStorage.ConnectSystemNodeType(a_paletteTypeName + "_egOnePalette", onePaletteBPName) != 0) { // FIXME literal
+    if ( ! paletteStorage.ConnectSystemNodesSet(a_paletteTypeName + "_egOnePalette", onePaletteBPName) ) { // FIXME literal
     // if (paletteStorage.Connect(a_paletteTypeName + "_egPaletteInfo", a_Database) != 0) { // FIXME check
         std::cout << "ConnectPalette() not found storage: " << a_paletteTypeName << std::endl;
     }
@@ -26,6 +26,12 @@ void EgOnePalette::addPaletteWidgetData(const std::string& nodesSetName, const s
     (*newNode)[paletteWidgetColorName] << paletteFill;
     paletteStorage << newNode;
     paletteStorage.Store();
+}
+
+void EgOnePalette::updPaletteIndex(EgDataNodeIDType paletteNodeID, uint32_t newIndex) {
+    // EgDataNode* paletteNode = paletteStorage[paletteNodeID];
+    paletteStorage[paletteNodeID][paletteFieldIndexName] << newIndex;
+    paletteStorage.MarkUpdatedDataNode(paletteNodeID);
 }
 
 /*
@@ -134,8 +140,8 @@ void EgOnePalette::getLayerNodesAndLinks(std::unordered_set<std::string>& nodesN
 
 int EgOnePalette::LoadPalette() {
     clear();
-    int res = paletteStorage.LoadAllNodes();
-    if (res) {
+    bool res = paletteStorage.LoadAllNodes();
+    if ( ! res ) {
         std::cout << "LoadPalette() ERROR: " << paletteTypeName << std::endl;
     } /* else {
         for (auto paletteIter : paletteStorage.dataMap) { // load each node separately
@@ -149,7 +155,7 @@ int EgOnePalette::LoadPalette() {
             // dataNodes.insert(std::make_pair(newNode->dataNodeID, newNode));
         }
     } */
-    return res;
+    return ! res;
 }
 
 int EgOnePalette::StorePalette() {

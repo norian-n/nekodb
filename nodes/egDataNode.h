@@ -5,20 +5,20 @@
 
 class EgDataNode {
 public:
-    EgDataNodeIDType         dataNodeID         { 0 };
-    EgFileOffsetType         dataFileOffset     { 0 };          // stored offset for local file operations speedup
-    EgDataNodeBlueprint* dataNodeBlueprint  { nullptr };    // blueprint == class == type of data nodes
-    void*                    serialDataPtr      { nullptr };    // link to ext data for serialization
+    EgDataNodeIDType        dataNodeID         { 0 };
+    EgFileOffsetType        dataFileOffset     { 0 };          // stored offset for local file operations speedup
+    EgDataNodeBlueprint*    dataNodeBlueprint  { nullptr };    // blueprint == class == type of data nodes
+    void*                   serialDataPtr      { nullptr };    // link to ext data for serialization
 
     EgPtrArrayType<EgByteArrayAbstractType*>* dataFieldsPtrs;
     int insertIndex {0}; // stored index for AddNextDataFieldFromType() FIXME check reset
 
     std::unordered_map < std::string, EgByteArraySlicerType* >  indexedFieldsOldValues; // store old value for index update
 
-    std::unordered_map < EgBlueprintIDType, EgLinkDataPtrsNodePtrsMapType >  inLinks;   // links IDs resolving to ptrs
-    std::unordered_map < EgBlueprintIDType, EgLinkDataPtrsNodePtrsMapType >  outLinks;    
+    std::unordered_map < EgNodesSetIDType, EgLinkDataPtrsNodePtrsMapType >  inLinks;    // links IDs resolved to nodes ptrs by link type
+    std::unordered_map < EgNodesSetIDType, EgLinkDataPtrsNodePtrsMapType >  outLinks;    
 
-    EgDataNode() = delete; // {} // for debug only
+    EgDataNode() = delete; // blueprint required
 
     EgDataNode(EgDataNodeBlueprint* a_dataNodeBlueprint, bool initFieldsBA = true); // call initByteArrays flag
     EgDataNode(EgDataNodeBlueprint* a_dataNodeBlueprint, void* a_serialDataPtr);
@@ -26,18 +26,17 @@ public:
 
     EgByteArrayAbstractType& operator[](const std::string& fieldStrName);  // field data by name
 
-    // EgDataNode& operator << (const char* str) { InsertDataFieldFromCharStr(str); return *this; }
-    EgDataNode& operator << (std::string& s)  { InsertDataFieldFromStr(s); return *this; }
-    EgDataNode& operator << (const std::string& s)  { InsertDataFieldFromStr(s); return *this; }
+    EgDataNode& operator << (std::string& s)              { InsertDataFieldFromStr(s); return *this; }
+    EgDataNode& operator << (const std::string& s)        { InsertDataFieldFromStr(s); return *this; }
     EgDataNode& operator << (EgByteArrayAbstractType& ba) { InsertDataFieldFromByteArray(ba); return *this; }
 
     template <typename T> EgDataNode& operator << (const T& value) {
-        if (insertIndex < dataNodeBlueprint->fieldsCount) {
-            EgByteArraySlicerType *byteArray = new EgByteArraySlicerType(dataNodeBlueprint->theHamSlicer, sizeof(value)); // use ham slicer allocator
+        if (insertIndex < dataNodeBlueprint-> fieldsCount) {
+            EgByteArraySlicerType *byteArray = new EgByteArraySlicerType(dataNodeBlueprint-> theHamSlicer, sizeof(value)); // use ham slicer allocator
             memcpy((void *)byteArray-> dataChunk, (void *)&value, sizeof(value));
-            dataFieldsPtrs->ptrsArray[insertIndex++] = byteArray;
+            dataFieldsPtrs-> ptrsArray[insertIndex++] = byteArray;
         } else
-            std::cout << "ERROR: AddNextDataFieldFromType() fields count overflow: " << dataNodeBlueprint-> blueprintName << std::endl;
+            EG_LOG_STUB << "ERROR: data node fields count overflow: " << dataNodeBlueprint-> blueprintName << FN;
         return *this;
     }
 
@@ -47,22 +46,18 @@ public:
     bool fieldNameExists(const std::string& fieldStrName);
     void getDetailsLayerID (EgDataNodeIDType& thelayerID);
 
-    void* getNextInLinkSerialPtr (EgBlueprintIDType linkBlueprintID, EgDataNode* prevLinkDataPtr); // link data, not linked node
-    void* getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNode* prevLinkDataPtr);
+    void* getNextInLinkSerialPtr (EgNodesSetIDType linkBlueprintID, EgDataNode* prevLinkDataPtr); // link data, not linked node
+    void* getNextOutLinkSerialPtr(EgNodesSetIDType linkBlueprintID, EgDataNode* prevLinkDataPtr);
 
-    EgDataNode* getInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNode* linkNodePtr); // node, not link
-    EgDataNode* getOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNode* linkNodePtr);
+    EgDataNode* getInLinkedNode(EgNodesSetIDType linkBlueprintID, EgDataNode* linkNodePtr); // node, not link
+    EgDataNode* getOutLinkedNode(EgNodesSetIDType linkBlueprintID, EgDataNode* linkNodePtr);
 
-    EgLinkDataPtrsNodePtrsMapType* getInLinksMap(EgBlueprintIDType linkBlueprintID);
-    EgLinkDataPtrsNodePtrsMapType* getOutLinksMap(EgBlueprintIDType linkBlueprintID);
+    EgLinkDataPtrsNodePtrsMapType* getInLinksMap(EgNodesSetIDType linkBlueprintID);
+    EgLinkDataPtrsNodePtrsMapType* getOutLinksMap(EgNodesSetIDType linkBlueprintID);
 
-    void deleteInLink (EgBlueprintIDType linkBlueprintID, EgDataNode* delLinkNodePtr); // link data, not linked node
-    void deleteOutLink(EgBlueprintIDType linkBlueprintID, EgDataNode* delLinkNodePtr);
+    void deleteInLink (EgNodesSetIDType linkBlueprintID, EgDataNode* delLinkNodePtr); // link data, not linked node
+    void deleteOutLink(EgNodesSetIDType linkBlueprintID, EgDataNode* delLinkNodePtr);
 
-    // EgDataNodeType* getNextInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr); // node, not link
-    // EgDataNodeType* getNextOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNodeType* prevLinkDataPtr);     
-
-    // void InsertDataFieldFromCharStr(const char* str);
     void InsertDataFieldFromStr(const std::string& s);
     void InsertDataFieldFromByteArray(EgByteArrayAbstractType& ba);
     void InsertRawByteArrayPtr(EgByteArraySlicerType* baPtr);    
@@ -73,16 +68,4 @@ public:
     void readDataFieldsFromFile(EgFileType& theFile);
 };
 
-// ======================== Debug ========================
-// void PrintEgDataNodeOffsets(const EgDataNodeType& dataNode);
-void PrintEgDataNodeFields (const EgDataNode& dataNode);
-
-    /* template <typename T> EgDataNodeType& operator << (T&& rvalue) {
-        if (insertIndex < dataNodeBlueprint->fieldsCount) {
-            EgByteArraySlicerType *byteArray = new EgByteArraySlicerType(dataNodeBlueprint->theHamSlicer, sizeof(value)); // use ham slicer allocator
-            memcpy((void *)byteArray->dataChunk, (void *)&value, sizeof(value));
-            dataFieldsPtrs->ptrsArray[insertIndex++] = byteArray;
-        } else
-            std::cout << "ERROR: AddNextDataFieldFromType() fields count overflow: " << dataNodeBlueprint-> blueprintName << std::endl;
-        return *this;
-    } */
+void PrintEgDataNodeFields (const EgDataNode& dataNode);  // debug

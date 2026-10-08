@@ -25,6 +25,7 @@ public:
     // void updateParentID(EgDataNodeIDType layerID, EgDataNodeIDType parentLayerID);
 
     void addPaletteWidgetData(const std::string& nodesSetName, const std::string& widgetName, EgDataNodeIDType nodeID, uint32_t paletteIndex, uint32_t paletteFill);
+    void updPaletteIndex(EgDataNodeIDType paletteNodeID, uint32_t newIndex); // FIXME literal type
 
     /* void createBlankLayer(EgDataNodeIDType& newLayerID, EgDataNodeIDType parentLayerID, uint32_t W, uint32_t H, 
         const std::string& nodesName, const std::string& linksName);

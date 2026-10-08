@@ -30,7 +30,7 @@ public:
 
     void clear();
 
-    int  Connect(const std::string& nodesNameStr, EgDatabase& myDB);
+    bool Connect(const std::string& nodesNameStr, EgDatabase& myDB);
     // int  Connect(const std::string& nodesNameStr, EgDatabaseType& myDB, const std::string& blueprintNameStr);
 
     EgDataNode& operator[](EgDataNodeIDType nodeID);
@@ -41,16 +41,17 @@ public:
     EgDataNodesSet& operator << (EgDataNode& newNode) { AddDataNode(newNode); return *this; }
     EgDataNodeIDType getAddedNodeID() { return nodesContainer->lastNodeID; }
 
-    int  MarkUpdatedDataNode(EgDataNodeIDType nodeID);
-    int  MarkUpdatedDataNode(EgDataNode& updNode) { return MarkUpdatedDataNode(updNode.dataNodeID); }
+    bool MarkUpdatedDataNode(EgDataNodeIDType nodeID);
+    bool MarkUpdatedDataNode(EgDataNode& updNode) { return MarkUpdatedDataNode(updNode.dataNodeID); }
 
     void DeleteDataNode(EgDataNodeIDType delID);
     void DeleteDataNode(EgDataNode& delNode) { return DeleteDataNode(delNode.dataNodeID); }
 
-    int  Store();
-    int  LoadAllNodes();
+    bool Store();
+    bool LoadAllNodes();
     bool LoadNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue);
+    bool CherryPickNode(EgDataNodeIDType nodeID);
     // Projects.LoadIndexedNodes(IC<int>("owner", EQ, 2) &&  IC<int>("status", EQ, 3));
     // int  LoadNodesByOffsets() { return nodesContainer-> LoadLocalNodesByOffsets(indexOffsets); }
-    int  ConnectSystemNodeType(const std::string dataNodesSetName, const std::string& blueprintName); // for internal database storages
+    bool ConnectSystemNodesSet(const std::string dataNodesSetName, const std::string& blueprintName); // for internal database storages
 };

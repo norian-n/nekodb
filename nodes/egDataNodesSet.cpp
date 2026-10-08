@@ -12,14 +12,14 @@ EgDataNodesSet::EgDataNodesSet():
 
 EgDataNodesSet::~EgDataNodesSet() { 
     clear(); 
-    delete dataNodeBlueprint; // MEM_DEL <-- Connect, ConnectSystemNodeType
+    delete dataNodeBlueprint; // MEM_DEL <-- Connect, ConnectSystemNodesSet
     delete nodesContainer;    // MEM_DEL <-- constructor
 }
 
-int EgDataNodesSet::Connect(const std::string& nodesNameStr, EgDatabase& myDB) {
+bool EgDataNodesSet::Connect(const std::string& nodesNameStr, EgDatabase& myDB) {
     if (isConnected) {
-        EG_LOG_STUB << "WARNING: Connect(): trying to connect data nodes type again: " << nodesNameStr << FN;
-        return 0;
+        // EG_LOG_STUB << "WARNING: Connect(): trying to connect data nodes type again: " << nodesNameStr << FN;
+        return true;
     }
     metaInfoDatabase = &myDB;
     isConnected = false;
@@ -27,20 +27,20 @@ int EgDataNodesSet::Connect(const std::string& nodesNameStr, EgDatabase& myDB) {
     // EgDataNode* metaInfoNode = metaInfoDatabase-> dataNodePtrByNodesType(this);
     if (myDB.blueprintNameByNodeName(nodesSetName, nodeBlueprintName) ) { //metaInfoNode) {
         EG_LOG_STUB << "ERROR: Connect() dataNodes type not found in metainfo: " << nodesSetName << FN;
-        return -2;
+        return false;
     }
     // EG_LOG_STUB << "DEBUG nodeBlueprintName : " << nodeBlueprintName << FN;
-    if (! dataNodeBlueprint)
+    if ( ! dataNodeBlueprint )
         dataNodeBlueprint = new EgDataNodeBlueprint(nodeBlueprintName); // TODO use BP ID // MEM_NEW --> destructor
-    if (dataNodeBlueprint-> LocalLoadBlueprint()) {
+    if ( ! dataNodeBlueprint-> LocalLoadBlueprint() ) {
         EG_LOG_STUB << "ERROR: Connect() can't open data nodes blueprint file " << nodeBlueprintName << ".dnl" << FN;
-        return -1;
+        return false;
     }
     // metaInfoNode-> serialDataPtr = static_cast < void* > (this);  // FIXME check & doc shortcut, parallel issue
     nodesContainer-> init(dataNodeBlueprint, nodesSetName);
     isConnected = true;
     // EG_LOG_STUB << "connected nodes set: " << nodesSetName << FN;
-    return 0;
+    return true;
 }
 /*
 int EgDataNodesType::Connect(const std::string& nodesNameStr, EgDatabaseType& myDB, const std::string& blueprintNameStr) {
@@ -69,20 +69,20 @@ int EgDataNodesType::Connect(const std::string& nodesNameStr, EgDatabaseType& my
     return 0;
 } */
 
-int EgDataNodesSet::ConnectSystemNodeType(const std::string dataNodesSetName, const std::string& blueprintName) { // sailent connect, no metainfo register
-    if (isConnected) return 0;
+bool EgDataNodesSet::ConnectSystemNodesSet(const std::string dataNodesSetName, const std::string& blueprintName) { // sailent connect, no metainfo register
+    if (isConnected) return true;
     isConnected = false;
     nodesSetName = dataNodesSetName;
     nodeBlueprintName = blueprintName;
-    if (! dataNodeBlueprint)
+    if ( ! dataNodeBlueprint )
         dataNodeBlueprint = new EgDataNodeBlueprint(blueprintName); // MEM_NEW --> destructor
-    if (dataNodeBlueprint-> LocalLoadBlueprint()) {
+    if ( ! dataNodeBlueprint-> LocalLoadBlueprint() ) {
         // EG_LOG_STUB << "ERROR: can't find blueprint: " << blueprintName << FN;
-        return -1;
+        return false;
     }
     nodesContainer-> init(dataNodeBlueprint, nodesSetName);
     isConnected = true;
-    return 0;
+    return true;
 }
 
 void EgDataNodesSet::clear() {
@@ -91,28 +91,24 @@ void EgDataNodesSet::clear() {
     isDataChanged = false;
 }
 
-/*int EgDataNodesType::OpenLocalBlueprint() {
-    return dataNodeBlueprint-> LocalLoadBlueprint();
-}*/
-
 EgDataNodeIDType EgDataNodesSet::AddDataNode(EgDataNode* newNode) {
     if (! isConnected) {
         std::cout << "ERROR: EgDataNodesType is not connected to database: " << nodesSetName << std::endl;
         return 0;
     }
     EgDataNodeIDType res = nodesContainer-> AddDataNode(newNode);
-    isDataChanged = true; // isDataUpdated || ! (bool) res;
+    isDataChanged = true;
     return res;
 }
 
-int EgDataNodesSet::MarkUpdatedDataNode(EgDataNodeIDType nodeID) {
+bool EgDataNodesSet::MarkUpdatedDataNode(EgDataNodeIDType nodeID) {
     // EG_LOG_STUB << dataNodesName << " nodeID : " << std::dec << nodeID << FN;
     if (! isConnected) {
         std::cout << "ERROR: EgDataNodesType is not connected to database: " << nodesSetName << std::endl;
-        return -1;
+        return false;
     }
-    int res = nodesContainer-> MarkUpdatedDataNode(nodeID);
-    isDataChanged = isDataChanged || ! (bool) res;
+    bool res = nodesContainer-> MarkUpdatedDataNode(nodeID);
+    isDataChanged = isDataChanged || res; // changed if marked by container
     return res;
 }
 
@@ -125,16 +121,16 @@ void EgDataNodesSet::DeleteDataNode(EgDataNodeIDType delID) {
     isDataChanged = true;
 }
 
-int EgDataNodesSet::Store() {
-    bool emptyMaps = !nodesContainer-> addedDataNodes.size() &&  !nodesContainer-> updatedDataNodes.size() 
+bool EgDataNodesSet::Store() {
+    /* bool emptyMaps = !nodesContainer-> addedDataNodes.size() &&  !nodesContainer-> updatedDataNodes.size() 
         && !nodesContainer-> deletedDataNodes.size();
     if ( emptyMaps && isDataChanged )
-        std::cout << "DEBUG: Store() emptyMaps && isDataUpdated logical conflict at nodes type " << nodesSetName << std::endl;
+        EG_LOG_STUB << "DEBUG: Store() emptyMaps && isDataUpdated logical conflict at nodes set: " << nodesSetName << FN; */
     if (! isDataChanged)
-        return 0;
+        return true;
     if (! isConnected) {
-        std::cout << "ERROR: EgDataNodesType is not connected to database: " << nodesSetName << std::endl;
-        return -1;
+        EG_LOG_STUB << "ERROR: Store() - nodes set is not connected to database: " << nodesSetName << FN;
+        return false;
     }
     if (serialStoreFunction && (nodesContainer-> addedDataNodes.size() || nodesContainer-> updatedDataNodes.size())) {
         for (auto addedNodesIter : nodesContainer-> addedDataNodes)
@@ -148,26 +144,30 @@ int EgDataNodesSet::Store() {
     return nodesContainer-> StoreToLocalFile();
 }
 
-int EgDataNodesSet::LoadAllNodes() {
+bool EgDataNodesSet::LoadAllNodes() {
     if (! isConnected) {
-        std::cout << "ERROR: LoadAllNodes(): EgDataNodesType is not connected to database: " << nodesSetName << std::endl;
-        return -1;
+        EG_LOG_STUB << "ERROR: LoadAllNodes() - nodes set is not connected to database: " << nodesSetName << FN;
+        return false;
     }
-    int res = nodesContainer-> LoadAllLocalFileNodes();
+    isDataLoaded = nodesContainer-> LoadAllLocalFileNodes();
     // EG_LOG_STUB << "res: " << res << FN;
     if (serialLoadFunction)
         for (auto nodesIter : nodesContainer-> dataNodes) {
             // EG_LOG_STUB << "call serialLoadFunction for node: " << nodesIter.second-> dataNodeID << FN;
             (*serialLoadFunction)(*nodesIter.second);
         }
-    isDataLoaded = ! (bool) res;
-    return res;
+    return isDataLoaded;
 }
 
 bool EgDataNodesSet::LoadNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue) {
     isDataLoaded = nodesContainer-> LoadLocalNodesEQ(indexName, fieldValue);
     return isDataLoaded;
 }
+
+bool EgDataNodesSet::CherryPickNode(EgDataNodeIDType nodeID) {
+    return nodesContainer-> CherryPickNode(nodeID);
+}
+
 
 EgDataNode& EgDataNodesSet::operator[](EgDataNodeIDType nodeID) {
     EgDataNode* nodePtr = nodesContainer-> GetNodePtrByID(nodeID);

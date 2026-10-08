@@ -1,7 +1,7 @@
 #pragma once
 #include "../metainfo/egDatabase.h"
 
-class EgPalettes {
+class EgPalettes { // palettes set
 public:
     std::string             paletteTypeName;
     EgDatabase*             metaInfoDatabase { nullptr };

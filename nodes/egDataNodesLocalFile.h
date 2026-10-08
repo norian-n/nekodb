@@ -50,6 +50,7 @@ public:
     bool getLastNodeOffset(EgFileOffsetType& theOffset);
 
     bool WriteDataNode(EgDataNode* theNode);
+    bool ReadDataNodeIDOnly(EgDataNode* theNode, EgFileOffsetType& nextOffset);
     bool ReadDataNode(EgDataNode* theNode, EgFileOffsetType& nextOffset);
     bool DeleteDataNode(EgDataNode* theNode);
 

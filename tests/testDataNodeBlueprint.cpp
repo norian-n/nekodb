@@ -32,11 +32,11 @@ bool testDataNodeBlueprint() {
     testBlueprint.AddDataFieldName("try to add field after commit");
     
     testBlueprint.LocalStoreBlueprint();
-    int res = testBlueprint.LocalLoadBlueprint();
+    bool res = testBlueprint.LocalLoadBlueprint();
     
     // PrintDataNodeBlueprint(testBlueprint);
 
-    return (res == 0);
+    return res;
 }
 
 int main() {

@@ -48,29 +48,33 @@ void EgDataNode::getDetailsLayerID (EgDataNodeIDType& theLayerID) {
         theLayerID = 0;
 }
 
-EgLinkDataPtrsNodePtrsMapType* EgDataNode::getInLinksMap(EgBlueprintIDType linkBlueprintID) {
+EgLinkDataPtrsNodePtrsMapType* EgDataNode::getInLinksMap(EgNodesSetIDType linkBlueprintID) {
     // EG_LOG_STUB << "linkBlueprintID: " << linkBlueprintID << FN;
     auto inLinksMapIter = inLinks.find(linkBlueprintID);
     if (inLinksMapIter != inLinks.end()) {
         // EG_LOG_STUB << "getInLinksMap() the map found for ID: " << linkBlueprintID << FN;        
         return &(inLinksMapIter-> second);
     }
-    EG_LOG_STUB << "getInLinksMap() the map NOT found for ID: " << linkBlueprintID << FN; 
+    // if (linkBlueprintID)
+    // EG_LOG_STUB << "getInLinksMap() the map NOT found for ID: " << linkBlueprintID << FN; 
     return nullptr;
 }
 
-EgLinkDataPtrsNodePtrsMapType* EgDataNode::getOutLinksMap(EgBlueprintIDType linkBlueprintID) {
+EgLinkDataPtrsNodePtrsMapType* EgDataNode::getOutLinksMap(EgNodesSetIDType linkBlueprintID) {
     // EG_LOG_STUB << "linkBlueprintID: " << linkBlueprintID << FN;
     auto outLinksMapIter = outLinks.find(linkBlueprintID);
     if (outLinksMapIter != outLinks.end()) {
         // EG_LOG_STUB << "getOutLinksMap() the map found for ID: " << linkBlueprintID << FN;        
         return &(outLinksMapIter-> second);
     }
-    EG_LOG_STUB << "getOutLinksMap() the map NOT found for ID: " << linkBlueprintID << FN; 
+    // if (linkBlueprintID)
+    // EG_LOG_STUB << "getOutLinksMap() the map NOT found for ID: " << linkBlueprintID << FN; 
     return nullptr;
 }
 
-void* EgDataNode::getNextInLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNode* prevLinkDataPtr) {
+void* EgDataNode::getNextInLinkSerialPtr(EgNodesSetIDType linkBlueprintID, EgDataNode* prevLinkDataPtr) {
+    // if (! linkBlueprintID)
+    //    return nullptr;
     EgLinkDataPtrsNodePtrsMapType* inLinksMap = getInLinksMap(linkBlueprintID);
     if (inLinksMap) {
         if (prevLinkDataPtr) { // null to get first, else get next
@@ -94,7 +98,9 @@ void* EgDataNode::getNextInLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDa
     return nullptr;
 }
 
-void* EgDataNode::getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgDataNode* prevLinkDataPtr) {
+void* EgDataNode::getNextOutLinkSerialPtr(EgNodesSetIDType linkBlueprintID, EgDataNode* prevLinkDataPtr) {
+    // if (! linkBlueprintID)
+    //    return nullptr;
     EgLinkDataPtrsNodePtrsMapType* outLinksMap = getOutLinksMap(linkBlueprintID);
     if (outLinksMap) {
         if (prevLinkDataPtr) { // null to get first, else get next
@@ -118,7 +124,7 @@ void* EgDataNode::getNextOutLinkSerialPtr(EgBlueprintIDType linkBlueprintID, EgD
     return nullptr;
 }
 
-void EgDataNode::deleteInLink (EgBlueprintIDType linkBlueprintID, EgDataNode* delLinkNodePtr) {
+void EgDataNode::deleteInLink (EgNodesSetIDType linkBlueprintID, EgDataNode* delLinkNodePtr) {
     EgLinkDataPtrsNodePtrsMapType* inLinksMap = getInLinksMap(linkBlueprintID);
     if (inLinksMap) {
         auto inLinksMapIter = inLinksMap->find(delLinkNodePtr);
@@ -132,7 +138,7 @@ void EgDataNode::deleteInLink (EgBlueprintIDType linkBlueprintID, EgDataNode* de
     }
 }
 
-void EgDataNode::deleteOutLink (EgBlueprintIDType linkBlueprintID, EgDataNode* delLinkDataPtr) {
+void EgDataNode::deleteOutLink (EgNodesSetIDType linkBlueprintID, EgDataNode* delLinkDataPtr) {
     EgLinkDataPtrsNodePtrsMapType* outLinksMap = getOutLinksMap(linkBlueprintID);
     if (outLinksMap) {
         auto outLinksMapIter = outLinksMap->find(delLinkDataPtr);
@@ -146,7 +152,7 @@ void EgDataNode::deleteOutLink (EgBlueprintIDType linkBlueprintID, EgDataNode* d
     }
 }
 
-EgDataNode* EgDataNode::getInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNode* linkNodePtr) {
+EgDataNode* EgDataNode::getInLinkedNode(EgNodesSetIDType linkBlueprintID, EgDataNode* linkNodePtr) {
     EgLinkDataPtrsNodePtrsMapType* inLinksMap = getInLinksMap(linkBlueprintID);
     if (inLinksMap) {
         auto inLinksMapIter = inLinksMap->find(linkNodePtr);
@@ -158,7 +164,7 @@ EgDataNode* EgDataNode::getInLinkedNode(EgBlueprintIDType linkBlueprintID, EgDat
     return nullptr;
 }
 
-EgDataNode* EgDataNode::getOutLinkedNode(EgBlueprintIDType linkBlueprintID, EgDataNode* linkNodePtr) {
+EgDataNode* EgDataNode::getOutLinkedNode(EgNodesSetIDType linkBlueprintID, EgDataNode* linkNodePtr) {
     EgLinkDataPtrsNodePtrsMapType* outLinksMap = getOutLinksMap(linkBlueprintID);
     if (outLinksMap) {
         auto outLinksMapIter = outLinksMap->find(linkNodePtr);

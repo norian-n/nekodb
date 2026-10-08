@@ -16,7 +16,7 @@ typedef unsigned char    EgByteType;
     // ID types
 typedef uint32_t         EgDataNodeIDType;
 typedef EgDataNodeIDType EgDataLinkIDType;
-typedef uint16_t         EgBlueprintIDType;     // data nodes and links blueprint/layout/type/class ID type
+typedef uint16_t         EgNodesSetIDType;     // data nodes and links blueprint/layout/type/class ID type
     // count/size/length types
 typedef uint16_t         EgFieldNameLengthType;
 typedef uint16_t         EgFieldsCountType;
@@ -32,3 +32,4 @@ typedef std::unordered_map <EgDataLinkIDType, EgDataNode*>  EgLinkIDsNodePtrsMap
 typedef std::unordered_map <EgDataNode*, EgDataNode*>       EgLinkDataPtrsNodePtrsMapType;
 
 const uint64_t egDefaultHamBrickSize = 1024 * 64; // TODO FIXME add flex bricksize to pre-launch system settings
+const std::string egDefaultFolderName  ("egdb/");

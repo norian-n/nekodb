@@ -1,20 +1,20 @@
 #pragma once
 
 #include <cstring>
-#include <unordered_set>
+// #include <unordered_set>
 
 // const std::string nodeBlueprintsStorageName ("egNodeBlueprintsMetainfo");
 const std::string nodesSetsStorageName      ("egNodesSetsMetainfo");
-const std::string nodesSetFieldName         ("egNodesSetName");
-const std::string nodesBPFieldName          ("egNodeBlueprintName");
-const std::string glamourBPFieldName        ("egNodeGlamBlueprintName");
+const std::string nodesSet_FieldName        ("egNodesSetName");
+const std::string nodesBPName_FieldName     ("egNodeBlueprintName");
+const std::string glamourBPName_FieldName   ("egNodeGlamBlueprintName");
 
 // const std::string linkBlueprintsStorageName ("egLinkBlueprintsMetainfo");
-const std::string linkSuffixName            ("_egArrowLink");
 const std::string linksSetsStorageName      ("egLinksSetsMetainfo");
-const std::string linksSetFieldName         ("egLinksSetName");
-const std::string linksBPFieldName          ("egLinkBlueprintName");
-const std::string linksFromFieldName        ("nodesSetFromName");
-const std::string linksToFieldName          ("nodesSetToName");
+const std::string linksSetName_FieldName    ("egLinksSetName");
+const std::string linksBPName_FieldName     ("egLinkBlueprintName");
 
-const std::unordered_set<std::string> egSimpleLinkFields    = {"fromID", "toID"};
+const std::string stdBoundLinkBPName        ("egStdBoundLinkBlueprint");
+const std::string stdFreeLinkBPName         ("egStdFreeLinkBlueprint");
+
+// const std::unordered_set<std::string> egSimpleLinkFields = {"fromID", "toID"};

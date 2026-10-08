@@ -9,7 +9,9 @@ bool initDatabase(EgDatabase& graphDB) {
     // typeSettings.useLocation = true;
     // typeSettings.useLinks = true;
 
-    graphDB.CreateNodesSet("generalops"); // , typeSettings);
+    // bool res {false};
+
+    graphDB.CreateNodeBlueprint("generalops"); // , typeSettings);
 
     graphDB.AddNodeDataField("name");
     graphDB.AddNodeDataField("status"); // , isIndexed create index
@@ -17,7 +19,8 @@ bool initDatabase(EgDatabase& graphDB) {
     graphDB.AddNodeDataField("x");
     graphDB.AddNodeDataField("y");    
 
-    graphDB.CommitNodesSet();
+    graphDB.CommitNodeBlueprint();
+    graphDB.CreateNodesSetByBlueprint("generalops", "generalops");
 
     // graphDB.AddLinkType("basicops_linktype"); // , "locations", "locations"); // create link type
 
@@ -116,21 +119,21 @@ int main() {
     EgDatabase  graphDB;
     EgDataNodesSet basicopsNodesType;
 
-    cout << "===== Test general database ops " << " =====" << endl;
+    cout << "===== Test general database ops ===== COUNTME" << endl;
 
     bool res = initDatabase(graphDB);
 
     // cout << "===== initDatabase() res: " << res << " =====" << endl;
 
-    int result = basicopsNodesType.Connect("generalops", graphDB);
+    bool res1 = basicopsNodesType.Connect("generalops", graphDB);
 
     // cout << "===== After connect result: " << std::dec << result << " =====" << endl;
 
     // PrintDataNodeLayout(*(locationsNodesType.dataNodeBlueprint));
-    bool res1 = testDeleteAllAddSome(basicopsNodesType);
+    bool res2 = testDeleteAllAddSome(basicopsNodesType);
     // bool res2 = reloadData(basicopsNodesType);
 
-    if (res1) //  && res2)
+    if (res && res1 && res2) //  && res2)
         cout << "PASS" << endl;
     else
         cout << "FAIL" << endl;

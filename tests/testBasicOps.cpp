@@ -9,7 +9,7 @@ bool initDatabase(EgDatabase& graphDB) {
     // typeSettings.useLocation = true;
     // typeSettings.useLinks = true;
 
-    graphDB.CreateNodesSet("basicops"); // , typeSettings);
+    graphDB.CreateNodeBlueprint("basicops"); // , typeSettings);
 
     graphDB.AddNodeDataField("name");
     graphDB.AddNodeDataField("status"); // , isIndexed create index
@@ -17,7 +17,8 @@ bool initDatabase(EgDatabase& graphDB) {
     graphDB.AddNodeDataField("x");
     graphDB.AddNodeDataField("y");    
 
-    graphDB.CommitNodesSet();
+    graphDB.CommitNodeBlueprint();
+    graphDB.CreateNodesSetByBlueprint("basicops", "basicops");
 
     // graphDB.AddLinkType("basicops_linktype"); // , "locations", "locations"); // create link type
 
@@ -117,21 +118,21 @@ int main() {
     EgDatabase  graphDB;
     EgDataNodesSet basicopsNodesType;
 
-    cout << "===== Test basic database ops " << " =====" << endl;
+    cout << "===== Test basic database ops ===== COUNTME" << endl;
 
     bool res = initDatabase(graphDB);
 
     // cout << "===== initDatabase() res: " << res << " =====" << endl;
 
-    int result = basicopsNodesType.Connect("basicops", graphDB);
+    bool res1 = basicopsNodesType.Connect("basicops", graphDB);
 
     // cout << "===== After connect result: " << std::dec << result << " =====" << endl;
 
     // PrintDataNodeLayout(*(locationsNodesType.dataNodeBlueprint));
-    bool res1 = testEgDataNodesTypeBasicNodeOps(basicopsNodesType);
-    bool res2 = reloadData(basicopsNodesType);
+    bool res2 = testEgDataNodesTypeBasicNodeOps(basicopsNodesType);
+    bool res3 = reloadData(basicopsNodesType);
 
-    if (res1 && res2)
+    if (res && res1 && res2 && res3)
         cout << "PASS" << endl;
     else
         cout << "FAIL" << endl;

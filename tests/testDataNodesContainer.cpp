@@ -58,7 +58,7 @@ bool testDataNodesContainer() {
     cout << "===== Test NodesContainerType  =====" << endl;
     nodesContainer.init(&testBlueprint, "testNodes");
 
-    if(nodesContainer.LoadLocalBlueprint()) {
+    if( ! nodesContainer.dataNodeBlueprint-> LocalLoadBlueprint()) {
         cout << "Error: can't open data nodes blueprint testNodes.dnl" << endl;
         return false;
     }

@@ -10,25 +10,20 @@ public:
     bool           palettesMetainfoLoaded  { false };
 
     EgDatabase*          metaInfoDatabase  { nullptr };
-    EgDataNodeBlueprint* palettesBlueprint { nullptr };
+    // EgDataNodeBlueprint* palettesBlueprint { nullptr };
 
     EgPalettesMetainfo(EgDatabase* a_metaInfoDatabase) : metaInfoDatabase(a_metaInfoDatabase) { getPalettesMetainfo(); }
     
-    ~EgPalettesMetainfo() { 
-        clear(); 
-    }
+    ~EgPalettesMetainfo() { clear(); }
     
     void clear();
     void getPalettesMetainfo();
 
     inline void createPalettesMetainfo();
+    int  CreatePalettesSet(const std::string& paletteName);
 
-// ======================== layers metadata API ========================
-    void AddPalettesToMetainfo(const std::string& linksTypeName); // EgBlueprintIDType& blueprintID, 
+    inline void AddPalettesToMetainfo(const std::string& palettesSetName); // EgBlueprintIDType& blueprintID, 
     void LoadPalettesInfo();
 
-    bool palettesSetIDByName(const std::string& layersName, EgDataNodeIDType& layersTypeID);
-    
-    int  CreatePalettesSet(const std::string& paletteName);
-    int  CreateOnePalette(const std::string& setName, const std::string& paletteName);
+    bool palettesSetExists(const std::string& layersName); // , EgDataNodeIDType& layersTypeID
 };

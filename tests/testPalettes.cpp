@@ -20,7 +20,7 @@ bool initNodesSets(EgDatabase& graphDB) {
     graphDB.CreateLinkBlueprint("testLinksBlueprint");
     graphDB.AddLinkDataField("x");
     graphDB.AddLinkDataField("y");
-    graphDB.CommitLinkBlueprint();
+    graphDB.CommitBoundLinkBlueprint();
 
     // graphDB.CreateNodesSetByBlueprint("layer2nodes", "testBlueprint");
 
@@ -61,6 +61,8 @@ int main() {
 
     testOneP.StorePalette();
     testOneP.LoadPalette();
+
+    testOneP.updPaletteIndex(2, 3);
 
     EgDataNode* testNode {nullptr};
     EgDataNodeBlueprint* newNodeBP {nullptr};

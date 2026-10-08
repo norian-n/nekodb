@@ -4,35 +4,32 @@
 #include "../service/egByteArray.h"
 #include "../service/egFileType.h"
 
-const int egBlueprintInit   {1}; // int blueprintMode
-const int egBlueprintActive {2};
-
 class EgDataNodeBlueprint
 {
 public:
-    int blueprintMode {egBlueprintActive};   // blueprint can't be edited freely, data pumping on changes is required
-    EgBlueprintIDType   blueprintID;                    // Data Nodes Blueprint (DNL) ID for graph DB
-    std::string         blueprintName;                  // == dataNodesTypeName
+    bool blueprintInitMode { false };   // blueprint can't be edited freely, data pumping on changes is required
+    EgNodesSetIDType    blueprintID { 0 };     // Data Nodes Blueprint (DNL) ID for graph DB
+    std::string         blueprintName;         // == dataNodesTypeName
 
-    EgHamSlicerType     theHamSlicer;                   // memory allocator for data nodes (node has only blueprint out connect)
-    EgFileType          blueprintFile;                  // local files load & store support (if local files used)    
+    EgHamSlicerType     theHamSlicer;          // memory allocator for data nodes (node has only blueprint out connect)
+    EgFileType          blueprintFile;         // local files load & store support (if local files used)    
 
     // EgNodeBlueprintSettingsType    blueprintSettings;   // add-ons for blueprint type
     EgFieldsCountType              fieldsCount {0};
 
-    std::unordered_map < std::string, EgFieldsCountType >   dataFieldsNames;    // map  data node field names to fields indexes for dataFieldsPtrs
+    std::unordered_map < std::string, EgFieldsCountType >   dataFieldsNames; // map data node field names to fields indexes for dataFieldsPtrs
     std::unordered_map < std::string, EgIndexSettingsType > indexedFields;
 
-    EgByteArrayAbstractType egNotFound;
-    std::string egNotFoundStr {"<Data Not Found>"};
+    EgByteArrayAbstractType egNotFound; // const field to show bad data ops
+    const std::string egNotFoundStr {"<Data Not Found>"};
 
     EgDataNodeBlueprint(std::string a_blueprintName): blueprintName(a_blueprintName), blueprintFile(a_blueprintName) 
         { egNotFound.dataSize = egNotFoundStr.size(); egNotFound.dataChunk = (unsigned char *) egNotFoundStr.c_str(); }
-    ~EgDataNodeBlueprint() { /* std::cout << "EgDataNodeBlueprintType destructor " << std::endl; */ clear(); }
+    ~EgDataNodeBlueprint() { clear(); }
 
     void clear() { dataFieldsNames.clear(); indexedFields.clear(); }
 
-    int  BlueprintInitStart();
+    bool BlueprintInitStart();
     void AddDataFieldName(std::string fieldName);
     void AddIndex(std::string indexName, uint8_t indexSizeBytes = 4, uint8_t indexSubType = egIndexesSpace::egIntFT); // default int32
     void BlueprintInitCommit();
@@ -44,13 +41,11 @@ public:
     inline void writeIndexedFields();
     inline void readIndexesFields();
     
-    int  LocalStoreBlueprint();
-    int  LocalLoadBlueprint();
+    bool LocalStoreBlueprint();
+    bool LocalLoadBlueprint();
 };
 
-// ======================== Debug ========================
-
-void PrintDataNodeBlueprint(EgDataNodeBlueprint& blueprint);
+void PrintDataNodeBlueprint(EgDataNodeBlueprint& blueprint); // debug
 
 /* struct EgNodeBlueprintSettingsType
 {

@@ -6,26 +6,26 @@
 
 class EgLayersMetainfo { // addons metadate
 public:
-    EgDataNodesSet layersMetainfo;
+    EgDataNodesSet layersSetsMetainfo;
     bool layersMetainfoLoaded     {false};
 
     EgDatabase*          metaInfoDatabase { nullptr };
     EgDataNodeBlueprint* layersBlueprint  { nullptr };
 
-    EgLayersMetainfo(EgDatabase* a_metaInfoDatabase) : metaInfoDatabase(a_metaInfoDatabase) { initDatabase(); }
+    EgLayersMetainfo(EgDatabase* a_metaInfoDatabase) : metaInfoDatabase(a_metaInfoDatabase) { ConnectOrCreateStorage(); }
     
     ~EgLayersMetainfo() {  clear(); delete layersBlueprint; }
     
     void clear();
-    void initDatabase();
-    inline void createLayersMetainfo();
+    void ConnectOrCreateStorage();
+    inline void CreateLayersBlueprints();
 
-    void AddLayersTypeInfo(EgBlueprintIDType& blueprintID, const std::string& linksTypeName);
+    int  CreateLayersSet(const std::string& layersSetName);
     void LoadLayersInfo();
 
-    bool layersTypeIDByName(const std::string& layersName, EgDataNodeIDType& layersTypeID);
+    bool layersSetNameExists(const std::string& layersName);
+    bool layersSetIDByName(const std::string& layersName, EgDataNodeIDType& layersID);
     bool topLayerIDByName(const std::string& layersName, EgDataNodeIDType& layersTopID);
 
     void updateTopLayerID(const std::string& layersName, EgDataNodeIDType topLayerID);
-    int  CreateLayersSet(const std::string& layersTypeName);
 };

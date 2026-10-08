@@ -20,22 +20,22 @@ public:
 
     void clear();
     // int  GetLastID();
-    int  LoadLocalBlueprint();
+    // bool LoadLocalBlueprint();
     EgDataNode* GetNodePtrByID(EgDataNodeIDType nodeID);
 
     EgDataNodeIDType AddDataNode(EgDataNode* newNode);
-    int  MarkUpdatedDataNode(EgDataNodeIDType nodeID);
+    bool MarkUpdatedDataNode(EgDataNodeIDType nodeID);
     void DeleteDataNode(const EgDataNodeIDType delID);
 
     EgDataNodesContainer& operator << (EgDataNode* newNode);
 
-    int  StoreToLocalFile();
-    int  LoadAllLocalFileNodes();
+    bool StoreToLocalFile();
+    bool LoadAllLocalFileNodes();
+    bool CherryPickNode(EgDataNodeIDType nodeID);
 
     bool LoadLocalNodesEQ(const std::string& indexName, EgByteArrayAbstractType& fieldValue);
+    bool LoadLocalNodesByOffsets(std::set<EgFileOffsetType>& indexOffsets);
 
-    int  LoadLocalNodesByOffsets(std::set<EgFileOffsetType>& index_offsets);
-        // ======================== Debug ========================
-    void PrintDataNodesContainer();
+    void PrintDataNodesContainer(); // debug
     void PrintNodesChain();
 };

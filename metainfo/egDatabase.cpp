@@ -12,42 +12,54 @@ EgDatabase::EgDatabase() {
 }
 
 void EgDatabase::clear() {
-    nodesTypesMetainfo.clear();
-    linksTypesMetainfo.clear();
+    nodesSetsMetainfo.clear();
+    linksSetsMetainfo.clear();
+    blueprintsMetainfo.clear();
     // nodesTypesMetainfoLoaded = false;
     // linksTypesMetainfoLoaded = false;
 }
 
 void EgDatabase::initDatabase() {
     // check if nodes and links metainfo exists
-    if ( ! nodesTypesMetainfo.ConnectSystemNodesSet(nodesSetsStorageName, nodesSetsStorageName) ) {
+    if ( ! nodesSetsMetainfo.ConnectSystemNodesSet(nodesSetsStorageName, nodesSetsStorageName) ) {
         EG_LOG_STUB << "INIT: Not found nodes metadata storage, create new: " << nodesSetsStorageName << FN;
         createNodesMetainfo();
     }
     LoadDataNodesSetsInfo();
-    if ( ! linksTypesMetainfo.ConnectSystemNodesSet(linksSetsStorageName,linksSetsStorageName) ) {
+    if ( ! linksSetsMetainfo.ConnectSystemNodesSet(linksSetsStorageName,linksSetsStorageName) ) {
         EG_LOG_STUB << "INIT: Not found links metadata storage, create new: " << linksSetsStorageName << FN;
         createStdLinkBlueprints();
         createLinksMetainfo();
     }
     LoadLinksInfo();
+    if ( ! blueprintsMetainfo.ConnectSystemNodesSet(bluprintsStorName,bluprintsStorName) ) {
+        EG_LOG_STUB << "INIT: Not found blueprints metadata storage, create new: " << bluprintsStorName << FN;
+        createBlueprintsMetainfo();
+    }
+    LoadBlueprintsInfo();
 }
 
 inline void EgDatabase::createNodesMetainfo() { // , , 
-    CreateNodeBlueprint(nodesSetsStorageName);
+    CreateSystemBlueprint(nodesSetsStorageName);
     AddNodeDataField(nodesSet_FieldName);
     AddNodeDataField(nodesBPName_FieldName);
-    AddNodeDataField(glamourBPName_FieldName);
-    CommitNodeBlueprint();
+    // AddNodeDataField(glamourBPName_FieldName);
+    CommitSystemBlueprint();
 }
 
 inline void EgDatabase::createLinksMetainfo() { // , , 
-    CreateNodeBlueprint(linksSetsStorageName);
+    CreateSystemBlueprint(linksSetsStorageName);
     AddNodeDataField(linksSetName_FieldName);
     AddNodeDataField(linksBPName_FieldName);
     AddNodeDataField(linksFromID_FieldName);
     AddNodeDataField(linksToID_FieldName);
-    CommitNodeBlueprint();
+    CommitSystemBlueprint();
+}
+
+inline void EgDatabase::createBlueprintsMetainfo() { // , , 
+    CreateSystemBlueprint(bluprintsStorName);
+    AddNodeDataField(BPName_FName);
+    CommitSystemBlueprint();
 }
 
 int  EgDatabase::CreateBlueprintByTemplate(const std::string& oldBPName, const std::string& newBPName, std::unordered_set<std::string>& addFields) {
@@ -70,7 +82,7 @@ int  EgDatabase::CreateBlueprintByTemplate(const std::string& oldBPName, const s
 }
 
 EgDataNodesSet* EgDatabase::GetNodesTypePtrByID(EgNodesSetIDType nodeTypeID) { // FIXME implement serialDataPtr on all types load
-    return static_cast < EgDataNodesSet* > (nodesTypesMetainfo.nodesContainer->GetNodePtrByID (nodeTypeID)-> serialDataPtr);
+    return static_cast < EgDataNodesSet* > (nodesSetsMetainfo.nodesContainer->GetNodePtrByID (nodeTypeID)-> serialDataPtr);
 }
 
 int EgDatabase::AddDataNodesTypeInfo(const std::string& nodesSetName, const std::string& blueprintName) {
@@ -81,12 +93,12 @@ int EgDatabase::AddDataNodesTypeInfo(const std::string& nodesSetName, const std:
         return -1;
     }
     // EG_LOG_STUB << "typeName : " << typeName << FN;
-    EgDataNode* newNode = new EgDataNode(nodesTypesMetainfo.dataNodeBlueprint);
+    EgDataNode* newNode = new EgDataNode(nodesSetsMetainfo.dataNodeBlueprint);
     // blueprintID = nodesTypesMetainfo.nodesContainer-> GetLastID() + 1;
     (*newNode)[nodesSet_FieldName] << nodesSetName;
     (*newNode)[nodesBPName_FieldName]  << blueprintName;
-    nodesTypesMetainfo << newNode;
-    nodesTypesMetainfo.Store();
+    nodesSetsMetainfo << newNode;
+    nodesSetsMetainfo.Store();
     return 0;
 }
 /*
@@ -115,33 +127,54 @@ int EgDatabase::AddLinksTypeInfo(const std::string& linksSetName, const std::str
         EG_LOG_STUB << "ERROR : linkss set name already exists : " << linksSetName << FN;
         return -1;
     }
-    EgDataNode* newNode = new EgDataNode(linksTypesMetainfo.dataNodeBlueprint);
+    EgDataNode* newNode = new EgDataNode(linksSetsMetainfo.dataNodeBlueprint);
     // blueprintID = linksTypesMetainfo.nodesContainer-> lastNodeID + 1; // FIXME check if needed
     (*newNode)[linksSetName_FieldName]  << linksSetName;
     (*newNode)[linksBPName_FieldName]   << blueprintName;
     (*newNode)[linksFromID_FieldName] << nodesFrom;
     (*newNode)[linksToID_FieldName]   << nodesTo;
-    linksTypesMetainfo << newNode;
-    linksTypesMetainfo.Store();
+    linksSetsMetainfo << newNode;
+    linksSetsMetainfo.Store();
     return 0;
 }
 
+bool EgDatabase::AddBlueprintToMetainfo(const std::string& blueprintName) {
+    // EG_LOG_STUB << "nodesSetName: " << nodesSetName << " blueprintName: " << blueprintName << FN;
+    // EgNodesSetIDType stubID;
+    /* if (blueprintNameExists(blueprintName)) { // metainfo Data Exists, checked in transaction start
+        EG_LOG_STUB << "ERROR : blueprint name already exists : " << blueprintName << FN;
+        return false;
+    } */ 
+    EgDataNode* newNode = new EgDataNode(blueprintsMetainfo.dataNodeBlueprint);
+    (*newNode)[BPName_FName]  << blueprintName;
+    blueprintsMetainfo << newNode;
+    blueprintsMetainfo.Store();
+    return true;
+}
+
 void EgDatabase::LoadDataNodesSetsInfo() {
-    if (! nodesTypesMetainfo.isConnected)
-            nodesTypesMetainfo.ConnectSystemNodesSet(nodesSetsStorageName, nodesSetsStorageName);
-    if (! nodesTypesMetainfo.isDataLoaded)
-            nodesTypesMetainfo.LoadAllNodes();
+    if (! nodesSetsMetainfo.isConnected)
+            nodesSetsMetainfo.ConnectSystemNodesSet(nodesSetsStorageName, nodesSetsStorageName);
+    if (! nodesSetsMetainfo.isDataLoaded)
+            nodesSetsMetainfo.LoadAllNodes();
 }
 
 void EgDatabase::LoadLinksInfo() {
-    if (! linksTypesMetainfo.isConnected)    
-        linksTypesMetainfo.ConnectSystemNodesSet(linksSetsStorageName, linksSetsStorageName);
-    if (! linksTypesMetainfo.isDataLoaded)
-            linksTypesMetainfo.LoadAllNodes();
+    if (! linksSetsMetainfo.isConnected)    
+        linksSetsMetainfo.ConnectSystemNodesSet(linksSetsStorageName, linksSetsStorageName);
+    if (! linksSetsMetainfo.isDataLoaded)
+            linksSetsMetainfo.LoadAllNodes();
+}
+
+void EgDatabase::LoadBlueprintsInfo() {
+    if (! blueprintsMetainfo.isConnected)    
+        blueprintsMetainfo.ConnectSystemNodesSet(bluprintsStorName, bluprintsStorName);
+    if (! blueprintsMetainfo.isDataLoaded)
+            blueprintsMetainfo.LoadAllNodes();
 }
 
 bool EgDatabase::nodeTypeIDByName(const std::string& typeName, EgNodesSetIDType& nodeTypeID) {
-        for (auto nodesIter : nodesTypesMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
+        for (auto nodesIter : nodesSetsMetainfo.nodesContainer-> dataNodes) {
             std::string currentName;
             (*(nodesIter.second))[nodesSet_FieldName] >> currentName;
             // EG_LOG_STUB << "currentName : " << currentName << FN;
@@ -157,7 +190,7 @@ bool EgDatabase::nodeTypeIDByName(const std::string& typeName, EgNodesSetIDType&
 bool EgDatabase::blueprintNameByNodeName(const std::string& nodesSetName, std::string& nodeBlueprintName) {
         // EG_LOG_STUB << "nodesSetName : " << nodesSetName << FN;
         LoadDataNodesSetsInfo();
-        for (auto nodesIter : nodesTypesMetainfo.nodesContainer-> dataNodes) {
+        for (auto nodesIter : nodesSetsMetainfo.nodesContainer-> dataNodes) {
             std::string currentName;
             (*(nodesIter.second))[nodesSet_FieldName] >> currentName;
             // EG_LOG_STUB << "currentName : " << currentName << FN;
@@ -175,8 +208,8 @@ bool EgDatabase::blueprintNameByLinkName(const std::string& linksSetName, std::s
     // EG_LOG_STUB << "check typeName : " << nodesSetName << FN;
     // if (LoadDataNodesTypesInfo() == 0) { // files exist
         LoadLinksInfo();
-        for (auto nodesIter : linksTypesMetainfo.nodesContainer-> dataNodes) {
-            std::string currentName;
+        std::string currentName;
+        for (auto nodesIter : linksSetsMetainfo.nodesContainer-> dataNodes) {
             (*(nodesIter.second))[linksSetName_FieldName] >> currentName;
             // EG_LOG_STUB << "currentName : " << currentName << FN;
             if (currentName == linksSetName) {
@@ -190,10 +223,24 @@ bool EgDatabase::blueprintNameByLinkName(const std::string& linksSetName, std::s
     return true;
 }
 
+bool EgDatabase::blueprintNameExists(const std::string& blueprintName) {
+        LoadBlueprintsInfo();
+        std::string currentName;
+        for (auto nodesIter : blueprintsMetainfo.nodesContainer-> dataNodes) {
+            (*(nodesIter.second))[BPName_FName] >> currentName;
+            // EG_LOG_STUB << "currentName : " << currentName << FN;
+            if (currentName == blueprintName) {
+                return true; // typename exists
+            }
+        }
+    // }
+    return false;
+}
+
 EgDataNode* EgDatabase::dataNodePtrByNodesType(EgDataNodesSet* nodesType) {
     // EG_LOG_STUB << "check typeName : " << typeName << FN;
     // if (LoadDataNodesTypesInfo() == 0) { // files exist
-        for (auto nodesIter : nodesTypesMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
+        for (auto nodesIter : nodesSetsMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
             std::string currentName;
             (*(nodesIter.second))[nodesSet_FieldName] >> currentName;
             // nodesBPFieldName
@@ -209,7 +256,7 @@ EgDataNode* EgDatabase::dataNodePtrByNodesType(EgDataNodesSet* nodesType) {
 
 bool EgDatabase::linkTypeIDByName(const std::string& linkName, EgNodesSetIDType& linkTypeID) {
     // if (LoadLinksInfo() == 0) { // files exist
-        for (auto nodesIter : linksTypesMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
+        for (auto nodesIter : linksSetsMetainfo.nodesContainer-> dataNodes) {// 17 [first, second], <11 = dataFieldsNames.begin(); fieldsIter != dataFieldsNames.end(); ++fieldsIter) {
             std::string currentName;
             (*(nodesIter.second))[linksSetName_FieldName] >> currentName;
             // EG_LOG_STUB << "linkTypeIDByName() currentName: " << currentName << " linkName: " << linkName << FN;
@@ -245,9 +292,28 @@ void EgDatabase::CommitNodesSet() {
 } */
 
 bool EgDatabase::CreateNodeBlueprint(const std::string& blueprintName) { //,  EgNodeTypeSettings& typeSettings)
+    if (blueprintNameExists(blueprintName)) { // metainfo Data Exists
+        EG_LOG_STUB << "ERROR : blueprint name already exists in database : " << blueprintName << FN;
+        CreateNodeBlueprintFlag = false; // abort next ops
+        return false;
+    }
     nodeBlueprint = new EgDataNodeBlueprint(blueprintName);  // if someone failed to commit blueprint and leak mem, no big deal
-    if ( ! nodeBlueprint-> BlueprintInitStart() ) { // alredy exists
-        EG_LOG_STUB << "ERROR: Data node blueprint already exists: " << blueprintName << FN;
+    if ( ! nodeBlueprint-> BlueprintInitStart() ) { // alredy exists in file system
+        EG_LOG_STUB << "ERROR: Data node blueprint file already exists: " << blueprintName << FN;
+        CreateNodeBlueprintFlag = false; // abort next ops
+        delete nodeBlueprint;
+        nodeBlueprint = nullptr;
+        return false;
+    }
+    CreateNodeBlueprintFlag = true; // ok to add fields
+    // EG_LOG_STUB << "newBlueprint before: " << nodeBlueprint->blueprintName << " " << (int) nodeBlueprint-> blueprintID << FN;
+    return true;
+}
+
+bool EgDatabase::CreateSystemBlueprint(const std::string& blueprintName) { //,  EgNodeTypeSettings& typeSettings)
+    nodeBlueprint = new EgDataNodeBlueprint(blueprintName);  // if someone failed to commit blueprint and leak mem, no big deal
+    if ( ! nodeBlueprint-> BlueprintInitStart() ) { // alredy exists in file system
+        EG_LOG_STUB << "ERROR: Data node blueprint file already exists: " << blueprintName << FN;
         CreateNodeBlueprintFlag = false; // abort next ops
         delete nodeBlueprint;
         nodeBlueprint = nullptr;
@@ -275,8 +341,20 @@ void EgDatabase::AddIndex(const std::string& indexName, uint8_t indexSizeBytes, 
 }
 
 void EgDatabase::CommitNodeBlueprint() {
-    if (CreateNodeBlueprintFlag)
+    if (CreateNodeBlueprintFlag) {
         nodeBlueprint-> BlueprintInitCommit();
+        // EG_LOG_STUB << "AddBlueprintToMetainfo()_nodeBlueprint-> blueprintName : " << nodeBlueprint-> blueprintName << FN;
+        AddBlueprintToMetainfo(nodeBlueprint-> blueprintName);
+    }
+    delete nodeBlueprint;
+    nodeBlueprint = nullptr;
+    CreateNodeBlueprintFlag = false;
+}
+
+void EgDatabase::CommitSystemBlueprint() {
+    if (CreateNodeBlueprintFlag) {
+        nodeBlueprint-> BlueprintInitCommit();
+    }
     delete nodeBlueprint;
     nodeBlueprint = nullptr;
     CreateNodeBlueprintFlag = false;
@@ -306,7 +384,7 @@ int EgDatabase::CreateStdBoundLinkSet(const std::string& linksSetName, const std
     int res = AddLinksTypeInfo(linksSetName, stdBoundLinkBPName, nodesFrom, nodesTo);
     // EG_LOG_STUB << "newBlueprint after: " << linkBlueprint->blueprintName << " " << (int)linkBlueprint->blueprintID << FN;
     if (! res )
-        linksTypesMetainfo.Store();
+        linksSetsMetainfo.Store();
     return res;
 }
 

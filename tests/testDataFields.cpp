@@ -82,13 +82,13 @@ void addSampleDataFields(EgDataNode& testNode) {
     // testDataFields.fieldsCount = TEST_FIELDS_COUNT;
 
     EgByteArrayAbstractType* byteArray = new EgByteArrayAbstractType();
-    byteArray-> dataChunk = (EgByteType*) field1.c_str();                     // no alloc, ptr to global mem
+    byteArray-> dataChunk = (EgByteType*) field1.c_str();              // no alloc, ptr to global mem
     byteArray-> dataSize  = field1.size();
 
     // testDataFields.dataFields.push_back(byteArray);
     testNode.InsertDataFieldFromByteArray(*byteArray);
 
-    byteArray = new EgByteArraySysallocType(field2.size());              // sys heap alloc
+    byteArray = new EgByteArraySysallocType(field2.size());            // sys heap alloc
     memcpy((void*)byteArray-> dataChunk, (void*) field2.c_str(), byteArray-> dataSize);
     // testDataFields.dataFields.push_back(byteArray);
     testNode.InsertDataFieldFromByteArray(*byteArray);

@@ -7,7 +7,9 @@
 const std::string nodesSetsStorageName      ("egNodesSetsMetainfo");
 const std::string nodesSet_FieldName        ("egNodesSetName");
 const std::string nodesBPName_FieldName     ("egNodeBlueprintName");
-const std::string glamourBPName_FieldName   ("egNodeGlamBlueprintName");
+
+const std::string bluprintsStorName         ("egBlueprintsMetainfo");
+const std::string BPName_FName              ("egBlueprintName");
 
 // const std::string linkBlueprintsStorageName ("egLinkBlueprintsMetainfo");
 const std::string linksSetsStorageName      ("egLinksSetsMetainfo");

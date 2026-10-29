@@ -21,21 +21,21 @@ void EgLayersMetainfo::ConnectOrCreateStorage() {
 }
 
 inline void EgLayersMetainfo::CreateLayersBlueprints() { // FIXME STUB
-    if ( metaInfoDatabase->CreateNodeBlueprint(layersMetainfoStorageName) ) { // layers sets metainfo blueprint
+    if ( metaInfoDatabase->CreateSystemBlueprint(layersMetainfoStorageName) ) { // layers sets metainfo blueprint
         metaInfoDatabase->AddNodeDataField(layersFieldNameName);
         metaInfoDatabase->AddNodeDataField(layersFieldTopLayerIDName);
-        metaInfoDatabase->CommitNodeBlueprint();
+        metaInfoDatabase->CommitSystemBlueprint();
     }
-    if ( metaInfoDatabase->CreateNodeBlueprint(layersSetBPName) ) { // layers set blueprint
+    if ( metaInfoDatabase->CreateSystemBlueprint(layersSetBPName) ) { // layers set blueprint
         metaInfoDatabase->AddNodeDataField(layerNodesSets_FieldName);
         metaInfoDatabase->AddNodeDataField(layerLinks_FieldName);
         // metaInfoDatabase->AddNodeDataField(layerDarkNodesLink_FieldName);
         metaInfoDatabase->AddNodeDataField(layerWidth_FieldName);
         metaInfoDatabase->AddNodeDataField(layerHeight_FieldName);
         metaInfoDatabase->AddNodeDataField(layerParentID_FieldName);
-        metaInfoDatabase->CommitNodeBlueprint();
+        metaInfoDatabase->CommitSystemBlueprint();
     }
-    if ( metaInfoDatabase-> CreateNodeBlueprint(nodeWidgetBPName) ) { // nodeWidget blueprint
+    if ( metaInfoDatabase-> CreateSystemBlueprint(nodeWidgetBPName) ) { // nodeWidget blueprint
         metaInfoDatabase-> AddNodeDataField(nodeWidgetFieldLabelName);
         metaInfoDatabase-> AddNodeDataField(nodeWidgetFieldXName);
         metaInfoDatabase-> AddNodeDataField(nodeWidgetFieldYName);
@@ -47,7 +47,7 @@ inline void EgLayersMetainfo::CreateLayersBlueprints() { // FIXME STUB
         metaInfoDatabase-> AddNodeDataField(nodeWidgetFieldNodesName);  // "boundNodesSet") FIXME remove to free link
         metaInfoDatabase-> AddNodeDataField(nodeWidgetFieldNodeIDName); // "boundNodeID"
         metaInfoDatabase-> AddNodeDataField(nodeWidgetFieldDescName);   // "widgetDescription"
-        metaInfoDatabase-> CommitNodeBlueprint();
+        metaInfoDatabase-> CommitSystemBlueprint();
     }
     if ( ! metaInfoDatabase-> CreateLinkBlueprint(linkWidgetBPName)) { // layer links blueprint
         metaInfoDatabase->AddLinkDataField(linkWidgetStartX_FName);

@@ -8,8 +8,9 @@
 
 class EgDatabase { // metadata of nodes sets, links sets, layers sets
 public:
-    EgDataNodesSet nodesTypesMetainfo;      // metadata stored in system nodes sets
-    EgDataNodesSet linksTypesMetainfo;
+    EgDataNodesSet nodesSetsMetainfo;      // metadata stored in system nodes sets
+    EgDataNodesSet linksSetsMetainfo;
+    EgDataNodesSet blueprintsMetainfo;
 
     EgLayersMetainfo*   layersMetainfo   {nullptr};
     EgPalettesMetainfo* palettesMetainfo {nullptr};
@@ -36,7 +37,11 @@ public:
     inline void createNodesMetainfo();
     inline void createLinksMetainfo();
     inline void createStdLinkBlueprints();
+    inline void createBlueprintsMetainfo();
     // inline void createLayersMetainfo();
+
+bool AddBlueprintToMetainfo(const std::string& blueprintName);
+bool blueprintNameExists(const std::string& blueprintName);
 
 // ======================== nodes metadata API ========================
     // int  CreateNodesSet(const std::string& nodesSetName); // blueprint and set at once
@@ -46,6 +51,9 @@ public:
     void AddIndex(const std::string& indexName, uint8_t indexSizeBytes = 4, uint8_t indexSubType = egIndexesSpace::egIntFT);
     void CommitNodeBlueprint();         // use AddNodeDataField() prior to commit
     int  CreateNodesSetByBlueprint(const std::string& nodesSetName, const std::string& nodeBlueprintName);
+
+    bool CreateSystemBlueprint(const std::string& blueprintName); // dont add to metadata, file only
+    void CommitSystemBlueprint();  
 // ======================== links metadata API ========================
     int  CreateLinkBlueprint(const std::string& linksBlueprintName);
     void AddLinkDataField(const std::string& fieldName);
@@ -81,6 +89,8 @@ public:
     void LoadLinksInfo();
     bool linkTypeIDByName(const std::string& linkName, EgNodesSetIDType& linkTypeID);
     bool blueprintNameByLinkName(const std::string& nodesSetName, std::string& nodeBlueprintName, EgNodesSetIDType& linksSetID);
+
+    void LoadBlueprintsInfo();
 
     inline bool LoadLocalFileNode(const std::string& nodesSetName, EgDataNodeIDType nodeID, EgDataNode*& newNode);
     bool CherryPickNode(const std::string& nodesSetName, EgDataNodeIDType nodeID, EgDataNode*& newNode, EgDataNodeBlueprint*& newNodeBP); // MEMLEAK delete after use

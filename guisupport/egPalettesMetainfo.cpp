@@ -20,21 +20,21 @@ void EgPalettesMetainfo::getPalettesMetainfo() {
 }
 
 inline void EgPalettesMetainfo::createPalettesMetainfo() {
-    if ( metaInfoDatabase-> CreateNodeBlueprint(palettesMetainfoName)) { // metainfo blueprint
+    if ( metaInfoDatabase-> CreateSystemBlueprint(palettesMetainfoName)) { // metainfo blueprint
         metaInfoDatabase-> AddNodeDataField(palettesNameField);
-        metaInfoDatabase-> CommitNodeBlueprint();
+        metaInfoDatabase-> CommitSystemBlueprint();
     }
-    if ( metaInfoDatabase-> CreateNodeBlueprint(palettesSetBPName)) { // palettesSet blueprint
+    if ( metaInfoDatabase-> CreateSystemBlueprint(palettesSetBPName)) { // palettesSet blueprint
         metaInfoDatabase-> AddNodeDataField(palettesNameField);
-        metaInfoDatabase-> CommitNodeBlueprint();
+        metaInfoDatabase-> CommitSystemBlueprint();
     }
-    if ( metaInfoDatabase-> CreateNodeBlueprint(onePaletteBPName)) { // onePalette blueprint
+    if ( metaInfoDatabase-> CreateSystemBlueprint(onePaletteBPName)) { // onePalette blueprint
         metaInfoDatabase-> AddNodeDataField(paletteFieldIndexName);
         metaInfoDatabase-> AddNodeDataField(paletteFieldNodesName);
         metaInfoDatabase-> AddNodeDataField(paletteFieldNodeIDName);
         metaInfoDatabase-> AddNodeDataField(paletteWidgetNameName);
         metaInfoDatabase-> AddNodeDataField(paletteWidgetColorName);
-        metaInfoDatabase-> CommitNodeBlueprint();
+        metaInfoDatabase-> CommitSystemBlueprint();
     }
 }
 

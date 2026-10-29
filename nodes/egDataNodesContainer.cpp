@@ -41,7 +41,7 @@ EgDataNode *EgDataNodesContainer::GetNodePtrByID(EgDataNodeIDType nodeID) {
     return nullptr;
 }
 
-EgDataNodeIDType EgDataNodesContainer::AddDataNode(EgDataNode *newNode) {
+EgDataNodeIDType EgDataNodesContainer::AddDataNode(EgDataNode* newNode) {
     newNode-> dataNodeID = 1 + lastNodeID++;
     nodesCount++;
     dataNodes.insert(std::make_pair(newNode-> dataNodeID, newNode));
